@@ -1,0 +1,19 @@
+pytest
+coverage
+pytest-cov
+lxml
+wand
+scandir
+httpretty
+mongomock
+mimeparse
+Sphinx
+paramiko
+jsonschema
+requests_mock
+mock
+iso-639
+
+# TODO: docutils is required by python-daemon. Can be removed when this issue:
+# https://pagure.io/python-daemon/issue/18 is solved
+docutils
