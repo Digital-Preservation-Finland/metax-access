@@ -1,11 +1,9 @@
 # encoding=utf8
 """Metax interface class."""
 
-import iso639
 import lxml.etree
 import requests
 from requests.auth import HTTPBasicAuth
-from siptools_research.config import Configuration
 
 DS_STATE_INITIALIZED = 0
 DS_STATE_PROPOSED_FOR_DIGITAL_PRESERVATION = 10
@@ -51,15 +49,16 @@ class DatasetNotFoundError(Exception):
 class Metax(object):
     """Get metadata from metax as dict object."""
 
-    def __init__(self, config_file):
+    def __init__(self, metax_url, metax_user, metax_password):
         """ Initialize Metax object.
 
-        :config_file: Global configuration file
+        :metax_url: Metax url
+        :user: Metax user
+        :password: Metax user password
         """
-        configuration = Configuration(config_file)
-        self.metax_url = configuration.get('metax_url')
-        self.username = configuration.get('metax_user')
-        self.password = configuration.get('metax_password')
+        self.metax_url = metax_url
+        self.username = metax_user
+        self.password = metax_password
         self.baseurl = self.metax_url + '/rest/v1/'
         self.elasticsearch_url = self.metax_url + '/es/'
 
