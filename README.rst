@@ -15,7 +15,7 @@ Testing
 -------
 Install required RPM packages::
 
-   yum install libxslt-devel libxml2-devel openssl-devel mongodb-server gcc ImageMagick dpres-xml-schemas
+   yum install libxslt-devel libxml2-devel openssl-devel gcc
 
 Create and activate virtualenv::
 

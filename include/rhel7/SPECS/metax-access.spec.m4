@@ -11,7 +11,7 @@
 Name:           metax-access
 Version:        %{file_version}
 Release:        %{file_release_number}%{file_release_tag}.%{file_build_number}.git%{file_commit_ref}%{?dist}
-Summary:        Metax access library
+Summary:        Metax Access Library
 Group:          Applications/Archiving
 License:        LGPLv3+
 URL:            http://www.csc.fi
@@ -19,9 +19,8 @@ Source0:        %{file_prefix}-v%{file_version}%{?file_release_tag}-%{file_build
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 Requires:       python
-Requires:       python-lxml python-paramiko python2-jsonschema python-requests
-Requires:       python-scandir python-iso-639 ImageMagick
-Requires:       python-mongomock
+Requires:       python-lxml python-paramiko python-requests
+Requires:       python-scandir
 BuildRequires:  python-setuptools pytest python-httpretty
 
 %description
