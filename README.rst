@@ -13,16 +13,13 @@ Usage
 
 Testing
 -------
-Install required RPM packages::
-
-   yum install libxslt-devel libxml2-devel openssl-devel gcc
 
 Create and activate virtualenv::
 
    virtualenv venv
    source venv/bin/activate
 
-Luigi will not install with old versions of pip, so upgrade pip::
+Upgrade pip::
 
    pip install --upgrade pip
 
