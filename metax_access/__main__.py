@@ -46,25 +46,28 @@ def main():
     subparsers = parser.add_subparsers(title='command')
 
     # Post command parser
-    post_parser = subparsers.add_parser('post')
+    post_parser = subparsers.add_parser('post',
+                                        help='Post file or dataset metadata.')
     post_parser.add_argument('resource',
-                             choices=('file', 'dataset', 'contract'),
+                             choices=('file', 'dataset'),
                              help="Resource type")
     post_parser.add_argument('filepath', help="Path to metadata file")
     post_parser.set_defaults(func=post)
 
     # Get command parser
-    get_parser = subparsers.add_parser('get')
+    get_parser = subparsers.add_parser('get',
+                                       help='Print file or dataset metadata.')
     get_parser.add_argument('resource',
-                            choices=('file', 'dataset', 'contract'),
+                            choices=('file', 'dataset'),
                             help="Resource type")
     get_parser.add_argument('identifier', help="Resource identifier")
     get_parser.set_defaults(func=get)
 
     # Delete command parser
-    delete_parser = subparsers.add_parser('delete')
+    delete_parser = subparsers.add_parser('delete',
+                                          help='Delete file or dataset metadata')
     delete_parser.add_argument('resource',
-                               choices=('file', 'dataset', 'contract'),
+                               choices=('file', 'dataset'),
                                help="Resource type")
     delete_parser.add_argument('identifier', help="Resource identifier")
     delete_parser.set_defaults(func=delete)
