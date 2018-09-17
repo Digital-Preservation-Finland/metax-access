@@ -82,4 +82,5 @@ def main():
     args.func(metax_client, args)
 
 
-main()
+if __name__ == "__main__":
+    main()
