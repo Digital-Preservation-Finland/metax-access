@@ -13,10 +13,7 @@ def main():
         install_requires=[
             "requests",
             "lxml",
-            "scandir",
-            "jsonschema",
-            "wand",
-            "iso-639"
+            "jsonschema"
         ],
         entry_points={
             'console_scripts': [
