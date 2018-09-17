@@ -477,10 +477,78 @@ class Metax(object):
 
         return response.json()
 
+    def delete_file(self, file_id):
+        """Delete metadata of a file.
+
+        :file_id: file identifier
+        :returns: requests Response
+        """
+        url = self.baseurl + 'files/' + file_id
+        response = requests.delete(
+            url=url,
+            auth=HTTPBasicAuth(self.username, self.password)
+        )
+        response.raise_for_status()
+        return response
+
+    def delete_dataset(self, dataset_id):
+        """Delete metadata of dataset.
+
+        :dataset_id: dataset identifier
+        :returns: requests Response
+        """
+        url = self.baseurl + 'datasets/' + dataset_id
+        response = requests.delete(
+            url=url,
+            auth=HTTPBasicAuth(self.username, self.password)
+        )
+        response.raise_for_status()
+        return response
+
+    def delete_dataset_files(self, dataset_id):
+        """Delete metadata of files of a dataset.
+
+        :dataset_id: dataset identifier
+        :returns: list of requests Responses
+        """
+        dataset_files = self.get_dataset_files(dataset_id)
+
+        for file_ in dataset_files:
+            self.delete_file(file_['identifier'])
+
+    def post_file(self, metadata):
+        """Post file metadata.
+
+        :metadata: file metadata dictionary
+        :returns: requests Response
+        """
+        url = self.baseurl + 'files/'
+        response = requests.post(
+            url=url,
+            json=metadata,
+            auth=HTTPBasicAuth(self.username, self.password)
+        )
+        response.raise_for_status()
+        return response
+
+    def post_dataset(self, metadata):
+        """Post dataset metadata.
+
+        :metadata: dataset metadata dictionary
+        :returns: requests Response
+        """
+        url = self.baseurl + 'datasets/'
+        response = requests.post(
+            url, json=metadata,
+            auth=HTTPBasicAuth(self.username, self.password)
+        )
+        response.raise_for_status()
+        return response
+
 
 def _do_get_request(url, auth=None):
     """Wrapper function for requests.get() function. Raises
-    MetaxConnectionError if status code is 503 (Service unavailable
+    MetaxConnectionError if status code is 503 (Service unavailable)
 
     :returns: requests response
     """
