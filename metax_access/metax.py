@@ -488,7 +488,6 @@ class Metax(object):
             url=url,
             auth=HTTPBasicAuth(self.username, self.password)
         )
-        response.raise_for_status()
         return response
 
     def delete_dataset(self, dataset_id):
@@ -502,7 +501,6 @@ class Metax(object):
             url=url,
             auth=HTTPBasicAuth(self.username, self.password)
         )
-        response.raise_for_status()
         return response
 
     def delete_dataset_files(self, dataset_id):
@@ -528,7 +526,6 @@ class Metax(object):
             json=metadata,
             auth=HTTPBasicAuth(self.username, self.password)
         )
-        response.raise_for_status()
         return response
 
     def post_dataset(self, metadata):
@@ -542,7 +539,6 @@ class Metax(object):
             url, json=metadata,
             auth=HTTPBasicAuth(self.username, self.password)
         )
-        response.raise_for_status()
         return response
 
 
