@@ -59,19 +59,27 @@ def testmetax(request):
     def dynamic_response(request, url, headers):
         """Return HTTP response according to url and query string"""
         logging.debug("Dynamic response for HTTP GET url: %s", url)
+        logging.debug("Request: %s", str(request))
+        logging.debug("Header: %s", str(headers))
         # url without basepath:
         path = url.split(METAX_URL)[1]
-        # subdirectory to get file from:
-        subdir = path.split('/')[1]
-        # file to be used as response body:
-        body_file = path.split('/')[2]
-        # if url contains query strings or more directories after the filename,
-        # everything is added to the filename url encoded
-        tail = path.split('/%s/%s' % (subdir, body_file))[1]
-        if tail:
-            body_file += urllib.quote(tail, safe='%')
+        logging.debug("Path: %s", path)
+        if path.startswith('/datasets?'):
+            full_path = "%s/%s/%s" % (METAX_PATH, 'datasets', 'datasets')
+        elif path.startswith('/contracts?'):
+            full_path = "%s/%s/%s" % (METAX_PATH, 'contracts', 'contracts')
+        else:
+            # subdirectory to get file from:
+            subdir = path.split('/')[1]
+            # file to be used as response body:
+            body_file = path.split('/')[2]
+            # if url contains query strings or more directories after the filename,
+            # everything is added to the filename url encoded
+            tail = path.split('/%s/%s' % (subdir, body_file))[1]
+            if tail:
+                body_file += urllib.quote(tail, safe='%')
 
-        full_path = "%s/%s/%s" % (METAX_PATH, subdir, body_file)
+            full_path = "%s/%s/%s" % (METAX_PATH, subdir, body_file)
         logging.debug("Looking for file: %s", full_path)
         if not os.path.isfile(full_path):
             return (403, headers, "File not found")
@@ -81,6 +89,13 @@ def testmetax(request):
 
         return (200, headers, body)
 
+    def dynamic_patch_response(request, url, headers):
+        """Return HTTP response according to url and query string"""
+        logging.debug("Dynamic response for HTTP PATCH url: %s", url)
+        logging.debug("Request: %s", str(request))
+        logging.debug("Header: %s", str(headers))
+        return (200, headers, body)
+    
     # Enable http-server in beginning of test function
     httpretty.enable()
 
@@ -95,7 +110,7 @@ def testmetax(request):
     httpretty.register_uri(
         httpretty.PATCH,
         re.compile(METAX_URL + '/(.*)'),
-        body=dynamic_response,
+        body=dynamic_patch_response,
     )
 
     # Register response for POST method for any url starting with METAX_URL

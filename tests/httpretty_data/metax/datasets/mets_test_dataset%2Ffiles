@@ -1,0 +1,82 @@
+[
+    {
+        "id": 1,
+        "byte_size": 100,
+        "checksum": {
+            "algorithm": "sha2",
+            "checked": "2017-06-23T17:41:59+03:00",
+            "value": "habeebit"
+        },
+        "parent_directory": {
+            "id": 3,
+            "identifier": "pid:urn:dir:3"
+        },
+        "file_frozen": "2017-05-21T17:41:59+03:00",
+        "file_format": "html/text",
+        "file_modified": "2017-06-23T17:41:59+03:00",
+        "file_name": "file_name_1",
+        "file_path": "/project_x_FROZEN/Experiment_X/file_name_1",
+        "file_storage": {
+            "id": 1,
+            "identifier": "pid:urn:storageidentifier1"
+        },
+        "file_uploaded": "2017-05-21T17:41:59+03:00",
+        "identifier": "pid:urn:1",
+        "file_characteristics": {
+            "title": "A title 120",
+            "encoding": "UTF-8",
+            "file_format": "text/plain",
+            "format_version": "",
+            "description": "A nice description 120",
+            "file_created": "2014-01-17T08:19:31Z",
+            "application_name": "Application Name",
+            "metadata_modified": "2014-01-17T08:19:31Z"
+        },
+        "open_access": false,
+        "project_identifier": "project_x",
+        "replication_path": "/path/to/copy/of/file",
+        "date_modified": "2017-06-27T13:07:22+03:00",
+        "date_created": "2017-05-23T13:07:22+03:00",
+        "service_created": "metax"
+    },
+    {
+        "id": 2,
+        "byte_size": 200,
+        "checksum": {
+            "algorithm": "sha2",
+            "checked": "2017-06-23T17:41:59+03:00",
+            "value": "habeebit"
+        },
+        "parent_directory": {
+            "id": 3,
+            "identifier": "pid:urn:dir:3"
+        },
+        "file_frozen": "2017-05-21T17:41:59+03:00",
+        "file_format": "html/text",
+        "file_modified": "2017-06-23T17:41:59+03:00",
+        "file_name": "file_name_2",
+        "file_path": "/project_x_FROZEN/Experiment_X/file_name_2",
+        "file_storage": {
+            "id": 1,
+            "identifier": "pid:urn:storageidentifier1"
+        },
+        "file_uploaded": "2017-05-21T17:41:59+03:00",
+        "identifier": "pid:urn:2",
+        "file_characteristics": {
+            "title": "A title 120",
+            "encoding": "UTF-8",
+            "file_format": "text/html",
+            "format_version": "4.01",
+            "description": "A nice description 120",
+            "file_created": "2014-01-17T08:19:31Z",
+            "application_name": "Application Name",
+            "metadata_modified": "2014-01-17T08:19:31Z"
+        },
+        "open_access": false,
+        "project_identifier": "project_x",
+        "replication_path": "/path/to/copy/of/file",
+        "date_modified": "2017-06-27T13:07:22+03:00",
+        "date_created": "2017-05-23T13:07:22+03:00",
+        "service_created": "metax"
+    }
+]

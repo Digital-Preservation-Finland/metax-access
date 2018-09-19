@@ -5,6 +5,8 @@ lxml
 httpretty
 mock
 requests
+Sphinx==1.7.9
+flask
 
 # TODO: docutils is required by python-daemon. Can be removed when this issue:
 # https://pagure.io/python-daemon/issue/18 is solved
