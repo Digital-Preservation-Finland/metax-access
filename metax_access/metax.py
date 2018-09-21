@@ -6,7 +6,6 @@ from requests import get, post, patch
 from requests.auth import HTTPBasicAuth
 from flask import abort
 import requests
-from attr import dataclass
 
 DS_STATE_INITIALIZED = 0
 DS_STATE_PROPOSED_FOR_DIGITAL_PRESERVATION = 10
