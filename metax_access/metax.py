@@ -4,7 +4,6 @@
 import lxml.etree
 from requests import get, post, patch
 from requests.auth import HTTPBasicAuth
-from flask import abort
 import requests
 
 DS_STATE_INITIALIZED = 0
@@ -77,9 +76,20 @@ class Metax(object):
                      offset="0",
                      pas_filter=None,
                      org_filter=None):
-        """Gets the metadata of datasets from METAX.
+        """Gets the metadata of datasets from Metax.
 
-        :returns: The data from METAX as json.
+        :states(string): string containing dataset preservation state values
+        e.g "10,20" for filtering
+        :limit(string): max number of datasets to be returned
+        :offset(string): offset for paging
+        :pas_filter(string): string for filtering datasets, Used for the following
+        attributes in metax:
+            1. research_dataset['title']
+            2. research_dataset['curator']['name']
+            3. contract['contract_json']['title']
+        :org_filter(string): string for filtering datasets based on
+        research_dataset=>metadata_owner_org attribute value
+        :returns: datasets from Metax as json.
         """
         if states is None:
             states = ','.join(str(state) for state in DS_STATE_ALL_STATES)
@@ -102,9 +112,14 @@ class Metax(object):
         return response.json()
 
     def get_contracts(self, limit="1000000", offset="0", org_filter=None):
-        """Gets the data for contracts list from METAX.
+        """Gets the data for contracts list from Metax.
 
-        :returns: The data from METAX as json.
+        :limit(string): max number of contracts to be returned
+        :offset(string): offset for paging
+        :org_filter(string): string for filtering contracts based on
+        contract['contract_json']['organization']['organization_identifier']
+        attribute value
+        :returns: contracts from Metax as json.
         """
         org_filter_str = ''
         if org_filter is not None:
@@ -120,10 +135,10 @@ class Metax(object):
         return response.json()
 
     def get_contract(self, pid):
-        """Gets the data of a contract from METAX.
+        """Gets the contract data from Metax.
 
-        :pid: Identifier of the contract
-        :returns: The data from METAX as json.
+        :pid(string): id or ientifier attribute of contract
+        :returns: The contract from Metax as json.
         """
         url = "".join([self.baseurl, "contracts/", pid])
         response = _do_get_request(url, HTTPBasicAuth(self.username,
@@ -136,7 +151,7 @@ class Metax(object):
     def get_dataset(self, dataset_id):
         """Get dataset metadata from Metax.
 
-        :dataset_id: ID number of object
+        :dataset_id(string): id or identifier attribute of dataset
         :returns: dataset as json
         """
         url = self.baseurl + 'datasets' + '/' + dataset_id
@@ -152,10 +167,10 @@ class Metax(object):
         return response.json()
 
     def get_datacatalog(self, catalog_id):
-        """Gets the metadata of a datacatalog from METAX.
+        """Gets the metadata of a datacatalog from Metax.
 
-        :catalog_id: Identifier of the dataset
-        :returns: The data from METAX as json.
+        :catalog_id(string): id or identifier attribute of the datacatalog
+        :returns: The datacatalog as json.
         """
         url = "".join([self.baseurl, "datacatalogs/", catalog_id])
         response = _do_get_request(url, HTTPBasicAuth(self.username,
@@ -167,11 +182,12 @@ class Metax(object):
 
     def set_contract_for_dataset(self, dataset_id, contract_id,
                                  contract_identifier):
-        """Sends an update request of a dataset to METAX.
+        """Sets a contract for a dataset.
 
-        :dataset_id: Identifier of the dataset
-        :contract_id: id attribute of the contract.
-        :contract_identifier: identifier attribute of the contract.
+        :dataset_id(string): id or identifier of the dataset
+        :contract_id(string): id attribute of the contract.
+        :contract_identifier(string): identifier attribute of the contract.
+        :returns:
         """
         if contract_id != 0:
             data = {'contract':
@@ -183,30 +199,39 @@ class Metax(object):
             data = {'contract': None}
 
         url = "".join([self.baseurl, "datasets/", dataset_id])
-        r = _do_patch_request(url, data, HTTPBasicAuth(self.username,
-                                                       self.password))
-        r.raise_for_status()
+        response = _do_patch_request(url, data, HTTPBasicAuth(self.username,
+                                                              self.password))
+        response.raise_for_status()
 
     def get_dataset_filetypes(self, dataset_id):
         """Gets the unique triples of file_format, format_version, encoding
         of the files in dataset.
 
-        :dataset_id: id of the dataset
+        :dataset_id(string): id or identifier of the dataset
+        :returns: dict:
+            {
+                'total_count': len(filetypes),
+            '    filetypes': [{'file_format': <format>,
+                               'format_version': <version>,
+                               'encoding': <encoding>}]
+            }
         """
         temp_types = set()
         mime_types = []
         url = "".join([self.baseurl,
                        "datasets/", str(dataset_id), '/files'])
-        r = _do_get_request(url, HTTPBasicAuth(self.username,
-                                               self.password))
-        if r.status_code == 404:
-            abort(404)
-        elif r.status_code >= 300:
-            if 'detail' in r.json():
-                abort(500, r.json()['detail'])
+        response = _do_get_request(url, HTTPBasicAuth(self.username,
+                                                      self.password))
+        if response.status_code == 404:
+            response.raise_for_status()
+        elif response.status_code >= 300:
+            response.status_code = 500
+            if 'detail' in response.json():
+                response.reason = response.json()['detail']
+                response.raise_for_status()
             else:
-                abort(500)
-        for fil in r.json():
+                response.raise_for_status()
+        for fil in response.json():
             file_format = ''
             format_version = ''
             encoding = ''
@@ -231,10 +256,10 @@ class Metax(object):
         return file_types
 
     def get_contract_datasets(self, pid):
-        """Gets the datasets of a contract from METAX.
+        """Gets the datasets of a contract from Metax.
 
-        :pid: Identifier of the contract
-        :returns: The data from METAX as json.
+        :pid(string): id or identifier attribute of contract
+        :returns: The datasets from Metax as json.
         """
         url = "".join([self.baseurl, "contracts/", str(pid), '/datasets'])
         response = _do_get_request(url, HTTPBasicAuth(self.username,
@@ -245,8 +270,8 @@ class Metax(object):
     def get_file(self, file_id):
         """Get file metadata from Metax.
 
-        :file_id: ID number of object
-        :returns: dict
+        :file_id(string): id or identifier attribute of file
+        :returns: file metadata as json
         """
         url = self.baseurl + 'files' + '/' + file_id
 
@@ -261,8 +286,8 @@ class Metax(object):
     def get_xml(self, entity_url, entity_id):
         """Get xml data of dataset, contract or file with id from Metax.
 
-        :entity_url: "datasets", "contracts" or "files"
-        :entity_id: ID number of object
+        :entity_url(string): "datasets", "contracts" or "files"
+        :entity_id(string): id or identifier attribute of object
         :returns: dict with XML namespace strings as keys and
                   lxml.etree.ElementTree objects as values
         """
@@ -299,8 +324,8 @@ class Metax(object):
     def set_xml(self, file_id, xml_element):
         """Add xml data to a file with in Metax.
 
-        :file_id: ID of file
-        :xml_element: XML Element
+        :file_id(string): id or identifier attribute of file
+        :xml_element(string): XML Element
         :returns: None
         """
         # Read namespace from XML element
@@ -333,7 +358,8 @@ class Metax(object):
     def get_elasticsearchdata(self):
         """Get elastic search data from Metax
 
-        :returns: dict"""
+        :returns: json
+        """
         url = self.elasticsearch_url + "reference_data/use_category/_search?"\
                                        "pretty&size=100"
         response = _do_get_request(url)
@@ -356,6 +382,7 @@ class Metax(object):
         50 = Metadata validation failed
         60 = Validated metadata updated
         70 = Valid metadata
+        75 = Metadata confirmed
         80 = Accepted to digital preservation
         90 = in packaging service
         100 = Packaging failed
@@ -364,11 +391,12 @@ class Metax(object):
         130 = Rejected in digital preservation service
         140 = in dissemination
 
-        :dataset_id: The ID of dataset in Metax
-        :state (integer): The value for `preservation_state`
-        :description (string): The value for `preservation_system_description`
+        :dataset_id(string): id or identifier attribute of dataset in Metax
+        :state (int): The value for `preservation_state`
+        :user_descr0iption (string): The value for
+                                    `preservation_reason_description`
+        :system_description (string): The value for `preservation_description`
         :returns: None
-
         """
         url = self.baseurl + 'datasets/' + dataset_id
 
@@ -394,8 +422,8 @@ class Metax(object):
     def set_file_characteristics(self, file_id, file_characteristics):
         """Updates `file_characteristics` attribute for a file in Metax.
 
-        :file_id: ID of file
-        :file_characteristics: Dict object that contains new data for
+        :file_id(string): id or identifier attribute of file
+        :file_characteristics(dict): Dict object that contains new data for
                                `file_characteristics` attribute
         :returns: None
         """
@@ -418,7 +446,7 @@ class Metax(object):
     def get_datacite(self, dataset_id):
         """Get descriptive metadata in datacite xml format.
 
-        :dataset_id: ID of dataset
+        :dataset_id(string): id or identifier attribute of dataset
         :returns: Datacite XML (lxml.etree.ElementTree object)
         """
         url = "%sdatasets/%s?dataset_format=datacite" % (self.baseurl,
@@ -434,10 +462,11 @@ class Metax(object):
         return lxml.etree.fromstring(response.content).getroottree()
 
     def get_dataset_files(self, dataset_id):
-        """Get file metadata of dataset from Metax.
+        """Get files metadata of dataset Metax.
 
-        :dataset_id: ID number of object
-        :returns: dict"""
+        :dataset_id(string): id or identifier attribute of dataset
+        :returns: metadata of dataset files as json
+        """
         url = self.baseurl + 'datasets/' + dataset_id + '/files'
 
         response = _do_get_request(url, HTTPBasicAuth(self.username,

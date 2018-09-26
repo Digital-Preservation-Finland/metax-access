@@ -49,13 +49,8 @@ def test_get_datasets_http_503_error(metax_access):
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
-        # Run task like it would be run from command line
-        exception_thrown = False
-        try:
+        with pytest.raises(MetaxConnectionError):
             metax_access.get_datasets()
-        except MetaxConnectionError:
-            exception_thrown = True
-        assert exception_thrown is True
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -67,13 +62,8 @@ def test_get_datasets_http_404_error(metax_access):
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_404_response):
-        # Run task like it would be run from command line
-        exception_thrown = False
-        try:
+        with pytest.raises(DatasetNotFoundError):
             metax_access.get_datasets()
-        except DatasetNotFoundError:
-            exception_thrown = True
-        assert exception_thrown is True
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -112,13 +102,8 @@ def test_get_contracts_503_error(metax_access):
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
-        # Run task like it would be run from command line
-        exception_thrown = False
-        try:
+        with pytest.raises(MetaxConnectionError):
             metax_access.get_contracts()
-        except MetaxConnectionError:
-            exception_thrown = True
-        assert exception_thrown is True
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -130,13 +115,8 @@ def test_get_contracts_404_error(metax_access):
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_404_response):
-        # Run task like it would be run from command line
-        exception_thrown = False
-        try:
+        with pytest.raises(ContractNotFoundError):
             metax_access.get_contracts()
-        except ContractNotFoundError:
-            exception_thrown = True
-        assert exception_thrown is True
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -160,13 +140,8 @@ def test_get_contract_503_error(metax_access):
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
-        # Run task like it would be run from command line
-        exception_thrown = False
-        try:
+        with pytest.raises(MetaxConnectionError):
             metax_access.get_contract('urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001')
-        except MetaxConnectionError:
-            exception_thrown = True
-        assert exception_thrown is True
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -178,13 +153,8 @@ def test_get_contract_404_error(metax_access):
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_404_response):
-        # Run task like it would be run from command line
-        exception_thrown = False
-        try:
+        with pytest.raises(ContractNotFoundError):
             metax_access.get_contract('urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001')
-        except ContractNotFoundError:
-            exception_thrown = True
-        assert exception_thrown is True
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -208,13 +178,8 @@ def test_get_catalog_503_error(metax_access):
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
-        # Run task like it would be run from command line
-        exception_thrown = False
-        try:
+        with pytest.raises(MetaxConnectionError):
             metax_access.get_datacatalog('urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2')
-        except MetaxConnectionError:
-            exception_thrown = True
-        assert exception_thrown is True
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -226,13 +191,8 @@ def test_get_catalog_404_error(metax_access):
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_404_response):
-        # Run task like it would be run from command line
-        exception_thrown = False
-        try:
+        with pytest.raises(DataCatalogNotFoundError):
             metax_access.get_datacatalog('urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2')
-        except DataCatalogNotFoundError:
-            exception_thrown = True
-        assert exception_thrown is True
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -262,9 +222,9 @@ def test_set_contract_for_dataset(metax_access):
     :returns: None
     """
 
-    response = metax_access.set_contract_for_dataset('dataset_id',
-                                                     'contract_id',
-                                                     'contract_identifier')
+    metax_access.set_contract_for_dataset('dataset_id',
+                                          'contract_id',
+                                          'contract_identifier')
     assert httpretty.last_request().method == 'PATCH'
     request_body = json.loads(httpretty.last_request().body)
     assert request_body['contract']['id'] == 'contract_id'
@@ -408,13 +368,8 @@ def test_get_dataset_returns_correct_error_when_http_503_error(metax_access):
     when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get', side_effect=mocked_503_response):
-        # Run task like it would be run from command line
-        exception_thrown = False
-        try:
+        with pytest.raises(MetaxConnectionError):
             metax_access.get_dataset('who_cares')
-        except MetaxConnectionError:
-            exception_thrown = True
-        assert exception_thrown is True
 
 
 @metax_access_instance_required
@@ -424,12 +379,8 @@ def test_get_xml_returns_correct_error_when_http_503_error(metax_access):
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
-        exception_thrown = False
-        try:
+        with pytest.raises(MetaxConnectionError):
             metax_access.get_xml('who', 'cares')
-        except MetaxConnectionError:
-            exception_thrown = True
-        assert exception_thrown is True
 
 
 @metax_access_instance_required
@@ -440,14 +391,10 @@ def test_set_preservation_state_returns_correct_error_when_http_503_error(metax_
     """
     with mock.patch('metax_access.metax.patch',
                     side_effect=mocked_503_response):
-        exception_thrown = False
-        try:
+        with pytest.raises(MetaxConnectionError):
             metax_access.set_preservation_state('who',
                                                 DS_STATE_INITIALIZED,
                                                 'cares')
-        except MetaxConnectionError:
-            exception_thrown = True
-        assert exception_thrown is True
 
 
 @metax_access_instance_required
@@ -458,13 +405,8 @@ def test_get_elasticsearchdata_returns_correct_error_when_http_503_error(metax_a
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
-        # Run task like it would be run from command line
-        exception_thrown = False
-        try:
+        with pytest.raises(MetaxConnectionError):
             metax_access.get_elasticsearchdata()
-        except MetaxConnectionError:
-            exception_thrown = True
-        assert exception_thrown is True
 
 
 @metax_access_instance_required
@@ -474,13 +416,8 @@ def test_get_datacite_returns_correct_error_when_http_503_error(metax_access):
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
-        # Run task like it would be run from command line
-        exception_thrown = False
-        try:
+        with pytest.raises(MetaxConnectionError):
             metax_access.get_datacite("x")
-        except MetaxConnectionError:
-            exception_thrown = True
-        assert exception_thrown is True
 
 
 @metax_access_instance_required
@@ -491,13 +428,8 @@ def test_get_dataset_files_returns_correct_error_when_http_503_error(metax_acces
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
-        # Run task like it would be run from command line
-        exception_thrown = False
-        try:
+        with pytest.raises(MetaxConnectionError):
             metax_access.get_dataset_files("x")
-        except MetaxConnectionError:
-            exception_thrown = True
-        assert exception_thrown is True
 
 
 # TODO: test for retrieving other entities: contracts, files...
