@@ -7,12 +7,14 @@ import httpretty
 import lxml.etree
 import mock
 import pytest
-from metax_access.metax import (Metax, MetaxConnectionError,
-                                DS_STATE_INITIALIZED,
-                                DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE
-                                ,DatasetNotFoundError, ContractNotFoundError,
-                                DataCatalogNotFoundError)
-from argparse import FileType
+from metax_access.metax import (
+    Metax, MetaxConnectionError,
+    DS_STATE_INITIALIZED,
+    DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
+    DatasetNotFoundError,
+    ContractNotFoundError,
+    DataCatalogNotFoundError
+)
 
 METAX_URL = 'https://metax-test.csc.fi'
 METAX_USER = 'tpas'
@@ -43,8 +45,7 @@ def test_get_datasets(metax_access):
 @pytest.mark.usefixtures('testmetax')
 @metax_access_instance_required
 def test_get_datasets_http_503_error(metax_access):
-    """
-    Test that get_datasets function throws a MetaxConnectionError
+    """Test that get_datasets function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
@@ -56,8 +57,7 @@ def test_get_datasets_http_503_error(metax_access):
 @pytest.mark.usefixtures('testmetax')
 @metax_access_instance_required
 def test_get_datasets_http_404_error(metax_access):
-    """
-    Test that get_elasticsearchdata function throws a MetaxConnectionError
+    """Test that get_elasticsearchdata function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
@@ -127,8 +127,11 @@ def test_get_contract(metax_access):
 
     :returns: None
     """
-    contract = metax_access.get_contract('urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001')
-    assert contract['contract_json']['identifier'] == 'urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001'
+    contract = metax_access.get_contract(
+        'urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001'
+    )
+    assert contract['contract_json']['identifier'] \
+        == 'urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001'
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -141,7 +144,9 @@ def test_get_contract_503_error(metax_access):
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
         with pytest.raises(MetaxConnectionError):
-            metax_access.get_contract('urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001')
+            metax_access.get_contract(
+                'urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001'
+            )
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -154,7 +159,9 @@ def test_get_contract_404_error(metax_access):
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_404_response):
         with pytest.raises(ContractNotFoundError):
-            metax_access.get_contract('urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001')
+            metax_access.get_contract(
+                'urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001'
+            )
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -165,8 +172,11 @@ def test_get_datacatalog(metax_access):
 
     :returns: None
     """
-    contract = metax_access.get_datacatalog('urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2')
-    assert contract['catalog_json']['identifier'] == 'urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2'
+    contract = metax_access.get_datacatalog(
+        'urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2'
+    )
+    assert contract['catalog_json']['identifier'] \
+        == 'urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2'
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -179,7 +189,9 @@ def test_get_catalog_503_error(metax_access):
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
         with pytest.raises(MetaxConnectionError):
-            metax_access.get_datacatalog('urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2')
+            metax_access.get_datacatalog(
+                'urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2'
+            )
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -192,7 +204,9 @@ def test_get_catalog_404_error(metax_access):
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_404_response):
         with pytest.raises(DataCatalogNotFoundError):
-            metax_access.get_datacatalog('urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2')
+            metax_access.get_datacatalog(
+                'urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2'
+            )
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -307,9 +321,11 @@ def test_set_preservation_state(metax_access):
 
     :returns: None
     """
-    metax_access.set_preservation_state("mets_test_dataset",
-                                  DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
-                                  system_description='Accepted to preservation')
+    metax_access.set_preservation_state(
+        "mets_test_dataset",
+        DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
+        system_description='Accepted to preservation'
+    )
 
     # Check the body of last HTTP request
     request_body = json.loads(httpretty.last_request().body)
@@ -384,7 +400,9 @@ def test_get_xml_returns_correct_error_when_http_503_error(metax_access):
 
 
 @metax_access_instance_required
-def test_set_preservation_state_returns_correct_error_when_http_503_error(metax_access):
+def test_set_preservation_state_returns_correct_error_when_http_503_error(
+        metax_access
+):
     """
     Test that set_preservation_state function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
@@ -398,7 +416,9 @@ def test_set_preservation_state_returns_correct_error_when_http_503_error(metax_
 
 
 @metax_access_instance_required
-def test_get_elasticsearchdata_returns_correct_error_when_http_503_error(metax_access):
+def test_get_elasticsearchdata_returns_correct_error_when_http_503_error(
+        metax_access
+):
     """
     Test that get_elasticsearchdata function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
@@ -421,7 +441,9 @@ def test_get_datacite_returns_correct_error_when_http_503_error(metax_access):
 
 
 @metax_access_instance_required
-def test_get_dataset_files_returns_correct_error_when_http_503_error(metax_access):
+def test_get_dataset_files_returns_correct_error_when_http_503_error(
+        metax_access
+):
     """
     Test that get_dataset_files function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
