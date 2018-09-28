@@ -67,7 +67,7 @@ class Metax(object):
         """
         self.username = metax_user
         self.password = metax_password
-        self.baseurl = metax_url
+        self.baseurl = metax_url + '/rest/v1/'
         self.elasticsearch_url = metax_url + '/es/'
 
     def get_datasets(self, states=None,
