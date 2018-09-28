@@ -22,8 +22,7 @@ METAX_PASSWORD = 'password'
 
 
 def metax_access_instance_required(f):
-    @wraps(f)
-    def dec_func(*args, **kwargs):
+    @wraps(f) def dec_func(*args, **kwargs):
         metax_access = Metax(METAX_URL, METAX_USER, METAX_PASSWORD)
         kwargs["metax_access"] = metax_access
         return f(*args, **kwargs)
@@ -96,8 +95,7 @@ def test_get_contracts(metax_access):
 @pytest.mark.usefixtures('testmetax')
 @metax_access_instance_required
 def test_get_contracts_503_error(metax_access):
-    """
-    Test that get_contracts function throws a MetaxConnectionError
+    """Test that get_contracts function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
@@ -109,8 +107,7 @@ def test_get_contracts_503_error(metax_access):
 @pytest.mark.usefixtures('testmetax')
 @metax_access_instance_required
 def test_get_contracts_404_error(metax_access):
-    """
-    Test that get_contracts function throws a ContractNotFoundError
+    """Test that get_contracts function throws a ContractNotFoundError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
@@ -137,8 +134,7 @@ def test_get_contract(metax_access):
 @pytest.mark.usefixtures('testmetax')
 @metax_access_instance_required
 def test_get_contract_503_error(metax_access):
-    """
-    Test that get_contracts function throws a MetaxConnectionError
+    """Test that get_contracts function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
@@ -152,8 +148,7 @@ def test_get_contract_503_error(metax_access):
 @pytest.mark.usefixtures('testmetax')
 @metax_access_instance_required
 def test_get_contract_404_error(metax_access):
-    """
-    Test that get_contracts function throws a ContractNotFoundError
+    """Test that get_contracts function throws a ContractNotFoundError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
@@ -167,8 +162,8 @@ def test_get_contract_404_error(metax_access):
 @pytest.mark.usefixtures('testmetax')
 @metax_access_instance_required
 def test_get_datacatalog(metax_access):
-    """Test get_datacatalog function. Reads sample dataset JSON from testmetax and
-    checks that returned dict contains the correct values.
+    """Test get_datacatalog function. Reads sample dataset JSON from testmetax
+    and checks that returned dict contains the correct values.
 
     :returns: None
     """
@@ -182,8 +177,7 @@ def test_get_datacatalog(metax_access):
 @pytest.mark.usefixtures('testmetax')
 @metax_access_instance_required
 def test_get_catalog_503_error(metax_access):
-    """
-    Test that get_datacatalog function throws a MetaxConnectionError
+    """Test that get_datacatalog function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
@@ -197,8 +191,7 @@ def test_get_catalog_503_error(metax_access):
 @pytest.mark.usefixtures('testmetax')
 @metax_access_instance_required
 def test_get_catalog_404_error(metax_access):
-    """
-    Test that get_datacatalog function throws a ContractNotFoundError
+    """Test that get_datacatalog function throws a ContractNotFoundError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
@@ -403,8 +396,7 @@ def test_get_xml_returns_correct_error_when_http_503_error(metax_access):
 def test_set_preservation_state_returns_correct_error_when_http_503_error(
         metax_access
 ):
-    """
-    Test that set_preservation_state function throws a MetaxConnectionError
+    """Test that set_preservation_state function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.patch',
@@ -419,8 +411,7 @@ def test_set_preservation_state_returns_correct_error_when_http_503_error(
 def test_get_elasticsearchdata_returns_correct_error_when_http_503_error(
         metax_access
 ):
-    """
-    Test that get_elasticsearchdata function throws a MetaxConnectionError
+    """Test that get_elasticsearchdata function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
@@ -444,14 +435,10 @@ def test_get_datacite_returns_correct_error_when_http_503_error(metax_access):
 def test_get_dataset_files_returns_correct_error_when_http_503_error(
         metax_access
 ):
-    """
-    Test that get_dataset_files function throws a MetaxConnectionError
+    """Test that get_dataset_files function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
         with pytest.raises(MetaxConnectionError):
             metax_access.get_dataset_files("x")
-
-
-# TODO: test for retrieving other entities: contracts, files...
