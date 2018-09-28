@@ -2,7 +2,6 @@
 # pylint: disable=no-member
 """Tests for ``metax_access.metax`` module"""
 import json
-from functools import wraps
 import httpretty
 import lxml.etree
 import mock
@@ -19,61 +18,50 @@ from metax_access.metax import (
 METAX_URL = 'https://metax-test.csc.fi'
 METAX_USER = 'tpas'
 METAX_PASSWORD = 'password'
-
-
-def metax_access_instance_required(f):
-    @wraps(f) def dec_func(*args, **kwargs):
-        metax_access = Metax(METAX_URL, METAX_USER, METAX_PASSWORD)
-        kwargs["metax_access"] = metax_access
-        return f(*args, **kwargs)
-    return dec_func
+METAX_CLIENT = Metax(METAX_URL, METAX_USER, METAX_PASSWORD)
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_get_datasets(metax_access):
+def test_get_datasets():
     """Test get_dataset function. Reads sample dataset JSON from testmetax and
     checks that returned dict contains the correct values.
 
     :returns: None
     """
-    datasets = metax_access.get_datasets('datasets')
+    datasets = METAX_CLIENT.get_datasets('datasets')
     assert len(datasets["results"]) == 2
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_get_datasets_http_503_error(metax_access):
+def test_get_datasets_http_503_error():
     """Test that get_datasets function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
         with pytest.raises(MetaxConnectionError):
-            metax_access.get_datasets()
+            METAX_CLIENT.get_datasets()
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_get_datasets_http_404_error(metax_access):
+def test_get_datasets_http_404_error():
     """Test that get_elasticsearchdata function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_404_response):
         with pytest.raises(DatasetNotFoundError):
-            metax_access.get_datasets()
+            METAX_CLIENT.get_datasets()
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_get_dataset(metax_access):
+def test_get_dataset():
     """Test get_dataset function. Reads sample dataset JSON from testmetax and
     checks that returned dict contains the correct values.
 
     :returns: None
     """
-    dataset = metax_access.get_dataset("mets_test_dataset")
+    dataset = METAX_CLIENT.get_dataset("mets_test_dataset")
     print dataset
     print type(dataset)
     assert dataset["research_dataset"]["provenance"][0]\
@@ -81,50 +69,46 @@ def test_get_dataset(metax_access):
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_get_contracts(metax_access):
+def test_get_contracts():
     """Test get_dataset function. Reads sample dataset JSON from testmetax and
     checks that returned dict contains the correct values.
 
     :returns: None
     """
-    contracts = metax_access.get_contracts()
+    contracts = METAX_CLIENT.get_contracts()
     assert len(contracts['results']) == 2
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_get_contracts_503_error(metax_access):
+def test_get_contracts_503_error():
     """Test that get_contracts function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
         with pytest.raises(MetaxConnectionError):
-            metax_access.get_contracts()
+            METAX_CLIENT.get_contracts()
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_get_contracts_404_error(metax_access):
+def test_get_contracts_404_error():
     """Test that get_contracts function throws a ContractNotFoundError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_404_response):
         with pytest.raises(ContractNotFoundError):
-            metax_access.get_contracts()
+            METAX_CLIENT.get_contracts()
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_get_contract(metax_access):
+def test_get_contract():
     """Test get_dataset function. Reads sample dataset JSON from testmetax and
     checks that returned dict contains the correct values.
 
     :returns: None
     """
-    contract = metax_access.get_contract(
+    contract = METAX_CLIENT.get_contract(
         'urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001'
     )
     assert contract['contract_json']['identifier'] \
@@ -132,42 +116,39 @@ def test_get_contract(metax_access):
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_get_contract_503_error(metax_access):
+def test_get_contract_503_error():
     """Test that get_contracts function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
         with pytest.raises(MetaxConnectionError):
-            metax_access.get_contract(
+            METAX_CLIENT.get_contract(
                 'urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001'
             )
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_get_contract_404_error(metax_access):
+def test_get_contract_404_error():
     """Test that get_contracts function throws a ContractNotFoundError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_404_response):
         with pytest.raises(ContractNotFoundError):
-            metax_access.get_contract(
+            METAX_CLIENT.get_contract(
                 'urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001'
             )
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_get_datacatalog(metax_access):
+def test_get_datacatalog():
     """Test get_datacatalog function. Reads sample dataset JSON from testmetax
     and checks that returned dict contains the correct values.
 
     :returns: None
     """
-    contract = metax_access.get_datacatalog(
+    contract = METAX_CLIENT.get_datacatalog(
         'urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2'
     )
     assert contract['catalog_json']['identifier'] \
@@ -175,42 +156,39 @@ def test_get_datacatalog(metax_access):
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_get_catalog_503_error(metax_access):
+def test_get_catalog_503_error():
     """Test that get_datacatalog function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
         with pytest.raises(MetaxConnectionError):
-            metax_access.get_datacatalog(
+            METAX_CLIENT.get_datacatalog(
                 'urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2'
             )
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_get_catalog_404_error(metax_access):
+def test_get_catalog_404_error():
     """Test that get_datacatalog function throws a ContractNotFoundError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_404_response):
         with pytest.raises(DataCatalogNotFoundError):
-            metax_access.get_datacatalog(
+            METAX_CLIENT.get_datacatalog(
                 'urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2'
             )
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_get_dataset_filestypes(metax_access):
+def test_get_dataset_filestypes():
     """Test get_xml function. Reads some test xml from testmetax checks that
     the function returns dictionary with correct items
 
     :returns: None
     """
-    filetypes = metax_access.get_dataset_filetypes('mets_test_dataset')
+    filetypes = METAX_CLIENT.get_dataset_filetypes('mets_test_dataset')
     assert isinstance(filetypes, dict)
     assert filetypes['total_count'] == 2
     assert filetypes['filetypes'][0]['encoding'] == 'UTF-8'
@@ -221,15 +199,14 @@ def test_get_dataset_filestypes(metax_access):
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_set_contract_for_dataset(metax_access):
+def test_set_contract_for_dataset():
     """Test get_xml function. Reads some test xml from testmetax checks that
     the function returns dictionary with correct items
 
     :returns: None
     """
 
-    metax_access.set_contract_for_dataset('dataset_id',
+    METAX_CLIENT.set_contract_for_dataset('dataset_id',
                                           'contract_id',
                                           'contract_identifier')
     assert httpretty.last_request().method == 'PATCH'
@@ -239,14 +216,13 @@ def test_set_contract_for_dataset(metax_access):
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_get_xml(metax_access):
+def test_get_xml():
     """Test get_xml function. Reads some test xml from testmetax checks that
     the function returns dictionary with correct items
 
     :returns: None
     """
-    xml_dict = metax_access.get_xml('files', "metax_xml_test")
+    xml_dict = METAX_CLIENT.get_xml('files', "metax_xml_test")
     assert isinstance(xml_dict, dict)
 
     # The keys of returned dictionary should be xml namespace urls and
@@ -259,8 +235,7 @@ def test_get_xml(metax_access):
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_set_xml(metax_access):
+def test_set_xml():
     """Test set_xml functions. Reads XML file and posts it to Metax. The body
     and headers of HTTP request are checked.
 
@@ -270,7 +245,7 @@ def test_set_xml(metax_access):
     mix = lxml.etree.parse('./tests/data/mix_sample.xml').getroot()
 
     # POST XML to Metax
-    metax_access.set_xml('set_xml_1', mix)
+    METAX_CLIENT.set_xml('set_xml_1', mix)
 
     # Check that posted message body is valid XML
     lxml.etree.fromstring(httpretty.last_request().body)
@@ -288,13 +263,12 @@ def test_set_xml(metax_access):
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_get_datacite(metax_access):
+def test_get_datacite():
     """Test get_datacite function. Read one field from returned etree object
     and check its correctness.
     :returns: None
     """
-    xml = metax_access.get_datacite("datacite_test_1")
+    xml = METAX_CLIENT.get_datacite("datacite_test_1")
 
     # Read field "creatorName" from xml file
     ns_string = 'http://datacite.org/schema/kernel-4'
@@ -305,8 +279,7 @@ def test_get_datacite(metax_access):
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_set_preservation_state(metax_access):
+def test_set_preservation_state():
     """Test set_preservation_state function. Metadata in Metax is modified by
     sending HTTP PATCH request with modified metadata in JSON format. This test
     checks that correct HTTP request is sent to Metax. The effect of the
@@ -314,7 +287,7 @@ def test_set_preservation_state(metax_access):
 
     :returns: None
     """
-    metax_access.set_preservation_state(
+    METAX_CLIENT.set_preservation_state(
         "mets_test_dataset",
         DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
         system_description='Accepted to preservation'
@@ -332,8 +305,7 @@ def test_set_preservation_state(metax_access):
 
 
 @pytest.mark.usefixtures('testmetax')
-@metax_access_instance_required
-def test_set_file_characteristics(metax_access):
+def test_set_file_characteristics():
     """Test set_file_characteristics function. Metadata in Metax is modified by
     sending HTTP PATCH request with modified metadata in JSON format. This test
     checks that correct HTTP request is sent to Metax. The effect of the
@@ -344,7 +316,7 @@ def test_set_file_characteristics(metax_access):
     sample_data = {"file_format": "text/plain",
                    "format_version": "1.0",
                    "encoding": "UTF-8"}
-    metax_access.set_file_characteristics('pid:urn:set_file_characteristics_1',
+    METAX_CLIENT.set_file_characteristics('pid:urn:set_file_characteristics_1',
                                           sample_data)
 
     # Check the body of last HTTP request
@@ -371,74 +343,62 @@ def mocked_404_response(*args, **kwargs):
     return MockResponse(404)
 
 
-@metax_access_instance_required
-def test_get_dataset_returns_correct_error_when_http_503_error(metax_access):
+def test_get_dataset_returns_correct_error_when_http_503_error():
     """Test that get_dataset function throws a MetaxConnectionError exception
     when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get', side_effect=mocked_503_response):
         with pytest.raises(MetaxConnectionError):
-            metax_access.get_dataset('who_cares')
+            METAX_CLIENT.get_dataset('who_cares')
 
 
-@metax_access_instance_required
-def test_get_xml_returns_correct_error_when_http_503_error(metax_access):
+def test_get_xml_returns_correct_error_when_http_503_error():
     """Test that get_xml function throws a MetaxConnectionError exception
     when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
         with pytest.raises(MetaxConnectionError):
-            metax_access.get_xml('who', 'cares')
+            METAX_CLIENT.get_xml('who', 'cares')
 
 
-@metax_access_instance_required
-def test_set_preservation_state_returns_correct_error_when_http_503_error(
-        metax_access
-):
+def test_set_preservation_state_returns_correct_error_when_http_503_error():
     """Test that set_preservation_state function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.patch',
                     side_effect=mocked_503_response):
         with pytest.raises(MetaxConnectionError):
-            metax_access.set_preservation_state('who',
+            METAX_CLIENT.set_preservation_state('who',
                                                 DS_STATE_INITIALIZED,
                                                 'cares')
 
 
-@metax_access_instance_required
-def test_get_elasticsearchdata_returns_correct_error_when_http_503_error(
-        metax_access
-):
+def test_get_elasticsearchdata_returns_correct_error_when_http_503_error():
     """Test that get_elasticsearchdata function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
         with pytest.raises(MetaxConnectionError):
-            metax_access.get_elasticsearchdata()
+            METAX_CLIENT.get_elasticsearchdata()
 
 
-@metax_access_instance_required
-def test_get_datacite_returns_correct_error_when_http_503_error(metax_access):
+def test_get_datacite_returns_correct_error_when_http_503_error():
     """Test that get_datacite function throws a MetaxConnectionError exception
     when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
         with pytest.raises(MetaxConnectionError):
-            metax_access.get_datacite("x")
+            METAX_CLIENT.get_datacite("x")
 
 
-@metax_access_instance_required
-def test_get_dataset_files_returns_correct_error_when_http_503_error(
-        metax_access
-):
+def test_get_dataset_files_returns_correct_error_when_http_503_error():
     """Test that get_dataset_files function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
     with mock.patch('metax_access.metax.get',
                     side_effect=mocked_503_response):
         with pytest.raises(MetaxConnectionError):
-            metax_access.get_dataset_files("x")
+            METAX_CLIENT.get_dataset_files("x")
