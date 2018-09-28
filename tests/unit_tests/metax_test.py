@@ -14,7 +14,7 @@ from metax_access.metax import (Metax, MetaxConnectionError,
                                 DataCatalogNotFoundError)
 from argparse import FileType
 
-METAX_URL = 'https://metax-test.csc.fi'
+METAX_URL = 'https://metax-test.csc.fi/rest/v1/'
 METAX_USER = 'tpas'
 METAX_PASSWORD = 'password'
 
