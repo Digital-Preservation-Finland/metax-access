@@ -56,11 +56,10 @@ class Metax(object):
         :user: Metax user
         :password: Metax user password
         """
-        self.metax_url = metax_url
         self.username = metax_user
         self.password = metax_password
-        self.baseurl = self.metax_url + '/rest/v1/'
-        self.elasticsearch_url = self.metax_url + '/es/'
+        self.baseurl = metax_url
+        self.elasticsearch_url = metax_url + '/es/'
 
     def get_dataset(self, dataset_id):
         """Get dataset metadata from Metax.
