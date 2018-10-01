@@ -1,5 +1,5 @@
 Metax access library
-===================================================
+====================
 Library for accessing Metax.
 
 Installation
@@ -10,6 +10,14 @@ On Centos 7 metax-access can be installed from `DPres RPM repository <https://dp
 
 Usage
 -----
+A simple commandline interface can be used for posting, retrieving, or deleting metadata. For example to view metadata of dataset::
+
+   metax_access --host https://metax-test.csc.fi -u tpas -p password get dataset 1
+
+For more information see::
+
+   metax_access -h
+
 
 Testing
 -------
