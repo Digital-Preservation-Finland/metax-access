@@ -402,3 +402,63 @@ def test_get_dataset_files_returns_correct_error_when_http_503_error():
                     side_effect=mocked_503_response):
         with pytest.raises(MetaxConnectionError):
             METAX_CLIENT.get_dataset_files("x")
+
+
+@httpretty.activate
+def test_delete_file():
+    """Test that ``delete_file`` function sends HTTP DELETE request to correct
+    url
+    """
+    httpretty.register_uri(httpretty.DELETE, METAX_URL + 'files/file1')
+
+    METAX_CLIENT.delete_file('file1')
+
+    assert httpretty.last_request().method == httpretty.DELETE
+    assert httpretty.last_request().headers.get('host') \
+        == 'metax-test.csc.fi'
+    assert httpretty.last_request().path == '/rest/v1/files/file1'
+
+
+@httpretty.activate
+def test_delete_dataset():
+    """Test that ``delete_dataset`` function sends HTTP DELETE request to
+    correct url
+    """
+    httpretty.register_uri(httpretty.DELETE, METAX_URL + 'datasets/dataset1')
+
+    METAX_CLIENT.delete_dataset('dataset1')
+
+    assert httpretty.last_request().method == httpretty.DELETE
+    assert httpretty.last_request().headers.get('host') \
+        == 'metax-test.csc.fi'
+    assert httpretty.last_request().path == '/rest/v1/datasets/dataset1'
+
+
+@httpretty.activate
+def test_post_file():
+    """Test that ``post_file`` function sends HTTP POST request to correct
+    url
+    """
+    httpretty.register_uri(httpretty.POST, METAX_URL + 'files/')
+
+    METAX_CLIENT.post_file({'identifier': '1'})
+
+    assert httpretty.last_request().method == httpretty.POST
+    assert httpretty.last_request().headers.get('host') \
+        == 'metax-test.csc.fi'
+    assert httpretty.last_request().path == '/rest/v1/files/'
+
+
+@httpretty.activate
+def test_post_dataset():
+    """Test that ``post_dataset`` function sends HTTP POST request to
+    correct url
+    """
+    httpretty.register_uri(httpretty.POST, METAX_URL + 'datasets/')
+
+    METAX_CLIENT.post_dataset({'identifier': '1'})
+
+    assert httpretty.last_request().method == httpretty.POST
+    assert httpretty.last_request().headers.get('host') \
+        == 'metax-test.csc.fi'
+    assert httpretty.last_request().path == '/rest/v1/datasets/'
