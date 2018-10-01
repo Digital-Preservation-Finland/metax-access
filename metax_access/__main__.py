@@ -3,6 +3,7 @@ import json
 import argparse
 import metax_access
 
+
 def post(metax_client, args):
     """Post file/dataset"""
     # Read metadata file
@@ -16,12 +17,14 @@ def post(metax_client, args):
         response = metax_client.post_file(data)
         print json.dumps(response.json(), indent=4)
 
+
 def get(metax_client, args):
     """Get file/dataset"""
     if args.resource == 'dataset':
         print json.dumps(metax_client.get_dataset(args.identifier), indent=4)
     elif args.resource == 'file':
         print json.dumps(metax_client.get_file(args.identifier), indent=4)
+
 
 def delete(metax_client, args):
     """Delete file/dataset"""
@@ -64,8 +67,9 @@ def main():
     get_parser.set_defaults(func=get)
 
     # Delete command parser
-    delete_parser = subparsers.add_parser('delete',
-                                          help='Delete file or dataset metadata')
+    delete_parser = subparsers.add_parser(
+        'delete', help='Delete file or dataset metadata'
+    )
     delete_parser.add_argument('resource',
                                choices=('file', 'dataset'),
                                help="Resource type")
