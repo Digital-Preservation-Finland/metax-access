@@ -409,7 +409,7 @@ def test_delete_file():
     """Test that ``delete_file`` function sends HTTP DELETE request to correct
     url
     """
-    httpretty.register_uri(httpretty.DELETE, METAX_URL + 'files/file1')
+    httpretty.register_uri(httpretty.DELETE, METAX_URL + '/rest/v1/files/file1')
 
     METAX_CLIENT.delete_file('file1')
 
@@ -424,7 +424,7 @@ def test_delete_dataset():
     """Test that ``delete_dataset`` function sends HTTP DELETE request to
     correct url
     """
-    httpretty.register_uri(httpretty.DELETE, METAX_URL + 'datasets/dataset1')
+    httpretty.register_uri(httpretty.DELETE, METAX_URL + '/rest/v1/datasets/dataset1')
 
     METAX_CLIENT.delete_dataset('dataset1')
 
@@ -439,7 +439,7 @@ def test_post_file():
     """Test that ``post_file`` function sends HTTP POST request to correct
     url
     """
-    httpretty.register_uri(httpretty.POST, METAX_URL + 'files/')
+    httpretty.register_uri(httpretty.POST, METAX_URL + '/rest/v1/files/')
 
     METAX_CLIENT.post_file({'identifier': '1'})
 
@@ -454,7 +454,7 @@ def test_post_dataset():
     """Test that ``post_dataset`` function sends HTTP POST request to
     correct url
     """
-    httpretty.register_uri(httpretty.POST, METAX_URL + 'datasets/')
+    httpretty.register_uri(httpretty.POST, METAX_URL + '/rest/v1/datasets/')
 
     METAX_CLIENT.post_dataset({'identifier': '1'})
 
