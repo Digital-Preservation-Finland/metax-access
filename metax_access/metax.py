@@ -541,6 +541,32 @@ class Metax(object):
         )
         return response
 
+    def post_contract(self, metadata):
+        """Post contract metadata.
+
+        :metadata: contract metadata dictionary
+        :returns: requests Response
+        """
+        url = self.baseurl + 'contracts/'
+        response = requests.post(
+            url, json=metadata,
+            auth=HTTPBasicAuth(self.username, self.password)
+        )
+        return response
+
+    def delete_contract(self, contract_id):
+        """Delete metadata of contract.
+
+        :dataset_id: contract identifier
+        :returns: requests Response
+        """
+        url = self.baseurl + 'contracts/' + contract_id
+        response = requests.delete(
+            url=url,
+            auth=HTTPBasicAuth(self.username, self.password)
+        )
+        return response
+
 
 def _do_get_request(url, auth=None):
     """Wrapper function for requests.get() function. Raises

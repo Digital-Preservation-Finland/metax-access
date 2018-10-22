@@ -16,6 +16,9 @@ def post(metax_client, args):
     elif args.resource == 'file':
         response = metax_client.post_file(data)
         print json.dumps(response.json(), indent=4)
+    elif args.resource == 'contract':
+        response = metax_client.post_contract(data)
+        print json.dumps(response.json(), indent=4)
 
 
 def get(metax_client, args):
@@ -24,16 +27,21 @@ def get(metax_client, args):
         print json.dumps(metax_client.get_dataset(args.identifier), indent=4)
     elif args.resource == 'file':
         print json.dumps(metax_client.get_file(args.identifier), indent=4)
+    elif args.resource == 'contract':
+        print json.dumps(metax_client.get_contract(args.identifier), indent=4)
 
 
 def delete(metax_client, args):
     """Delete file/dataset"""
     if args.resource == 'dataset':
         response = metax_client.delete_dataset(args.identifier)
-        print json.dumps(response.json(), indent=4)
+        print 'Status:' + str(response.status_code)
     elif args.resource == 'file':
         response = metax_client.delete_file(args.identifier)
-        print json.dumps(response.json(), indent=4)
+        print 'Status:' + str(response.status_code)
+    elif args.resource == 'contract':
+        response = metax_client.delete_contract(args.identifier)
+        print 'Status:' + str(response.status_code)
 
 
 def main():
@@ -50,28 +58,30 @@ def main():
 
     # Post command parser
     post_parser = subparsers.add_parser('post',
-                                        help='Post file or dataset metadata.')
+                                        help='Post file, dataset or contract '
+                                        'metadata.')
     post_parser.add_argument('resource',
-                             choices=('file', 'dataset'),
+                             choices=('file', 'dataset', 'contract'),
                              help="Resource type")
     post_parser.add_argument('filepath', help="Path to metadata file")
     post_parser.set_defaults(func=post)
 
     # Get command parser
     get_parser = subparsers.add_parser('get',
-                                       help='Print file or dataset metadata.')
+                                       help='Print file, dataset or contract '
+                                       'metadata.')
     get_parser.add_argument('resource',
-                            choices=('file', 'dataset'),
+                            choices=('file', 'dataset', 'contract'),
                             help="Resource type")
     get_parser.add_argument('identifier', help="Resource identifier")
     get_parser.set_defaults(func=get)
 
     # Delete command parser
     delete_parser = subparsers.add_parser(
-        'delete', help='Delete file or dataset metadata'
+        'delete', help='Delete file, dataset or contract metadata'
     )
     delete_parser.add_argument('resource',
-                               choices=('file', 'dataset'),
+                               choices=('file', 'dataset', 'contract'),
                                help="Resource type")
     delete_parser.add_argument('identifier', help="Resource identifier")
     delete_parser.set_defaults(func=delete)
