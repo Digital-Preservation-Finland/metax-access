@@ -19,9 +19,13 @@ Source0:        %{file_prefix}-v%{file_version}%{?file_release_tag}-%{file_build
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 Requires:       python
-Requires:       python-lxml python-paramiko python-requests
+Requires:       python-lxml
+Requires:       python-requests
 Requires:       python-scandir
-BuildRequires:  python-setuptools pytest python-httpretty
+Requires:       python-mock
+BuildRequires:  python-setuptools
+BuildRequires:  pytest
+BuildRequires:  python-httpretty
 
 %description
 Metax access library

@@ -325,34 +325,35 @@ class Metax(object):
 
         :file_id(string): id or identifier attribute of file
         :xml_element(string): XML Element
-        :returns: None
+        :returns: Boolean: True: xml data set. False: xml data already set
         """
         # Read namespace from XML element
         namespace = \
             xml_element.attrib[
                 '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation'
             ].split()[0]
-
-        # Convert XML element to string
-        data = lxml.etree.tostring(xml_element, pretty_print=True)
-
-        # POST to Metax
-        url = '%sfiles/%s/xml?namespace=%s' % (self.baseurl,
-                                               file_id,
-                                               namespace)
-        headers = {'Content-Type': 'application/xml'}
-        response = post(url,
-                        data=data,
-                        headers=headers,
-                        auth=HTTPBasicAuth(self.username,
-                                           self.password))
-
-        response.raise_for_status()
-        if response.status_code != 201:
-            raise requests.exceptions.HTTPError(
-                "Expected 201 Created, got {} instead".format(
-                    response.status_code)
-            )
+        xmls = self.get_xml('files', file_id)
+        if namespace not in xmls:
+            # Convert XML element to string
+            data = lxml.etree.tostring(xml_element, pretty_print=True)
+            # POST to Metax
+            url = '%sfiles/%s/xml?namespace=%s' % (self.baseurl,
+                                                   file_id,
+                                                   namespace)
+            headers = {'Content-Type': 'application/xml'}
+            response = post(url,
+                            data=data,
+                            headers=headers,
+                            auth=HTTPBasicAuth(self.username,
+                                               self.password))
+            response.raise_for_status()
+            if response.status_code != 201:
+                raise requests.exceptions.HTTPError(
+                    "Expected 201 Created, got {} instead".format(
+                        response.status_code))
+            return True
+        else:
+            return False
 
     def get_elasticsearchdata(self):
         """Get elastic search data from Metax

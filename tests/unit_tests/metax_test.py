@@ -4,7 +4,10 @@
 import json
 import httpretty
 import lxml.etree
-import mock
+try:
+    import mock
+except ImportError:
+    from unittest import mock
 import pytest
 from metax_access.metax import (
     Metax, MetaxConnectionError,
@@ -245,7 +248,7 @@ def test_set_xml():
     mix = lxml.etree.parse('./tests/data/mix_sample.xml').getroot()
 
     # POST XML to Metax
-    METAX_CLIENT.set_xml('set_xml_1', mix)
+    assert METAX_CLIENT.set_xml('set_xml_1', mix)
 
     # Check that posted message body is valid XML
     lxml.etree.fromstring(httpretty.last_request().body)
@@ -260,6 +263,25 @@ def test_set_xml():
     # Check that message query string has correct parameters
     assert httpretty.last_request().querystring['namespace'][0] \
         == 'http://www.loc.gov/mix/v20'
+
+
+@pytest.mark.usefixtures('testmetax')
+def test_set_xml_metadata_already_set():
+    """Test set_xml functions. Reads XML file and posts it to Metax. The body
+    and headers of HTTP request are checked.
+
+    :returns: None
+    """
+    # Read sample MIX xml file
+    mix = lxml.etree.parse('./tests/data/mix_sample.xml').getroot()
+
+    # POST XML to Metax
+    assert not METAX_CLIENT.set_xml('xml_metadata_already_set', mix)
+
+    # Check that message method is correct
+    assert httpretty.last_request().method == 'GET'
+    assert httpretty.last_request().querystring['namespace'][0] ==\
+        'http://www.loc.gov/mix/v20'
 
 
 @pytest.mark.usefixtures('testmetax')
