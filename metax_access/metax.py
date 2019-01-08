@@ -282,6 +282,19 @@ class Metax(object):
         response.raise_for_status()
         return response.json()
 
+    def get_files(self, project):
+        """Get all files of a given project
+
+        :project: project id
+        :returns: list of files
+        """
+        url = self.baseurl + 'files' + '/?project_identifier=' + project
+        response = _do_get_request(
+            url, HTTPBasicAuth(self.username, self.password)
+        )
+        
+        return response.json()["results"]
+
     def get_xml(self, entity_url, entity_id):
         """Get xml data of dataset, contract or file with id from Metax.
 
