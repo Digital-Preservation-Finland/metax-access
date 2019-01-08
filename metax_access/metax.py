@@ -292,8 +292,21 @@ class Metax(object):
         response = _do_get_request(
             url, HTTPBasicAuth(self.username, self.password)
         )
-        
+
         return response.json()["results"]
+
+    def get_files_dict(self, project):
+        """GET all the files of a given project as a dict {file_path: id}
+
+        :returns: Dict of all the files of a given project
+        """
+        files = self.get_files(project)
+
+        file_dict = {}
+        for _file in files:
+            file_dict[_file["file_path"]] = _file["id"]
+
+        return file_dict
 
     def get_xml(self, entity_url, entity_id):
         """Get xml data of dataset, contract or file with id from Metax.
