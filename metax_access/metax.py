@@ -504,6 +504,25 @@ class Metax(object):
 
         return response.json()
 
+    def get_file_datasets(self, file_id):
+        """GET a list of datasets associated with file_id
+
+        :param file_id: File identifier
+        :returns: List of datasets associated with file_id
+        """
+        url = self.baseurl + 'files/datasets'
+        response = requests.post(
+            url,
+            json=[file_id],
+            auth=HTTPBasicAuth(self.username, self.password)
+        )
+
+        if response.status_code == 404:
+            raise Exception("Could not find file metadata")
+        response.raise_for_status()
+
+        return response.json()
+
     def delete_file(self, file_id):
         """Delete metadata of a file.
 
@@ -513,6 +532,20 @@ class Metax(object):
         url = self.baseurl + 'files/' + file_id
         response = requests.delete(
             url=url,
+            auth=HTTPBasicAuth(self.username, self.password)
+        )
+        return response
+
+    def delete_files(self, file_id_list):
+        """Delete file metadata from Metax.
+
+        :param file_id_list: List of ids to delete from Metax
+        :returns: HTTP response returned by Metax
+        """
+        url = self.baseurl + 'files'
+        response = requests.delete(
+            url=url,
+            json=file_id_list,
             auth=HTTPBasicAuth(self.username, self.password)
         )
         return response
