@@ -288,12 +288,18 @@ class Metax(object):
         :project: project id
         :returns: list of files
         """
-        url = self.baseurl + 'files' + '/?project_identifier=' + project
-        response = _do_get_request(
-            url, HTTPBasicAuth(self.username, self.password)
-        )
+        files = []
+        url = self.baseurl + 'files/?limit=10000&project_identifier=' + project
 
-        return response.json()["results"]
+        # GET 10000 files every iteration until all files are read
+        while url is not None:
+            response = _do_get_request(
+                url, HTTPBasicAuth(self.username, self.password)
+            ).json()
+            url = response["next"]
+            files.extend(response["results"])
+
+        return files
 
     def get_files_dict(self, project):
         """GET all the files of a given project as a dict {file_path: id}
