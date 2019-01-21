@@ -189,11 +189,10 @@ class Metax(object):
         :returns:
         """
         if contract_id != 0:
-            data = {'contract':
-                    {'id': contract_id,
-                     'identifier': contract_identifier
-                     }
-                    }
+            data = {'contract': {
+                'id': contract_id,
+                'identifier': contract_identifier
+            }}
         else:
             data = {'contract': None}
 
@@ -302,7 +301,8 @@ class Metax(object):
         return files
 
     def get_files_dict(self, project):
-        """GET all the files of a given project as a dict {file_path: id}
+        """GET all the files of a given project as a dict
+        {file_path: {"id": id, "identifier": identifier}}
 
         :returns: Dict of all the files of a given project
         """
@@ -310,7 +310,10 @@ class Metax(object):
 
         file_dict = {}
         for _file in files:
-            file_dict[_file["file_path"]] = _file["id"]
+            file_dict[_file["file_path"]] = {
+                "id": _file["id"],
+                "identifier": _file["identifier"]
+            }
 
         return file_dict
 
