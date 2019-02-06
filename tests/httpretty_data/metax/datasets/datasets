@@ -152,7 +152,7 @@
                 "version_notes": [
                     "This version contains changes to x and y."
                 ],
-                "total_ida_byte_size": 300,
+                "total_files_byte_size": 300,
                 "preferred_identifier": "urn:nbn:fi:att:1955e904-e3dd-4d7e-99f1-3fed446f96d1",
                 "metadata_version_identifier": "1955e904-e3dd-4d7e-99f1-3fed446f96d1"
             },
@@ -327,7 +327,7 @@
                 "version_notes": [
                     "This version contains changes to x and y."
                 ],
-                "total_ida_byte_size": 700,
+                "total_files_byte_size": 700,
                 "preferred_identifier": "urn:nbn:fi:att:1955e904-e3dd-4d7e-99f1-3fed446f96d2",
                 "metadata_version_identifier": "1955e904-e3dd-4d7e-99f1-3fed446f96d2"
             },
