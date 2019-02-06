@@ -1,6 +1,8 @@
+---
 stages:
   - rpm-package
   - local-test
+  - documentation
 
 rpm-package:
   stage: rpm-package
@@ -20,3 +22,10 @@ e2e-localhost-metax-access:
     - 'e2e-fairdata-localhost.sh dpres-research-rest-api'
   except:
     - master
+
+documentation:
+  stage: documentation
+  script:
+    - 'documentation.sh'
+  only:
+    - develop
