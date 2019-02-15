@@ -25,6 +25,7 @@ clean: clean-rpm
 
 clean-rpm:
 	rm -rf rpmbuild
+	rm -rf doc/build doc/source/modules
 
 rpm: clean
 	create-archive.sh
@@ -33,4 +34,4 @@ rpm: clean
 
 .PHONY: doc
 doc:
-	make -C doc html
+	PYTHONPATH="../" make -C doc html

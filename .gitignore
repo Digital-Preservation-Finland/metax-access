@@ -1,3 +1,7 @@
 .venv/
 venv/
+build/
 rpmbuild/
+*.pyc
+doc/build/
+doc/source/modules/
