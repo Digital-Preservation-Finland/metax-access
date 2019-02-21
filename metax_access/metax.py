@@ -74,20 +74,23 @@ class Metax(object):
                      limit="1000000",
                      offset="0",
                      pas_filter=None,
-                     org_filter=None):
+                     org_filter=None,
+                     ordering=None):
         """Gets the metadata of datasets from Metax.
 
         :states(string): string containing dataset preservation state values
         e.g "10,20" for filtering
         :limit(string): max number of datasets to be returned
         :offset(string): offset for paging
-        :pas_filter(string): string for filtering datasets, Used for the following
-        attributes in metax:
+        :pas_filter(string): string for filtering datasets, Used for the
+        following attributes in metax:
             1. research_dataset['title']
             2. research_dataset['curator']['name']
             3. contract['contract_json']['title']
         :org_filter(string): string for filtering datasets based on
         research_dataset=>metadata_owner_org attribute value
+        :ordering(string): metax dataset attribute for sorting datasets
+        e.g "preservation_state"
         :returns: datasets from Metax as json.
         """
         if states is None:
@@ -99,10 +102,13 @@ class Metax(object):
         org_filter_str = ''
         if org_filter is not None:
             org_filter_str += '&metadata_owner_org=' + org_filter
+        ordering_str = ''
+        if ordering is not None:
+            ordering_str += '&ordering=' + ordering
         url = "".join([self.baseurl,
                        "datasets", "?state=", states, "&limit=",
                        limit, "&offset=", offset, pas_filter_str,
-                       org_filter_str])
+                       org_filter_str, ordering_str])
         response = _do_get_request(url, HTTPBasicAuth(self.username,
                                                       self.password))
         if response.status_code == 404:
