@@ -410,7 +410,7 @@ class Metax(object):
         response.raise_for_status()
         return response.json()
 
-    def set_preservation_state(self, dataset_id, state, user_description=None,
+    def set_preservation_state(self, dataset_id, state=None, user_description=None,
                                system_description=None):
         """Set values of attributes `preservation_state` and
         `preservation_state_description` for dataset in Metax
@@ -440,8 +440,9 @@ class Metax(object):
         :returns: None
         """
         url = self.baseurl + 'datasets/' + dataset_id
-
-        data = {"preservation_state": state}
+        data = {}
+        if state is not None:
+            data = {"preservation_state": state}
         if user_description is not None:
             data["preservation_reason_description"] = user_description
         if system_description is not None:

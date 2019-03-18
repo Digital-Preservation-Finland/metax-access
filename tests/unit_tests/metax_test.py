@@ -311,7 +311,7 @@ def test_set_preservation_state():
     """
     METAX_CLIENT.set_preservation_state(
         "mets_test_dataset",
-        DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
+        state=DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
         system_description='Accepted to preservation'
     )
 
@@ -391,9 +391,7 @@ def test_set_preservation_state_returns_correct_error_when_http_503_error():
     with mock.patch('metax_access.metax.patch',
                     side_effect=mocked_503_response):
         with pytest.raises(MetaxConnectionError):
-            METAX_CLIENT.set_preservation_state('who',
-                                                DS_STATE_INITIALIZED,
-                                                'cares')
+            METAX_CLIENT.set_preservation_state('foobar')
 
 
 def test_get_elasticsearchdata_returns_correct_error_when_http_503_error():
