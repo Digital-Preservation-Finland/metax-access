@@ -459,7 +459,7 @@ class Metax(object):
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError:
-            raise Exception(response.json())
+            raise Exception(str(response))
 
     def set_file_characteristics(self, file_id, file_characteristics):
         """Updates `file_characteristics` attribute for a file in Metax.
