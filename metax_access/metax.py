@@ -58,7 +58,7 @@ class DataCatalogNotFoundError(Exception):
 class Metax(object):
     """Get metadata from metax as dict object."""
 
-    def __init__(self, metax_url, metax_user, metax_password):
+    def __init__(self, metax_url, metax_user, metax_password, verify=True):
         """ Initialize Metax object.
 
         :metax_url: Metax url
@@ -69,6 +69,8 @@ class Metax(object):
         self.password = metax_password
         self.baseurl = metax_url + '/rest/v1/'
         self.elasticsearch_url = metax_url + '/es/'
+        self.rpcurl = metax_url + '/rpc'
+        self.verify = verify
 
     def get_datasets(self, states=None,
                      limit="1000000",
@@ -109,8 +111,8 @@ class Metax(object):
                        "datasets", "?state=", states, "&limit=",
                        limit, "&offset=", offset, pas_filter_str,
                        org_filter_str, ordering_str])
-        response = _do_get_request(url, HTTPBasicAuth(self.username,
-                                                      self.password))
+        response = self._do_get_request(url, HTTPBasicAuth(self.username,
+                                                           self.password))
         if response.status_code == 404:
             raise DatasetNotFoundError
         response.raise_for_status()
@@ -132,8 +134,8 @@ class Metax(object):
         url = "".join([self.baseurl, 'contracts?limit=', limit,
                        '&offset=', offset,
                        org_filter_str])
-        response = _do_get_request(url, HTTPBasicAuth(self.username,
-                                                      self.password))
+        response = self._do_get_request(url, HTTPBasicAuth(self.username,
+                                                           self.password))
         if response.status_code == 404:
             raise ContractNotFoundError
         response.raise_for_status()
@@ -146,8 +148,8 @@ class Metax(object):
         :returns: The contract from Metax as json.
         """
         url = "".join([self.baseurl, "contracts/", pid])
-        response = _do_get_request(url, HTTPBasicAuth(self.username,
-                                                      self.password))
+        response = self._do_get_request(url, HTTPBasicAuth(self.username,
+                                                           self.password))
         if response.status_code == 404:
             raise ContractNotFoundError
         response.raise_for_status()
@@ -159,15 +161,7 @@ class Metax(object):
         :dataset_id(string): id or identifier attribute of dataset
         :returns: dataset as json
         """
-        url = self.baseurl + 'datasets' + '/' + dataset_id
-
-        response = _do_get_request(url, HTTPBasicAuth(self.username,
-                                                      self.password))
-
-        if response.status_code == 404:
-            raise DatasetNotFoundError(
-                "Could not find metadata for dataset: %s" % dataset_id
-            )
+        response = self._get_dataset_from_metax(dataset_id)
         response.raise_for_status()
         return response.json()
 
@@ -178,8 +172,8 @@ class Metax(object):
         :returns: The datacatalog as json.
         """
         url = "".join([self.baseurl, "datacatalogs/", catalog_id])
-        response = _do_get_request(url, HTTPBasicAuth(self.username,
-                                                      self.password))
+        response = self._do_get_request(url, HTTPBasicAuth(self.username,
+                                                           self.password))
         if response.status_code == 404:
             raise DataCatalogNotFoundError
         response.raise_for_status()
@@ -203,8 +197,9 @@ class Metax(object):
             data = {'contract': None}
 
         url = "".join([self.baseurl, "datasets/", dataset_id])
-        response = _do_patch_request(url, data, HTTPBasicAuth(self.username,
-                                                              self.password))
+        response = self._do_patch_request(url, data,
+                                          HTTPBasicAuth(self.username,
+                                                        self.password))
         response.raise_for_status()
 
     def get_dataset_filetypes(self, dataset_id):
@@ -224,8 +219,8 @@ class Metax(object):
         mime_types = []
         url = "".join([self.baseurl,
                        "datasets/", str(dataset_id), '/files'])
-        response = _do_get_request(url, HTTPBasicAuth(self.username,
-                                                      self.password))
+        response = self._do_get_request(url, HTTPBasicAuth(self.username,
+                                                           self.password))
         if response.status_code == 404:
             response.raise_for_status()
         elif response.status_code >= 300:
@@ -266,8 +261,8 @@ class Metax(object):
         :returns: The datasets from Metax as json.
         """
         url = "".join([self.baseurl, "contracts/", str(pid), '/datasets'])
-        response = _do_get_request(url, HTTPBasicAuth(self.username,
-                                                      self.password))
+        response = self._do_get_request(url, HTTPBasicAuth(self.username,
+                                                           self.password))
         response.raise_for_status()
         return response.json()
 
@@ -279,8 +274,8 @@ class Metax(object):
         """
         url = self.baseurl + 'files' + '/' + file_id
 
-        response = _do_get_request(url, HTTPBasicAuth(self.username,
-                                                      self.password))
+        response = self._do_get_request(url, HTTPBasicAuth(self.username,
+                                                           self.password))
 
         if response.status_code == 404:
             raise Exception("Could not find metadata for file: %s" % file_id)
@@ -298,7 +293,7 @@ class Metax(object):
 
         # GET 10000 files every iteration until all files are read
         while url is not None:
-            response = _do_get_request(
+            response = self._do_get_request(
                 url, HTTPBasicAuth(self.username, self.password)
             ).json()
             url = response["next"]
@@ -336,8 +331,9 @@ class Metax(object):
 
         # Get list of xml namespaces
         ns_key_url = self.baseurl + entity_url + '/' + entity_id + '/xml'
-        response = _do_get_request(ns_key_url, HTTPBasicAuth(self.username,
-                                                             self.password))
+        response = self._do_get_request(ns_key_url,
+                                        HTTPBasicAuth(self.username,
+                                                      self.password))
         if response.status_code == 404:
             raise Exception("Could not retrieve list of additional metadata "
                             "XML for dataset %s: %s" % (entity_id, ns_key_url))
@@ -348,9 +344,9 @@ class Metax(object):
         # add it to result dict
         for ns_key in ns_key_list:
             query = '?namespace=' + ns_key
-            response = _do_get_request(ns_key_url + query,
-                                       HTTPBasicAuth(self.username,
-                                                     self.password))
+            response = self._do_get_request(ns_key_url + query,
+                                            HTTPBasicAuth(self.username,
+                                                          self.password))
             if not response.status_code == 200:
                 raise Exception("Could not retrieve additional metadata XML "
                                 "for dataset %s: %s" % (entity_id,
@@ -386,7 +382,8 @@ class Metax(object):
                             data=data,
                             headers=headers,
                             auth=HTTPBasicAuth(self.username,
-                                               self.password))
+                                               self.password),
+                            verify=self.verify)
             response.raise_for_status()
             if response.status_code != 201:
                 raise requests.exceptions.HTTPError(
@@ -403,7 +400,7 @@ class Metax(object):
         """
         url = self.elasticsearch_url + "reference_data/use_category/_search?"\
                                        "pretty&size=100"
-        response = _do_get_request(url)
+        response = self._do_get_request(url)
 
         if response.status_code == 404:
             raise Exception("Could not find elastic search data.")
@@ -450,7 +447,8 @@ class Metax(object):
         response = patch(
             url,
             json=data,
-            auth=HTTPBasicAuth(self.username, self.password)
+            auth=HTTPBasicAuth(self.username, self.password),
+            verify=self.verify
         )
         if response.status_code == 503:
             raise MetaxConnectionError
@@ -476,7 +474,8 @@ class Metax(object):
         response = requests.patch(
             url,
             json=data,
-            auth=HTTPBasicAuth(self.username, self.password)
+            auth=HTTPBasicAuth(self.username, self.password),
+            verify=self.verify
         )
 
         if response.status_code == 503:
@@ -485,16 +484,24 @@ class Metax(object):
         # Raise exception if request fails
         response.raise_for_status()
 
-    def get_datacite(self, dataset_id):
+    def get_datacite(self, dataset_identifier):
         """Get descriptive metadata in datacite xml format.
 
-        :dataset_id(string): id or identifier attribute of dataset
+        :dataset_identifier(string): identifier attribute of dataset
         :returns: Datacite XML (lxml.etree.ElementTree object)
         """
+        # set dataset preservation_identifier first. It is created only once
+        # by metax
+        rpc_url = "%s/datasets/set_preservation_identifier?identifier=%s" % (
+            self.rpcurl, dataset_identifier)
+        response = self._do_post_request(rpc_url,
+                                         auth=HTTPBasicAuth(self.username,
+                                                            self.password))
+        response.raise_for_status()
         url = "%sdatasets/%s?dataset_format=datacite" % (self.baseurl,
-                                                         dataset_id)
-        response = _do_get_request(url, HTTPBasicAuth(self.username,
-                                                      self.password))
+                                                         dataset_identifier)
+        response = self._do_get_request(url, HTTPBasicAuth(self.username,
+                                                           self.password))
 
         if response.status_code == 404:
             raise Exception("Could not find descriptive metadata.")
@@ -511,8 +518,8 @@ class Metax(object):
         """
         url = self.baseurl + 'datasets/' + dataset_id + '/files'
 
-        response = _do_get_request(url, HTTPBasicAuth(self.username,
-                                                      self.password))
+        response = self._do_get_request(url, HTTPBasicAuth(self.username,
+                                                           self.password))
 
         if response.status_code == 404:
             raise Exception("Could not find dataset files metadata.")
@@ -530,7 +537,8 @@ class Metax(object):
         response = requests.post(
             url,
             json=[file_id],
-            auth=HTTPBasicAuth(self.username, self.password)
+            auth=HTTPBasicAuth(self.username, self.password),
+            verify=self.verify
         )
 
         if response.status_code == 404:
@@ -548,7 +556,8 @@ class Metax(object):
         url = self.baseurl + 'files/' + file_id
         response = requests.delete(
             url=url,
-            auth=HTTPBasicAuth(self.username, self.password)
+            auth=HTTPBasicAuth(self.username, self.password),
+            verify=self.verify
         )
         return response
 
@@ -562,7 +571,8 @@ class Metax(object):
         response = requests.delete(
             url=url,
             json=file_id_list,
-            auth=HTTPBasicAuth(self.username, self.password)
+            auth=HTTPBasicAuth(self.username, self.password),
+            verify=self.verify
         )
         return response
 
@@ -575,7 +585,8 @@ class Metax(object):
         url = self.baseurl + 'datasets/' + dataset_id
         response = requests.delete(
             url=url,
-            auth=HTTPBasicAuth(self.username, self.password)
+            auth=HTTPBasicAuth(self.username, self.password),
+            verify=self.verify
         )
         return response
 
@@ -600,7 +611,8 @@ class Metax(object):
         response = requests.post(
             url=url,
             json=metadata,
-            auth=HTTPBasicAuth(self.username, self.password)
+            auth=HTTPBasicAuth(self.username, self.password),
+            verify=self.verify
         )
         return response
 
@@ -613,7 +625,8 @@ class Metax(object):
         url = self.baseurl + 'datasets/'
         response = requests.post(
             url, json=metadata,
-            auth=HTTPBasicAuth(self.username, self.password)
+            auth=HTTPBasicAuth(self.username, self.password),
+            verify=self.verify
         )
         return response
 
@@ -626,7 +639,8 @@ class Metax(object):
         url = self.baseurl + 'contracts/'
         response = requests.post(
             url, json=metadata,
-            auth=HTTPBasicAuth(self.username, self.password)
+            auth=HTTPBasicAuth(self.username, self.password),
+            verify=self.verify
         )
         return response
 
@@ -639,30 +653,56 @@ class Metax(object):
         url = self.baseurl + 'contracts/' + contract_id
         response = requests.delete(
             url=url,
-            auth=HTTPBasicAuth(self.username, self.password)
+            auth=HTTPBasicAuth(self.username, self.password),
+            verify=self.verify
         )
         return response
 
+    def _get_dataset_from_metax(self, dataset_id):
+        """Get dataset metadata from Metax.
+        :dataset_id(string): id or identifier attribute of dataset
+        :returns: dataset as returned by Metax
+        """
+        url = self.baseurl + 'datasets' + '/' + dataset_id
 
-def _do_get_request(url, auth=None):
-    """Wrapper function for requests.get() function. Raises
-    MetaxConnectionError if status code is 503 (Service unavailable)
+        response = self._do_get_request(url, HTTPBasicAuth(self.username,
+                                                           self.password))
 
-    :returns: requests response
-    """
-    response = get(url, auth=auth)
-    if response.status_code == 503:
-        raise MetaxConnectionError
-    return response
+        if response.status_code == 404:
+            raise DatasetNotFoundError(
+                "Could not find metadata for dataset: %s" % dataset_id
+            )
+        return response
 
+    def _do_get_request(self, url, auth=None):
+        """Wrapper function for requests.get() function. Raises
+        MetaxConnectionError if status code is 503 (Service unavailable)
 
-def _do_patch_request(url, data, auth=None):
-    """Wrapper function for requests.patch() function. Raises
-    MetaxConnectionError if status code is 503 (Service unavailable
+        :returns: requests response
+        """
+        response = get(url, auth=auth, verify=self.verify)
+        if response.status_code == 503:
+            raise MetaxConnectionError
+        return response
 
-    :returns: requests response
-    """
-    response = patch(url, json=data, auth=auth)
-    if response.status_code == 503:
-        raise MetaxConnectionError
-    return response
+    def _do_patch_request(self, url, data, auth=None):
+        """Wrapper function for requests.patch() function. Raises
+        MetaxConnectionError if status code is 503 (Service unavailable
+
+        :returns: requests response
+        """
+        response = patch(url, json=data, auth=auth, verify=self.verify)
+        if response.status_code == 503:
+            raise MetaxConnectionError
+        return response
+
+    def _do_post_request(self, url, data=None, auth=None):
+        """Wrapper function for requests.patch() function. Raises
+        MetaxConnectionError if status code is 503 (Service unavailable
+
+        :returns: requests response
+        """
+        response = post(url, json=data, auth=auth, verify=self.verify)
+        if response.status_code >= 500:
+            raise MetaxConnectionError
+        return response

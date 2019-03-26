@@ -18,10 +18,10 @@ from metax_access.metax import (
     DataCatalogNotFoundError
 )
 
-METAX_URL = 'https://metax-test.csc.fi'
+METAX_URL = 'https://foobar'
 METAX_USER = 'tpas'
 METAX_PASSWORD = 'password'
-METAX_CLIENT = Metax(METAX_URL, METAX_USER, METAX_PASSWORD)
+METAX_CLIENT = Metax(METAX_URL, METAX_USER, METAX_PASSWORD, verify=False)
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -65,8 +65,6 @@ def test_get_dataset():
     :returns: None
     """
     dataset = METAX_CLIENT.get_dataset("mets_test_dataset")
-    print dataset
-    print type(dataset)
     assert dataset["research_dataset"]["provenance"][0]\
         ['preservation_event']['pref_label']['en'] == 'creation'
 
@@ -291,7 +289,10 @@ def test_get_datacite():
     :returns: None
     """
     xml = METAX_CLIENT.get_datacite("datacite_test_1")
-
+    # make sure Metax is called for preservation_identifier generation
+    assert httpretty.HTTPretty.latest_requests[-2].path == \
+        ("/rpc/datasets/set_preservation_identifier?identifier="
+         "datacite_test_1")
     # Read field "creatorName" from xml file
     ns_string = 'http://datacite.org/schema/kernel-4'
     xpath_str = '/ns:resource/ns:creators/ns:creator/ns:creatorName'
@@ -408,7 +409,7 @@ def test_get_datacite_returns_correct_error_when_http_503_error():
     """Test that get_datacite function throws a MetaxConnectionError exception
     when requests.get() returns http 503 error
     """
-    with mock.patch('metax_access.metax.get',
+    with mock.patch('metax_access.metax.post',
                     side_effect=mocked_503_response):
         with pytest.raises(MetaxConnectionError):
             METAX_CLIENT.get_datacite("x")
@@ -435,7 +436,7 @@ def test_delete_file():
 
     assert httpretty.last_request().method == httpretty.DELETE
     assert httpretty.last_request().headers.get('host') \
-        == 'metax-test.csc.fi'
+        == 'foobar'
     assert httpretty.last_request().path == '/rest/v1/files/file1'
 
 
@@ -450,7 +451,7 @@ def test_delete_dataset():
 
     assert httpretty.last_request().method == httpretty.DELETE
     assert httpretty.last_request().headers.get('host') \
-        == 'metax-test.csc.fi'
+        == 'foobar'
     assert httpretty.last_request().path == '/rest/v1/datasets/dataset1'
 
 
@@ -465,7 +466,7 @@ def test_post_file():
 
     assert httpretty.last_request().method == httpretty.POST
     assert httpretty.last_request().headers.get('host') \
-        == 'metax-test.csc.fi'
+        == 'foobar'
     assert httpretty.last_request().path == '/rest/v1/files/'
 
 
@@ -480,5 +481,5 @@ def test_post_dataset():
 
     assert httpretty.last_request().method == httpretty.POST
     assert httpretty.last_request().headers.get('host') \
-        == 'metax-test.csc.fi'
+        == 'foobar'
     assert httpretty.last_request().path == '/rest/v1/datasets/'

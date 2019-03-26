@@ -15,7 +15,8 @@ import pytest
 logging.basicConfig(level=logging.DEBUG)
 
 METAX_PATH = "tests/httpretty_data/metax"
-METAX_URL = "https://metax-test.csc.fi/rest/v1"
+METAX_URL = "https://foobar/rest/v1"
+METAX_RPC_URL = "https://foobar/rpc"
 
 
 # Prefer modules from source directory rather than from site-python
@@ -95,7 +96,7 @@ def testmetax(request):
         logging.debug("Request: %s", str(request))
         logging.debug("Header: %s", str(headers))
         return (200, headers, body)
-    
+
     # Enable http-server in beginning of test function
     httpretty.enable()
 
@@ -118,6 +119,13 @@ def testmetax(request):
         httpretty.POST,
         re.compile(METAX_URL + '/(.*)'),
         status=201
+    )
+
+    # Register response for POST method for any url starting with METAX_RPC_URL
+    httpretty.register_uri(
+        httpretty.POST,
+        re.compile(METAX_RPC_URL + '/(.*)'),
+        status=200
     )
 
     # register response for get_elasticsearchdata-function
