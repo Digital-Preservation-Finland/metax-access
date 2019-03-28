@@ -161,7 +161,15 @@ class Metax(object):
         :dataset_id(string): id or identifier attribute of dataset
         :returns: dataset as json
         """
-        response = self._get_dataset_from_metax(dataset_id)
+        url = self.baseurl + 'datasets' + '/' + dataset_id
+
+        response = self._do_get_request(url, HTTPBasicAuth(self.username,
+                                                      self.password))
+
+        if response.status_code == 404:
+            raise DatasetNotFoundError(
+                "Could not find metadata for dataset: %s" % dataset_id
+            )
         response.raise_for_status()
         return response.json()
 
@@ -656,22 +664,6 @@ class Metax(object):
             auth=HTTPBasicAuth(self.username, self.password),
             verify=self.verify
         )
-        return response
-
-    def _get_dataset_from_metax(self, dataset_id):
-        """Get dataset metadata from Metax.
-        :dataset_id(string): id or identifier attribute of dataset
-        :returns: dataset as returned by Metax
-        """
-        url = self.baseurl + 'datasets' + '/' + dataset_id
-
-        response = self._do_get_request(url, HTTPBasicAuth(self.username,
-                                                           self.password))
-
-        if response.status_code == 404:
-            raise DatasetNotFoundError(
-                "Could not find metadata for dataset: %s" % dataset_id
-            )
         return response
 
     def _do_get_request(self, url, auth=None):
