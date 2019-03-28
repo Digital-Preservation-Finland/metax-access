@@ -1,4 +1,6 @@
-from .metax import Metax, MetaxConnectionError, DatasetNotFoundError
+from .metax import (Metax, MetaxConnectionError, DatasetNotFoundError,
+                    DataciteGenerationError
+                    )
 from .metax import DS_STATE_INITIALIZED
 from .metax import DS_STATE_PROPOSED_FOR_DIGITAL_PRESERVATION
 from .metax import DS_STATE_TECHNICAL_METADATA_GENERATED

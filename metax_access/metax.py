@@ -56,7 +56,7 @@ class DataCatalogNotFoundError(Exception):
 
 
 class DataciteGenerationError(Exception):
-    """Exception raised when Metax returned 400"""
+    """Exception raised when Metax returned 400 for datacite"""
 
 
 class Metax(object):
