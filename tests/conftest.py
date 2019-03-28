@@ -63,6 +63,7 @@ def testmetax(request):
         logging.debug("Request: %s", str(request))
         logging.debug("Header: %s", str(headers))
         # url without basepath:
+        status = 200
         path = url.split(METAX_URL)[1]
         logging.debug("Path: %s", path)
         if path.startswith('/datasets?'):
@@ -81,6 +82,7 @@ def testmetax(request):
                 body_file += urllib.quote(tail, safe='%')
 
             full_path = "%s/%s/%s" % (METAX_PATH, subdir, body_file)
+            status = 400 if body_file.split('?')[0].endswith('400') else 200
         logging.debug("Looking for file: %s", full_path)
         if not os.path.isfile(full_path):
             return (403, headers, "File not found")
@@ -88,7 +90,7 @@ def testmetax(request):
         with open(full_path) as open_file:
             body = open_file.read()
 
-        return (200, headers, body)
+        return (status, headers, body)
 
     def dynamic_patch_response(request, url, headers):
         """Return HTTP response according to url and query string"""

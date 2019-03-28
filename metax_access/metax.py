@@ -55,6 +55,10 @@ class DataCatalogNotFoundError(Exception):
     """Exception raised when contract is not found from metax"""
 
 
+class DataciteGenerationError(Exception):
+    """Exception raised when Metax returned 400"""
+
+
 class Metax(object):
     """Get metadata from metax as dict object."""
 
@@ -511,6 +515,12 @@ class Metax(object):
         response = self._do_get_request(url, HTTPBasicAuth(self.username,
                                                            self.password))
 
+        if response.status_code == 400:
+            detail = self._get_detailed_error(
+                response,
+                default='Datacite generation failed in Metax'
+            )
+            raise DataciteGenerationError(detail)
         if response.status_code == 404:
             raise Exception("Could not find descriptive metadata.")
         response.raise_for_status()
@@ -698,3 +708,11 @@ class Metax(object):
         if response.status_code >= 500:
             raise MetaxConnectionError
         return response
+
+    def _get_detailed_error(self, response, default="Metax error"):
+        try:
+            response_json = response.json()
+            detail = response_json['detail']
+        except (ValueError, KeyError):
+            detail = default
+        return detail

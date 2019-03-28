@@ -15,7 +15,8 @@ from metax_access.metax import (
     DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
     DatasetNotFoundError,
     ContractNotFoundError,
-    DataCatalogNotFoundError
+    DataCatalogNotFoundError,
+    DataciteGenerationError
 )
 
 METAX_URL = 'https://foobar'
@@ -299,6 +300,15 @@ def test_get_datacite():
     creatorname = xml.xpath(xpath_str, namespaces={'ns': ns_string})[0].text
     # Check that "creatorName" is same as in the original XML file
     assert creatorname == u"Puupää, Pekka"
+
+
+@pytest.mark.usefixtures('testmetax')
+def test_get_datacite_fails():
+    """Test get_datacite function when Metax returns 400
+    :returns: None
+    """
+    with pytest.raises(DataciteGenerationError) as ex:
+        METAX_CLIENT.get_datacite("datacite_test_1_400")
 
 
 @pytest.mark.usefixtures('testmetax')
