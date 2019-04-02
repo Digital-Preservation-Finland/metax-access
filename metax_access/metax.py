@@ -496,7 +496,7 @@ class Metax(object):
         # Raise exception if request fails
         response.raise_for_status()
 
-    def set_datacite(self, dataset_identifier):
+    def set_preservation_id(self, dataset_identifier):
         """Generates preservation_identifier for dataset with identifier
         dataset_identifier. If preservation_identifier already exists, does
         nothing.
@@ -516,7 +516,7 @@ class Metax(object):
         :dataset_identifier(string): identifier attribute of dataset
         :returns: Datacite XML (lxml.etree.ElementTree object)
         """
-        self.set_datacite(dataset_identifier)
+        self.set_preservation_id(dataset_identifier)
 
         url = "%sdatasets/%s?dataset_format=datacite" % (self.baseurl,
                                                          dataset_identifier)
