@@ -5,3 +5,4 @@ rpmbuild/
 *.pyc
 doc/build/
 doc/source/modules/
+doc/modules/
