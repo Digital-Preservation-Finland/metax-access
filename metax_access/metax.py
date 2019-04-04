@@ -99,6 +99,7 @@ class DataciteGenerationError(MetaxError):
         super(DataciteGenerationError, self).__init__(message, status_code)
 
 
+# pylint: disable=too-many-public-methods
 class Metax(object):
     """Get metadata from metax as dict object."""
 
@@ -116,6 +117,7 @@ class Metax(object):
         self.rpcurl = metax_url + '/rpc'
         self.verify = verify
 
+    # pylint: disable=too-many-arguments
     def get_datasets(self, states=None,
                      limit="1000000",
                      offset="0",
@@ -208,7 +210,7 @@ class Metax(object):
         url = self.baseurl + 'datasets' + '/' + dataset_id
 
         response = self._do_get_request(url, HTTPBasicAuth(self.username,
-                                                      self.password))
+                                                           self.password))
 
         if response.status_code == 404:
             raise DatasetNotFoundError(
@@ -547,7 +549,7 @@ class Metax(object):
                                                            self.password))
 
         if response.status_code == 400:
-            detail = self._get_detailed_error(
+            detail = _get_detailed_error(
                 response,
                 default='Datacite generation failed in Metax'
             )
@@ -774,10 +776,11 @@ class Metax(object):
             raise MetaxConnectionError
         return response
 
-    def _get_detailed_error(self, response, default="Metax error"):
-        try:
-            response_json = response.json()
-            detail = response_json['detail']
-        except (ValueError, KeyError):
-            detail = default
-        return detail
+
+def _get_detailed_error(response, default="Metax error"):
+    try:
+        response_json = response.json()
+        detail = response_json['detail']
+    except (ValueError, KeyError):
+        detail = default
+    return detail

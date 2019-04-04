@@ -11,7 +11,6 @@ except ImportError:
 import pytest
 from metax_access.metax import (
     Metax, MetaxConnectionError,
-    DS_STATE_INITIALIZED,
     DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
     DatasetNotFoundError,
     ContractNotFoundError,
@@ -37,6 +36,7 @@ def test_get_datasets():
 
 
 @pytest.mark.usefixtures('testmetax')
+# pylint: disable=invalid-name
 def test_get_datasets_http_503_error():
     """Test that get_datasets function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
@@ -48,6 +48,7 @@ def test_get_datasets_http_503_error():
 
 
 @pytest.mark.usefixtures('testmetax')
+# pylint: disable=invalid-name
 def test_get_datasets_http_404_error():
     """Test that get_elasticsearchdata function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
@@ -66,8 +67,8 @@ def test_get_dataset():
     :returns: None
     """
     dataset = METAX_CLIENT.get_dataset("mets_test_dataset")
-    assert dataset["research_dataset"]["provenance"][0]\
-        ['preservation_event']['pref_label']['en'] == 'creation'
+    assert (dataset["research_dataset"]["provenance"][0]['preservation_event']
+            ['pref_label']['en'] == 'creation')
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -265,6 +266,7 @@ def test_set_xml():
 
 
 @pytest.mark.usefixtures('testmetax')
+# pylint: disable=invalid-name
 def test_set_xml_metadata_already_set():
     """Test set_xml functions. Reads XML file and posts it to Metax. The body
     and headers of HTTP request are checked.
@@ -307,7 +309,7 @@ def test_get_datacite_fails():
     """Test get_datacite function when Metax returns 400
     :returns: None
     """
-    with pytest.raises(DataciteGenerationError) as ex:
+    with pytest.raises(DataciteGenerationError):
         METAX_CLIENT.get_datacite("datacite_test_1_400")
 
 
@@ -360,22 +362,31 @@ def test_set_file_characteristics():
     assert httpretty.last_request().method == 'PATCH'
 
 
+# pylint: disable=unused-argument
 def mocked_503_response(*args, **kwargs):
-    class MockResponse:
+    """Return mocked HTTP 503 response"""
+    # pylint: disable=too-few-public-methods
+    class MockResponse(object):
+        """Mocked response class"""
         def __init__(self, status_code):
             self.status_code = status_code
 
     return MockResponse(503)
 
 
+# pylint: disable=unused-argument
 def mocked_404_response(*args, **kwargs):
-    class MockResponse:
+    """Return mocked HTTP 404 response"""
+    # pylint: disable=too-few-public-methods
+    class MockResponse(object):
+        """Mocked response class"""
         def __init__(self, status_code):
             self.status_code = status_code
 
     return MockResponse(404)
 
 
+# pylint: disable=invalid-name
 def test_get_dataset_returns_correct_error_when_http_503_error():
     """Test that get_dataset function throws a MetaxConnectionError exception
     when requests.get() returns http 503 error
@@ -385,6 +396,7 @@ def test_get_dataset_returns_correct_error_when_http_503_error():
             METAX_CLIENT.get_dataset('who_cares')
 
 
+# pylint: disable=invalid-name
 def test_get_xml_returns_correct_error_when_http_503_error():
     """Test that get_xml function throws a MetaxConnectionError exception
     when requests.get() returns http 503 error
@@ -440,7 +452,8 @@ def test_delete_file():
     """Test that ``delete_file`` function sends HTTP DELETE request to correct
     url
     """
-    httpretty.register_uri(httpretty.DELETE, METAX_URL + '/rest/v1/files/file1')
+    httpretty.register_uri(httpretty.DELETE,
+                           METAX_URL + '/rest/v1/files/file1')
 
     METAX_CLIENT.delete_file('file1')
 
@@ -455,7 +468,8 @@ def test_delete_dataset():
     """Test that ``delete_dataset`` function sends HTTP DELETE request to
     correct url
     """
-    httpretty.register_uri(httpretty.DELETE, METAX_URL + '/rest/v1/datasets/dataset1')
+    httpretty.register_uri(httpretty.DELETE,
+                           METAX_URL + '/rest/v1/datasets/dataset1')
 
     METAX_CLIENT.delete_dataset('dataset1')
 
