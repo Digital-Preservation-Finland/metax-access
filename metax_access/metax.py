@@ -419,7 +419,8 @@ class Metax(object):
         response.raise_for_status()
         return response.json()
 
-    def set_preservation_state(self, dataset_id, state=None, user_description=None,
+    def set_preservation_state(self, dataset_id, state=None,
+                               user_description=None,
                                system_description=None):
         """Set values of attributes `preservation_state` and
         `preservation_state_description` for dataset in Metax
@@ -466,10 +467,7 @@ class Metax(object):
             raise MetaxConnectionError
 
         # Raise exception if request fails
-        try:
-            response.raise_for_status()
-        except requests.exceptions.HTTPError:
-            raise Exception(str(response))
+        response.raise_for_status()
 
     def set_file_characteristics(self, file_id, file_characteristics):
         """Updates `file_characteristics` attribute for a file in Metax.
