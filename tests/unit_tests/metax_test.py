@@ -17,6 +17,7 @@ from metax_access.metax import (
     DataCatalogNotFoundError,
     DataciteGenerationError
 )
+import requests_mock
 
 METAX_URL = 'https://foobar'
 METAX_USER = 'tpas'
@@ -304,11 +305,44 @@ def test_get_datacite():
     assert creatorname == u"Puupää, Pekka"
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_get_datacite_fails():
+@requests_mock.Mocker()
+def test_get_datacite_fails(mocker):
     """Test get_datacite function when Metax returns 400
+
     :returns: None
     """
+    # Mock metax dataset request response. Response body contains simplified
+    # dataset metadata.
+    mocker.get(
+        METAX_URL +
+        '/rest/v1/datasets/datacite_test_1_400',
+        json={"identifier": "datacite_test_1_400"}
+    )
+
+    # Mock datacite request response. Mocked response has status code 400, and
+    # response body contains error information.
+    response = \
+        {
+            "detail": "Dataset does not have a publisher (field: "
+                      "research_dataset.publisher), which is a required value "
+                      "for datacite format",
+            "error_identifier": "2019-03-28T12:39:01-f0a7e3ae"
+        }
+    mocker.get(
+        METAX_URL +
+        '/rest/v1/datasets/datacite_test_1_400?dataset_format=datacite',
+        json=response,
+        status_code=400
+    )
+
+    # Mock set_preservation_identifier API request
+    mocker.post(
+        METAX_URL +
+        '/rpc/datasets/set_preservation_identifier'
+        '?identifier=datacite_test_1_400',
+        text='foobar',
+    )
+
     with pytest.raises(DataciteGenerationError):
         METAX_CLIENT.get_datacite("datacite_test_1_400")
 
@@ -427,10 +461,12 @@ def test_get_elasticsearchdata_returns_correct_error_when_http_503_error():
             METAX_CLIENT.get_elasticsearchdata()
 
 
-def test_get_datacite_returns_correct_error_when_http_503_error():
+@requests_mock.Mocker()
+def test_get_datacite_returns_correct_error_when_http_503_error(mocker):
     """Test that get_datacite function throws a MetaxConnectionError exception
     when requests.get() returns http 503 error
     """
+    mocker.get(METAX_URL + '/rest/v1/datasets/x', json={'identifier': 'y'})
     with mock.patch('metax_access.metax.post',
                     side_effect=mocked_503_response):
         with pytest.raises(MetaxConnectionError):

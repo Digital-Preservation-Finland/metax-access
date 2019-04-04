@@ -522,29 +522,35 @@ class Metax(object):
         # Raise exception if request fails
         response.raise_for_status()
 
-    def set_preservation_id(self, dataset_identifier):
+    def set_preservation_id(self, dataset_id):
         """Generates preservation_identifier for dataset with identifier
         dataset_identifier. If preservation_identifier already exists, does
         nothing.
+
+        :param dataset_id: id or identifier attribute of dataset
+        :returns: ``None``
         """
+        dataset_identifier = self.get_dataset(dataset_id)["identifier"]
         rpc_url = "%s/datasets/set_preservation_identifier?identifier=%s" % (
             self.rpcurl, dataset_identifier
         )
+
         response = self._do_post_request(
             rpc_url, auth=HTTPBasicAuth(self.username, self.password)
         )
+
         response.raise_for_status()
 
-    def get_datacite(self, dataset_identifier):
+    def get_datacite(self, dataset_id):
         """Get descriptive metadata in datacite xml format.
 
-        :dataset_identifier(string): identifier attribute of dataset
+        :dataset_id: id or identifier attribute of dataset
         :returns: Datacite XML (lxml.etree.ElementTree object)
         """
-        self.set_preservation_id(dataset_identifier)
+        self.set_preservation_id(dataset_id)
 
         url = "%sdatasets/%s?dataset_format=datacite" % (self.baseurl,
-                                                         dataset_identifier)
+                                                         dataset_id)
         response = self._do_get_request(url, HTTPBasicAuth(self.username,
                                                            self.password))
 

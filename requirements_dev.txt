@@ -1,11 +1,15 @@
+# Testing requirements
 pytest
 coverage
 pytest-cov
-lxml
 httpretty
 mock
-requests
 Sphinx==1.7.9
+requests_mock
+
+# Install requirements
+lxml
+requests
 flask
 
 # TODO: docutils is required by python-daemon. Can be removed when this issue:
