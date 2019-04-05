@@ -543,3 +543,39 @@ def test_post_dataset():
     assert httpretty.last_request().headers.get('host') \
         == 'foobar'
     assert httpretty.last_request().path == '/rest/v1/datasets/'
+
+
+@requests_mock.Mocker()
+def test_set_preservation_id(mocker):
+    """Tests that ``set_preservation_id`` function sends correct http request
+    to Metax. The same request should be sent when `id` or `identifier`
+    attribute of dataset is used as parameter.
+    """
+
+    # Mock dataset with id="1234" and identifier="identifier1234"
+    mocker.get(
+        METAX_URL + '/rest/v1/datasets/1234',
+        json={"identifier": "identifier1234"}
+    )
+    mocker.get(
+        METAX_URL + '/rest/v1/datasets/identifier1234',
+        json={"identifier": "identifier1234"}
+    )
+    mocker.post(
+        METAX_URL + "/rpc/datasets/set_preservation_identifier?identifier="
+        "identifier1234"
+    )
+
+    # Call function with id attribute as parameter
+    METAX_CLIENT.set_preservation_id('1234')
+    assert mocker.call_count == 2
+    assert mocker.last_request.url \
+        == (METAX_URL + "/rpc/datasets/set_preservation_identifier?identifier="
+            "identifier1234")
+
+    # Call function with identifier attricute as parameter
+    METAX_CLIENT.set_preservation_id('identifier1234')
+    assert mocker.call_count == 4
+    assert mocker.last_request.url \
+        == (METAX_URL + "/rpc/datasets/set_preservation_identifier?identifier="
+            "identifier1234")
