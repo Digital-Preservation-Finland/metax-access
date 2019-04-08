@@ -1,5 +1,5 @@
 from .metax import (Metax, MetaxConnectionError, DatasetNotFoundError,
-                    DataciteGenerationError, ContractNotFoundError
+                    DataciteGenerationError, ContractNotFoundError, MetaxError
                     )
 from .metax import DS_STATE_INITIALIZED
 from .metax import DS_STATE_PROPOSED_FOR_DIGITAL_PRESERVATION
