@@ -54,6 +54,7 @@ class MetaxError(Exception):
         """Return dict with the error message"""
         return_val = dict(self.payload or ())
         return_val['error'] = self.message
+        return_val['code'] = self.status_code
         return return_val
 
     def __str__(self):
