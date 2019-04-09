@@ -43,7 +43,7 @@ class MetaxError(Exception):
     """Generic invalid usage Exception"""
     status_code = 400
 
-    def __init__(self, message, status_code, payload=None):
+    def __init__(self, message="Metax error", status_code=400, payload=None):
         Exception.__init__(self)
         self.message = message
         if status_code is not None:
@@ -56,6 +56,9 @@ class MetaxError(Exception):
         return_val['error'] = self.message
         return return_val
 
+    def __str__(self):
+        return self.message
+
 
 class MetaxConnectionError(MetaxError):
     """Exception raised when Metax is not available"""
@@ -63,20 +66,29 @@ class MetaxConnectionError(MetaxError):
         MetaxError.__init__(self, "No connection to Metax", 503)
 
 
-class DatasetNotFoundError(Exception):
+class DatasetNotFoundError(MetaxError):
     """Exception raised when dataset is not found from metax"""
+    def __init__(self, message="Dataset not found"):
+        MetaxError.__init__(self, message, 404)
 
 
-class ContractNotFoundError(Exception):
+class ContractNotFoundError(MetaxError):
     """Exception raised when contract is not found from metax"""
+    def __init__(self):
+        MetaxError.__init__(self, "Contract not found", 404)
 
 
-class DataCatalogNotFoundError(Exception):
+class DataCatalogNotFoundError(MetaxError):
     """Exception raised when contract is not found from metax"""
+    def __init__(self):
+        MetaxError.__init__(self, "Datacatalog not found", 404)
 
 
-class DataciteGenerationError(Exception):
+class DataciteGenerationError(MetaxError):
     """Exception raised when Metax returned 400 for datacite"""
+    def __init__(self, message="Datacite generation failed in Metax",
+                 status_code=400):
+        MetaxError.__init__(self, message, status_code)
 
 
 class Metax(object):
@@ -192,7 +204,7 @@ class Metax(object):
 
         if response.status_code == 404:
             raise DatasetNotFoundError(
-                "Could not find metadata for dataset: %s" % dataset_id
+                message="Could not find metadata for dataset: %s" % dataset_id
             )
         self._raise_for_status(response)
         return response.json()
@@ -254,7 +266,7 @@ class Metax(object):
         response = self._do_get_request(url, HTTPBasicAuth(self.username,
                                                            self.password))
         if response.status_code == 404:
-            self._raise_for_status(response)
+            raise DatasetNotFoundError
         elif response.status_code >= 300:
             response.status_code = 500
             if 'detail' in response.json():
@@ -514,7 +526,6 @@ class Metax(object):
         )
         self._raise_for_status(response)
 
-
     def get_datacite(self, dataset_identifier):
         """Get descriptive metadata in datacite xml format.
 
@@ -535,7 +546,7 @@ class Metax(object):
             )
             raise DataciteGenerationError(detail)
         if response.status_code == 404:
-            raise Exception("Could not find descriptive metadata.")
+            raise DatasetNotFoundError
         self._raise_for_status(response)
 
         # pylint: disable=no-member
