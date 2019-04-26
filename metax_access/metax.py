@@ -59,32 +59,44 @@ class MetaxError(Exception):
 class MetaxConnectionError(MetaxError):
     """Exception raised when Metax is not available"""
     def __init__(self):
-        MetaxError.__init__(self, "No connection to Metax", 503)
+        super(MetaxConnectionError, self).__init__(
+            "No connection to Metax", 503
+        )
 
 
 class DatasetNotFoundError(MetaxError):
     """Exception raised when dataset is not found from metax"""
     def __init__(self, message="Dataset not found"):
-        MetaxError.__init__(self, message, 404)
+        super(DatasetNotFoundError, self).__init__(message, 404)
 
 
 class ContractNotFoundError(MetaxError):
     """Exception raised when contract is not found from metax"""
     def __init__(self):
-        MetaxError.__init__(self, "Contract not found", 404)
+        super(ContractNotFoundError, self).__init__("Contract not found", 404)
 
 
 class DataCatalogNotFoundError(MetaxError):
     """Exception raised when contract is not found from metax"""
     def __init__(self):
-        MetaxError.__init__(self, "Datacatalog not found", 404)
+        super(DataCatalogNotFoundError, self).__init__(
+            "Datacatalog not found", 404
+        )
+
+
+class DirectoryNotFoundError(MetaxError):
+    """Exception raised when directory is not found from metax"""
+    def __init__(self):
+        super(DirectoryNotFoundError, self).__init__(
+            'Directory not found', 404
+        )
 
 
 class DataciteGenerationError(MetaxError):
     """Exception raised when Metax returned 400 for datacite"""
     def __init__(self, message="Datacite generation failed in Metax",
                  status_code=400):
-        MetaxError.__init__(self, message, status_code)
+        super(DataciteGenerationError, self).__init__(message, status_code)
 
 
 class Metax(object):
@@ -694,6 +706,40 @@ class Metax(object):
             verify=self.verify
         )
         return response
+
+    def get_directory_files(self, directory_identifier):
+        """Get files of the directory.
+
+        :directory_identifier(string): identifier attribute of directory
+        :returns: directory files as json
+        """
+        url = self.baseurl + 'directories/' + directory_identifier + '/files'
+
+        response = self._do_get_request(url, HTTPBasicAuth(self.username,
+                                                           self.password))
+
+        if response.status_code == 404:
+            raise DirectoryNotFoundError
+        response.raise_for_status()
+
+        return response.json()
+
+    def get_directory(self, directory_identifier):
+        """Gets directory.
+
+        :directory_identifier(string): identifier attribute of directory
+        :returns: directory
+        """
+        url = self.baseurl + 'directories/' + directory_identifier
+
+        response = self._do_get_request(url, HTTPBasicAuth(self.username,
+                                                           self.password))
+
+        if response.status_code == 404:
+            raise DirectoryNotFoundError
+        response.raise_for_status()
+
+        return response.json()
 
     def _do_get_request(self, url, auth=None):
         """Wrapper function for requests.get() function. Raises
