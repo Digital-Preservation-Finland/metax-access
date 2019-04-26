@@ -5,7 +5,7 @@ import lxml.etree
 from requests import get, post, patch
 from requests.auth import HTTPBasicAuth
 import requests
-from requests.exceptions import HTTPError
+
 
 DS_STATE_INITIALIZED = 0
 DS_STATE_PROPOSED_FOR_DIGITAL_PRESERVATION = 10
@@ -43,7 +43,7 @@ class MetaxError(Exception):
     """Generic invalid usage Exception"""
 
     def __init__(self, message="Metax error", status_code=400, payload=None):
-        Exception.__init__(self)
+        super(MetaxError, self).__init__(message)
         self.message = message
         self.status_code = status_code
         self.payload = payload
@@ -54,9 +54,6 @@ class MetaxError(Exception):
         return_val['error'] = self.message
         return_val['code'] = self.status_code
         return return_val
-
-    def __str__(self):
-        return self.message
 
 
 class MetaxConnectionError(MetaxError):
@@ -150,7 +147,7 @@ class Metax(object):
                                                            self.password))
         if response.status_code == 404:
             raise DatasetNotFoundError
-        self._raise_for_status(response)
+        response.raise_for_status()
         return response.json()
 
     def get_contracts(self, limit="1000000", offset="0", org_filter=None):
@@ -173,7 +170,7 @@ class Metax(object):
                                                            self.password))
         if response.status_code == 404:
             raise ContractNotFoundError
-        self._raise_for_status(response)
+        response.raise_for_status()
         return response.json()
 
     def get_contract(self, pid):
@@ -187,7 +184,7 @@ class Metax(object):
                                                            self.password))
         if response.status_code == 404:
             raise ContractNotFoundError
-        self._raise_for_status(response)
+        response.raise_for_status()
         return response.json()
 
     def get_dataset(self, dataset_id):
@@ -205,7 +202,7 @@ class Metax(object):
             raise DatasetNotFoundError(
                 message="Could not find metadata for dataset: %s" % dataset_id
             )
-        self._raise_for_status(response)
+        response.raise_for_status()
         return response.json()
 
     def get_datacatalog(self, catalog_id):
@@ -219,7 +216,7 @@ class Metax(object):
                                                            self.password))
         if response.status_code == 404:
             raise DataCatalogNotFoundError
-        self._raise_for_status(response)
+        response.raise_for_status()
         return response.json()
 
     def set_contract_for_dataset(self, dataset_id, contract_id,
@@ -243,7 +240,7 @@ class Metax(object):
         response = self._do_patch_request(url, data,
                                           HTTPBasicAuth(self.username,
                                                         self.password))
-        self._raise_for_status(response)
+        response.raise_for_status()
 
     def get_dataset_filetypes(self, dataset_id):
         """Gets the unique triples of file_format, format_version, encoding
@@ -270,9 +267,9 @@ class Metax(object):
             response.status_code = 500
             if 'detail' in response.json():
                 response.reason = response.json()['detail']
-                self._raise_for_status(response)
+                response.raise_for_status()
             else:
-                self._raise_for_status(response)
+                response.raise_for_status()
         for fil in response.json():
             file_format = ''
             format_version = ''
@@ -306,7 +303,7 @@ class Metax(object):
         url = "".join([self.baseurl, "contracts/", str(pid), '/datasets'])
         response = self._do_get_request(url, HTTPBasicAuth(self.username,
                                                            self.password))
-        self._raise_for_status(response)
+        response.raise_for_status()
         return response.json()
 
     def get_file(self, file_id):
@@ -322,7 +319,7 @@ class Metax(object):
 
         if response.status_code == 404:
             raise Exception("Could not find metadata for file: %s" % file_id)
-        self._raise_for_status(response)
+        response.raise_for_status()
         return response.json()
 
     def get_files(self, project):
@@ -380,7 +377,7 @@ class Metax(object):
         if response.status_code == 404:
             raise Exception("Could not retrieve list of additional metadata "
                             "XML for dataset %s: %s" % (entity_id, ns_key_url))
-        self._raise_for_status(response)
+        response.raise_for_status()
         ns_key_list = response.json()
 
         # For each listed namespace, download the xml, create ElementTree, and
@@ -427,7 +424,6 @@ class Metax(object):
                             auth=HTTPBasicAuth(self.username,
                                                self.password),
                             verify=self.verify)
-            self._raise_for_status(response)
             if response.status_code != 201:
                 raise requests.exceptions.HTTPError(
                     "Expected 201 Created, got {} instead".format(
@@ -447,7 +443,7 @@ class Metax(object):
 
         if response.status_code == 404:
             raise Exception("Could not find elastic search data.")
-        self._raise_for_status(response)
+        response.raise_for_status()
         return response.json()
 
     def set_preservation_state(self, dataset_id, state=None,
@@ -492,7 +488,7 @@ class Metax(object):
                                           HTTPBasicAuth(self.username,
                                                         self.password))
         # Raise exception if request fails
-        self._raise_for_status(response)
+        response.raise_for_status()
 
     def set_file_characteristics(self, file_id, file_characteristics):
         """Updates `file_characteristics` attribute for a file in Metax.
@@ -510,7 +506,7 @@ class Metax(object):
                                           HTTPBasicAuth(self.username,
                                                         self.password))
         # Raise exception if request fails
-        self._raise_for_status(response)
+        response.raise_for_status()
 
     def set_preservation_id(self, dataset_identifier):
         """Generates preservation_identifier for dataset with identifier
@@ -523,7 +519,7 @@ class Metax(object):
         response = self._do_post_request(
             rpc_url, auth=HTTPBasicAuth(self.username, self.password)
         )
-        self._raise_for_status(response)
+        response.raise_for_status()
 
     def get_datacite(self, dataset_identifier):
         """Get descriptive metadata in datacite xml format.
@@ -546,7 +542,7 @@ class Metax(object):
             raise DataciteGenerationError(detail)
         if response.status_code == 404:
             raise DatasetNotFoundError
-        self._raise_for_status(response)
+        response.raise_for_status()
 
         # pylint: disable=no-member
         return lxml.etree.fromstring(response.content).getroottree()
@@ -564,7 +560,7 @@ class Metax(object):
 
         if response.status_code == 404:
             raise Exception("Could not find dataset files metadata.")
-        self._raise_for_status(response)
+        response.raise_for_status()
 
         return response.json()
 
@@ -584,7 +580,7 @@ class Metax(object):
 
         if response.status_code == 404:
             raise Exception("Could not find file metadata")
-        self._raise_for_status(response)
+        response.raise_for_status()
 
         return response.json()
 
@@ -739,9 +735,3 @@ class Metax(object):
         except (ValueError, KeyError):
             detail = default
         return detail
-
-    def _raise_for_status(self, response):
-        try:
-            response.raise_for_status()
-        except HTTPError as error:
-            raise MetaxError(str(error), response.status_code)
