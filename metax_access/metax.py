@@ -41,13 +41,11 @@ DS_STATE_ALL_STATES = (
 
 class MetaxError(Exception):
     """Generic invalid usage Exception"""
-    status_code = 400
 
     def __init__(self, message="Metax error", status_code=400, payload=None):
         Exception.__init__(self)
         self.message = message
-        if status_code is not None:
-            self.status_code = status_code
+        self.status_code = status_code
         self.payload = payload
 
     def to_dict(self):
