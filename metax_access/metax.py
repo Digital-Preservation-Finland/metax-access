@@ -1,6 +1,7 @@
 # encoding=utf8
 """Metax interface class."""
 
+import copy
 import lxml.etree
 from requests import get, post, patch
 from requests.auth import HTTPBasicAuth
@@ -234,22 +235,21 @@ class Metax(object):
         response.raise_for_status()
         return response.json()
 
-    def set_contract_for_dataset(self, dataset_id, contract_id,
-                                 contract_identifier):
-        """Sets a contract for a dataset.
+    def patch_dataset(self, dataset_id, data):
+        """Patch a dataset.
 
         :param str dataset_id: id or identifier of the dataset
-        :param str contract_id: id attribute of the contract.
-        :param str contract_identifier: identifier attribute of the contract.
-        :returns:
+        :param dict data: A dataset dictionary that contains only the
+                          key/value pairs that will be updated
+        :returns: ``None``
         """
-        if contract_id != 0:
-            data = {'contract': {
-                'id': contract_id,
-                'identifier': contract_identifier
-            }}
-        else:
-            data = {'contract': None}
+
+        # The original data must be added to updated objects since Metax patch
+        # request will just overwrite them
+        original_data = self.get_dataset(dataset_id)
+        for key in data:
+            if key in original_data:
+                data[key] = _update_nested_dict(original_data[key], data[key])
 
         url = "".join([self.baseurl, "datasets/", dataset_id])
         response = self._do_patch_request(url, data,
@@ -803,3 +803,24 @@ def _get_detailed_error(response, default="Metax error"):
     except (ValueError, KeyError):
         detail = default
     return detail
+
+
+def _update_nested_dict(original, update):
+    """Update nested dictionary. The keys of update dictionary are appended to
+    original dictionary. If original already contains the key, it will be
+    overwritten. If key value is dictionary, the original value is updated with
+    the value from update dictionary.
+
+    :param original: Original dictionary
+    :param update: Dictionary that contains only key/value pairs to be updated
+    :returns: Updated dictionary
+    """
+    updated_dict = copy.deepcopy(original)
+
+    for key in update:
+        if key in original and isinstance(update[key], dict):
+            updated_dict[key] = _update_nested_dict(original[key], update[key])
+        else:
+            updated_dict[key] = update[key]
+
+    return updated_dict

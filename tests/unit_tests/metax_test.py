@@ -203,20 +203,25 @@ def test_get_dataset_filestypes():
 
 
 @pytest.mark.usefixtures('testmetax')
-def test_set_contract_for_dataset():
-    """Test get_xml function. Reads some test xml from testmetax checks that
-    the function returns dictionary with correct items
+def test_patch_dataset():
+    """Test patch_dataset function. Patch a dataset with few updated key/value
+    pairs and check that correct HTTP request was sent to Metax.
 
     :returns: None
     """
-
-    METAX_CLIENT.set_contract_for_dataset('dataset_id',
-                                          'contract_id',
-                                          'contract_identifier')
+    update = {
+        'foo1': 'bar1',
+        'research_dataset': {
+            'foo2': 'bar2'
+        }
+    }
+    METAX_CLIENT.patch_dataset('mets_test_dataset', update)
     assert httpretty.last_request().method == 'PATCH'
     request_body = json.loads(httpretty.last_request().body)
-    assert request_body['contract']['id'] == 'contract_id'
-    assert request_body['contract']['identifier'] == 'contract_identifier'
+
+    assert isinstance(request_body['research_dataset']['provenance'], list)
+    assert request_body['research_dataset']['foo2'] == 'bar2'
+    assert request_body['foo1'] == 'bar1'
 
 
 @pytest.mark.usefixtures('testmetax')
