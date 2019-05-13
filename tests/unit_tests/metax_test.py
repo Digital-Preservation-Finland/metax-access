@@ -379,23 +379,26 @@ def test_set_preservation_state():
 
 
 @pytest.mark.usefixtures('testmetax')
-def test_set_file_characteristics():
-    """Test set_file_characteristics function. Metadata in Metax is modified by
-    sending HTTP PATCH request with modified metadata in JSON format. This test
-    checks that correct HTTP request is sent to Metax. The effect of the
-    request is not tested.
+def test_patch_file():
+    """Test patch_file function. Metadata in Metax is modified by sending HTTP
+    PATCH request with modified metadata in JSON format. This test checks that
+    correct HTTP request is sent to Metax. The effect of the request is not
+    tested.
 
     :returns: None
     """
-    sample_data = {"file_format": "text/plain",
-                   "format_version": "1.0",
-                   "encoding": "UTF-8"}
-    METAX_CLIENT.set_file_characteristics('pid:urn:set_file_characteristics_1',
-                                          sample_data)
+    sample_data = {
+        "file_characteristics": {
+            "file_format": "text/plain",
+            "format_version": "1.0",
+            "encoding": "UTF-8"
+        }
+    }
+    METAX_CLIENT.patch_file('pid:urn:set_file_characteristics_1', sample_data)
 
     # Check the body of last HTTP request
     request_body = json.loads(httpretty.last_request().body)
-    assert request_body["file_characteristics"] == sample_data
+    assert request_body == sample_data
 
     # Check the method of last HTTP request
     assert httpretty.last_request().method == 'PATCH'

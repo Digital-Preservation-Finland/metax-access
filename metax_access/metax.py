@@ -507,22 +507,26 @@ class Metax(object):
         # Raise exception if request fails
         response.raise_for_status()
 
-    def set_file_characteristics(self, file_id, file_characteristics):
-        """Updates `file_characteristics` attribute for a file in Metax.
+    def patch_file(self, file_id, data):
+        """Patch file metadata.
 
-        :param str file_id: id or identifier attribute of file
-        :param dict file_characteristics: Dict object that contains new data
-                                          for `file_characteristics` attribute
+        :param str file_id: id or identifier of the file
+        :param dict data: A file metadata dictionary that contains only the
+                          key/value pairs that will be updated
         :returns: ``None``
         """
 
-        url = self.baseurl + 'files/' + file_id
-        data = {"file_characteristics": file_characteristics}
+        # The original data must be added to updated objects since Metax patch
+        # request will just overwrite them
+        original_data = self.get_file(file_id)
+        for key in data:
+            if key in original_data:
+                data[key] = _update_nested_dict(original_data[key], data[key])
 
+        url = "".join([self.baseurl, "files/", file_id])
         response = self._do_patch_request(url, data,
                                           HTTPBasicAuth(self.username,
                                                         self.password))
-        # Raise exception if request fails
         response.raise_for_status()
 
     def set_preservation_id(self, dataset_id):
