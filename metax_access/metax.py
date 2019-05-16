@@ -542,6 +542,15 @@ class Metax(object):
             rpc_url, auth=HTTPBasicAuth(self.username, self.password)
         )
 
+        if response.status_code == 400:
+            detail = _get_detailed_error(
+                response,
+                default='Assigning preservation identifier failed in Metax'
+            )
+            raise DataciteGenerationError(detail)
+        elif response.status_code == 404:
+            raise DatasetNotFoundError
+
         response.raise_for_status()
 
     def get_datacite(self, dataset_id):
@@ -563,8 +572,9 @@ class Metax(object):
                 default='Datacite generation failed in Metax'
             )
             raise DataciteGenerationError(detail)
-        if response.status_code == 404:
+        elif response.status_code == 404:
             raise DatasetNotFoundError
+
         response.raise_for_status()
 
         # pylint: disable=no-member
