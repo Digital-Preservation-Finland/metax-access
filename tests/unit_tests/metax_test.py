@@ -449,14 +449,15 @@ def test_get_xml_returns_correct_error_when_http_503_error():
             METAX_CLIENT.get_xml('who', 'cares')
 
 
-def test_set_preservation_state_returns_correct_error_when_http_503_error():
+@requests_mock.Mocker()
+def test_set_preservation_state_returns_correct_error_when_http_503_error(mocker):
     """Test that set_preservation_state function throws a MetaxConnectionError
-    exception when requests.get() returns http 503 error
+    exception when requests.patch() returns http 503 error
     """
-    with mock.patch('metax_access.metax.patch',
-                    side_effect=mocked_503_response):
-        with pytest.raises(MetaxConnectionError):
-            METAX_CLIENT.set_preservation_state('foobar')
+    mocker.get(METAX_URL + '/rest/v1/datasets/foobar', json={})
+    mocker.patch(METAX_URL + '/rest/v1/datasets/foobar', status_code=503)
+    with pytest.raises(MetaxConnectionError):
+        METAX_CLIENT.set_preservation_state('foobar', '10', 'foo', 'bar')
 
 
 def test_get_elasticsearchdata_returns_correct_error_when_http_503_error():

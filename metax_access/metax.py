@@ -466,8 +466,8 @@ class Metax(object):
     def set_preservation_state(self, dataset_id, state=None,
                                user_description=None,
                                system_description=None):
-        """Set values of attributes `preservation_state` and
-        `preservation_state_description` for dataset in Metax
+        """Set values of `preservation_state`, `preservation_state_description`
+        and `preservation_description` for dataset in Metax.
 
         0 = Initialized
         10 = Proposed for digital preservation
@@ -494,18 +494,27 @@ class Metax(object):
         :returns: ``None``
         """
         url = self.baseurl + 'datasets/' + dataset_id
-        data = {}
-        if state is not None:
-            data = {"preservation_state": state}
-        if user_description is not None:
-            data["preservation_reason_description"] = user_description
-        if system_description is not None:
-            data["preservation_description"] = system_description
-        response = self._do_patch_request(url, data,
-                                          HTTPBasicAuth(self.username,
-                                                        self.password))
-        # Raise exception if request fails
-        response.raise_for_status()
+        dataset = self.get_dataset(dataset_id)
+        data = {
+            'preservation_state': state,
+            'preservation_reason_description': user_description,
+            'preservation_description': system_description
+        }
+
+        # Remove "None" values
+        data = {key: value for key, value in data.items() if value is not None}
+
+        # Remove unchanged keys/value pairs to avoid
+        # modifying preservation_state_timestamp
+        data = {key: value for key, value in data.items()
+                if value is not dataset.get(key, None)}
+
+        if data:
+            response = self._do_patch_request(url, data,
+                                              HTTPBasicAuth(self.username,
+                                                            self.password))
+            # Raise exception if request fails
+            response.raise_for_status()
 
     def patch_file(self, file_id, data):
         """Patch file metadata.
