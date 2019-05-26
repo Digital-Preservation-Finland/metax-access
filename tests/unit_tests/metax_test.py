@@ -4,10 +4,6 @@
 import json
 import httpretty
 import lxml.etree
-try:
-    import mock
-except ImportError:
-    from unittest import mock
 import pytest
 from metax_access.metax import (
     Metax, MetaxConnectionError,
@@ -20,6 +16,7 @@ from metax_access.metax import (
 import requests_mock
 
 METAX_URL = 'https://foobar'
+METAX_REST_URL = METAX_URL+'/rest/v1'
 METAX_USER = 'tpas'
 METAX_PASSWORD = 'password'
 METAX_CLIENT = Metax(METAX_URL, METAX_USER, METAX_PASSWORD, verify=False)
@@ -27,8 +24,8 @@ METAX_CLIENT = Metax(METAX_URL, METAX_USER, METAX_PASSWORD, verify=False)
 
 @pytest.mark.usefixtures('testmetax')
 def test_get_datasets():
-    """Test get_dataset function. Reads sample dataset JSON from testmetax and
-    checks that returned dict contains the correct values.
+    """Test get_datasets function. Reads sample datasets JSON from testmetax
+    and checks that returned dict contains the correct values.
 
     :returns: None
     """
@@ -36,28 +33,26 @@ def test_get_datasets():
     assert len(datasets["results"]) == 2
 
 
-@pytest.mark.usefixtures('testmetax')
 # pylint: disable=invalid-name
-def test_get_datasets_http_503_error():
+@requests_mock.Mocker()
+def test_get_datasets_http_503_error(mocker):
     """Test that get_datasets function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
-    with mock.patch('metax_access.metax.get',
-                    side_effect=mocked_503_response):
-        with pytest.raises(MetaxConnectionError):
-            METAX_CLIENT.get_datasets()
+    mocker.get(METAX_REST_URL + '/datasets', status_code=503)
+    with pytest.raises(MetaxConnectionError):
+        METAX_CLIENT.get_datasets()
 
 
-@pytest.mark.usefixtures('testmetax')
 # pylint: disable=invalid-name
-def test_get_datasets_http_404_error():
-    """Test that get_elasticsearchdata function throws a MetaxConnectionError
-    exception when requests.get() returns http 503 error
+@requests_mock.Mocker()
+def test_get_datasets_http_404_error(mocker):
+    """Test that get_datasets function throws a DatasetNotFoundError
+    exception when requests.get() returns http 404 error
     """
-    with mock.patch('metax_access.metax.get',
-                    side_effect=mocked_404_response):
-        with pytest.raises(DatasetNotFoundError):
-            METAX_CLIENT.get_datasets()
+    mocker.get(METAX_REST_URL + '/datasets', status_code=404)
+    with pytest.raises(DatasetNotFoundError):
+        METAX_CLIENT.get_datasets()
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -74,8 +69,8 @@ def test_get_dataset():
 
 @pytest.mark.usefixtures('testmetax')
 def test_get_contracts():
-    """Test get_dataset function. Reads sample dataset JSON from testmetax and
-    checks that returned dict contains the correct values.
+    """Test get_contracts function. Reads sample contracts JSON from testmetax
+    and checks that returned dict contains the correct values.
 
     :returns: None
     """
@@ -83,32 +78,30 @@ def test_get_contracts():
     assert len(contracts['results']) == 2
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_get_contracts_503_error():
+@requests_mock.Mocker()
+def test_get_contracts_503_error(mocker):
     """Test that get_contracts function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
-    with mock.patch('metax_access.metax.get',
-                    side_effect=mocked_503_response):
-        with pytest.raises(MetaxConnectionError):
-            METAX_CLIENT.get_contracts()
+    mocker.get(METAX_REST_URL+'/contracts', status_code=503)
+    with pytest.raises(MetaxConnectionError):
+        METAX_CLIENT.get_contracts()
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_get_contracts_404_error():
+@requests_mock.Mocker()
+def test_get_contracts_404_error(mocker):
     """Test that get_contracts function throws a ContractNotFoundError
     exception when requests.get() returns http 503 error
     """
-    with mock.patch('metax_access.metax.get',
-                    side_effect=mocked_404_response):
-        with pytest.raises(ContractNotFoundError):
-            METAX_CLIENT.get_contracts()
+    mocker.get(METAX_REST_URL+'/contracts', status_code=404)
+    with pytest.raises(ContractNotFoundError):
+        METAX_CLIENT.get_contracts()
 
 
 @pytest.mark.usefixtures('testmetax')
 def test_get_contract():
-    """Test get_dataset function. Reads sample dataset JSON from testmetax and
-    checks that returned dict contains the correct values.
+    """Test get_contract function. Reads sample contract JSON from testmetax
+    and checks that returned dict contains the correct values.
 
     :returns: None
     """
@@ -119,30 +112,24 @@ def test_get_contract():
         == 'urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001'
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_get_contract_503_error():
-    """Test that get_contracts function throws a MetaxConnectionError
+@requests_mock.Mocker()
+def test_get_contract_503_error(mocker):
+    """Test that get_contract function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
-    with mock.patch('metax_access.metax.get',
-                    side_effect=mocked_503_response):
-        with pytest.raises(MetaxConnectionError):
-            METAX_CLIENT.get_contract(
-                'urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001'
-            )
+    mocker.get(METAX_REST_URL+'/contracts/foo', status_code=503)
+    with pytest.raises(MetaxConnectionError):
+        METAX_CLIENT.get_contract('foo')
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_get_contract_404_error():
-    """Test that get_contracts function throws a ContractNotFoundError
-    exception when requests.get() returns http 503 error
+@requests_mock.Mocker()
+def test_get_contract_404_error(mocker):
+    """Test that get_contract function throws a ContractNotFoundError
+    exception when requests.get() returns http 404 error
     """
-    with mock.patch('metax_access.metax.get',
-                    side_effect=mocked_404_response):
-        with pytest.raises(ContractNotFoundError):
-            METAX_CLIENT.get_contract(
-                'urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001'
-            )
+    mocker.get(METAX_REST_URL+'/contracts/foo', status_code=404)
+    with pytest.raises(ContractNotFoundError):
+        METAX_CLIENT.get_contract('foo')
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -159,30 +146,24 @@ def test_get_datacatalog():
         == 'urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2'
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_get_catalog_503_error():
+@requests_mock.Mocker()
+def test_get_catalog_503_error(mocker):
     """Test that get_datacatalog function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
-    with mock.patch('metax_access.metax.get',
-                    side_effect=mocked_503_response):
-        with pytest.raises(MetaxConnectionError):
-            METAX_CLIENT.get_datacatalog(
-                'urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2'
-            )
+    mocker.get(METAX_REST_URL+'/datacatalogs/foo', status_code=503)
+    with pytest.raises(MetaxConnectionError):
+        METAX_CLIENT.get_datacatalog('foo')
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_get_catalog_404_error():
-    """Test that get_datacatalog function throws a ContractNotFoundError
-    exception when requests.get() returns http 503 error
+@requests_mock.Mocker()
+def test_get_catalog_404_error(mocker):
+    """Test that get_datacatalog function throws a DataCatalogNotFoundError
+    exception when requests.get() returns http 404 error
     """
-    with mock.patch('metax_access.metax.get',
-                    side_effect=mocked_404_response):
-        with pytest.raises(DataCatalogNotFoundError):
-            METAX_CLIENT.get_datacatalog(
-                'urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2'
-            )
+    mocker.get(METAX_REST_URL+'/datacatalogs/foo', status_code=404)
+    with pytest.raises(DataCatalogNotFoundError):
+        METAX_CLIENT.get_datacatalog('foo')
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -319,9 +300,8 @@ def test_get_datacite_fails(mocker):
     # Mock metax dataset request response. Response body contains simplified
     # dataset metadata.
     mocker.get(
-        METAX_URL +
-        '/rest/v1/datasets/datacite_test_1_400',
-        json={"identifier": "datacite_test_1_400"}
+        METAX_REST_URL + '/datasets/foo',
+        json={"identifier": "foo"}
     )
 
     # Mock datacite request response. Mocked response has status code 400, and
@@ -334,22 +314,19 @@ def test_get_datacite_fails(mocker):
             "error_identifier": "2019-03-28T12:39:01-f0a7e3ae"
         }
     mocker.get(
-        METAX_URL +
-        '/rest/v1/datasets/datacite_test_1_400?dataset_format=datacite',
+        METAX_REST_URL + '/datasets/foo?dataset_format=datacite',
         json=response,
         status_code=400
     )
 
     # Mock set_preservation_identifier API request
     mocker.post(
-        METAX_URL +
-        '/rpc/datasets/set_preservation_identifier'
-        '?identifier=datacite_test_1_400',
+        METAX_URL + '/rpc/datasets/set_preservation_identifier?identifier=foo',
         text='foobar',
     )
 
     with pytest.raises(DataciteGenerationError):
-        METAX_CLIENT.get_datacite("datacite_test_1_400")
+        METAX_CLIENT.get_datacite("foo")
 
 
 @pytest.mark.usefixtures('testmetax')
@@ -404,49 +381,26 @@ def test_patch_file():
     assert httpretty.last_request().method == 'PATCH'
 
 
-# pylint: disable=unused-argument
-def mocked_503_response(*args, **kwargs):
-    """Return mocked HTTP 503 response"""
-    # pylint: disable=too-few-public-methods
-    class MockResponse(object):
-        """Mocked response class"""
-        def __init__(self, status_code):
-            self.status_code = status_code
-
-    return MockResponse(503)
-
-
-# pylint: disable=unused-argument
-def mocked_404_response(*args, **kwargs):
-    """Return mocked HTTP 404 response"""
-    # pylint: disable=too-few-public-methods
-    class MockResponse(object):
-        """Mocked response class"""
-        def __init__(self, status_code):
-            self.status_code = status_code
-
-    return MockResponse(404)
-
-
 # pylint: disable=invalid-name
-def test_get_dataset_returns_correct_error_when_http_503_error():
+@requests_mock.Mocker()
+def test_get_dataset_returns_correct_error_when_http_503_error(mocker):
     """Test that get_dataset function throws a MetaxConnectionError exception
     when requests.get() returns http 503 error
     """
-    with mock.patch('metax_access.metax.get', side_effect=mocked_503_response):
-        with pytest.raises(MetaxConnectionError):
-            METAX_CLIENT.get_dataset('who_cares')
+    mocker.get(METAX_REST_URL + '/datasets/foo', status_code=503)
+    with pytest.raises(MetaxConnectionError):
+        METAX_CLIENT.get_dataset('foo')
 
 
 # pylint: disable=invalid-name
-def test_get_xml_returns_correct_error_when_http_503_error():
+@requests_mock.Mocker()
+def test_get_xml_returns_correct_error_when_http_503_error(mocker):
     """Test that get_xml function throws a MetaxConnectionError exception
     when requests.get() returns http 503 error
     """
-    with mock.patch('metax_access.metax.get',
-                    side_effect=mocked_503_response):
-        with pytest.raises(MetaxConnectionError):
-            METAX_CLIENT.get_xml('who', 'cares')
+    mocker.get(METAX_REST_URL + '/files/foo/xml', status_code=503)
+    with pytest.raises(MetaxConnectionError):
+        METAX_CLIENT.get_xml('files', 'foo')
 
 
 @requests_mock.Mocker()
@@ -454,20 +408,24 @@ def test_set_preservation_state_returns_correct_error_when_http_503_error(mocker
     """Test that set_preservation_state function throws a MetaxConnectionError
     exception when requests.patch() returns http 503 error
     """
-    mocker.get(METAX_URL + '/rest/v1/datasets/foobar', json={})
-    mocker.patch(METAX_URL + '/rest/v1/datasets/foobar', status_code=503)
+    mocker.get(METAX_REST_URL + '/datasets/foobar', json={})
+    mocker.patch(METAX_REST_URL + '/datasets/foobar', status_code=503)
     with pytest.raises(MetaxConnectionError):
         METAX_CLIENT.set_preservation_state('foobar', '10', 'foo', 'bar')
 
 
-def test_get_elasticsearchdata_returns_correct_error_when_http_503_error():
+@requests_mock.Mocker()
+def test_get_elasticsearchdata_returns_correct_error_when_http_503_error(mocker):
     """Test that get_elasticsearchdata function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
-    with mock.patch('metax_access.metax.get',
-                    side_effect=mocked_503_response):
-        with pytest.raises(MetaxConnectionError):
-            METAX_CLIENT.get_elasticsearchdata()
+
+    mocker.get(
+        METAX_URL + "/es/reference_data/use_category/_search?pretty&size=100",
+        status_code=503
+    )
+    with pytest.raises(MetaxConnectionError):
+        METAX_CLIENT.get_elasticsearchdata()
 
 
 @requests_mock.Mocker()
@@ -475,21 +433,23 @@ def test_get_datacite_returns_correct_error_when_http_503_error(mocker):
     """Test that get_datacite function throws a MetaxConnectionError exception
     when requests.get() returns http 503 error
     """
-    mocker.get(METAX_URL + '/rest/v1/datasets/x', json={'identifier': 'y'})
-    with mock.patch('metax_access.metax.post',
-                    side_effect=mocked_503_response):
-        with pytest.raises(MetaxConnectionError):
-            METAX_CLIENT.get_datacite("x")
+    mocker.get(METAX_REST_URL + '/datasets/foo', json={'identifier': 'bar'})
+    mocker.post(
+        METAX_URL + '/rpc/datasets/set_preservation_identifier?identifier=bar',
+        status_code=503
+    )
+    with pytest.raises(MetaxConnectionError):
+        METAX_CLIENT.get_datacite("foo")
 
 
-def test_get_dataset_files_returns_correct_error_when_http_503_error():
+@requests_mock.Mocker()
+def test_get_dataset_files_returns_correct_error_when_http_503_error(mocker):
     """Test that get_dataset_files function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
-    with mock.patch('metax_access.metax.get',
-                    side_effect=mocked_503_response):
-        with pytest.raises(MetaxConnectionError):
-            METAX_CLIENT.get_dataset_files("x")
+    mocker.get(METAX_REST_URL+'/datasets/foo/files', status_code=503)
+    with pytest.raises(MetaxConnectionError):
+        METAX_CLIENT.get_dataset_files("foo")
 
 
 @httpretty.activate
