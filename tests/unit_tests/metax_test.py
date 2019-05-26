@@ -33,9 +33,8 @@ def test_get_datasets():
     assert len(datasets["results"]) == 2
 
 
-# pylint: disable=invalid-name
 @requests_mock.Mocker()
-def test_get_datasets_http_503_error(mocker):
+def test_get_datasets_http_503(mocker):
     """Test that get_datasets function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
@@ -44,9 +43,8 @@ def test_get_datasets_http_503_error(mocker):
         METAX_CLIENT.get_datasets()
 
 
-# pylint: disable=invalid-name
 @requests_mock.Mocker()
-def test_get_datasets_http_404_error(mocker):
+def test_get_datasets_http_404(mocker):
     """Test that get_datasets function throws a DatasetNotFoundError
     exception when requests.get() returns http 404 error
     """
@@ -79,7 +77,7 @@ def test_get_contracts():
 
 
 @requests_mock.Mocker()
-def test_get_contracts_503_error(mocker):
+def test_get_contracts_http_503(mocker):
     """Test that get_contracts function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
@@ -89,7 +87,7 @@ def test_get_contracts_503_error(mocker):
 
 
 @requests_mock.Mocker()
-def test_get_contracts_404_error(mocker):
+def test_get_contracts_http_404(mocker):
     """Test that get_contracts function throws a ContractNotFoundError
     exception when requests.get() returns http 503 error
     """
@@ -113,7 +111,7 @@ def test_get_contract():
 
 
 @requests_mock.Mocker()
-def test_get_contract_503_error(mocker):
+def test_get_contract_http_503(mocker):
     """Test that get_contract function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
@@ -123,7 +121,7 @@ def test_get_contract_503_error(mocker):
 
 
 @requests_mock.Mocker()
-def test_get_contract_404_error(mocker):
+def test_get_contract_http_404(mocker):
     """Test that get_contract function throws a ContractNotFoundError
     exception when requests.get() returns http 404 error
     """
@@ -147,7 +145,7 @@ def test_get_datacatalog():
 
 
 @requests_mock.Mocker()
-def test_get_catalog_503_error(mocker):
+def test_get_catalog_http_503(mocker):
     """Test that get_datacatalog function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
@@ -157,7 +155,7 @@ def test_get_catalog_503_error(mocker):
 
 
 @requests_mock.Mocker()
-def test_get_catalog_404_error(mocker):
+def test_get_catalog_http_404(mocker):
     """Test that get_datacatalog function throws a DataCatalogNotFoundError
     exception when requests.get() returns http 404 error
     """
@@ -381,9 +379,8 @@ def test_patch_file():
     assert httpretty.last_request().method == 'PATCH'
 
 
-# pylint: disable=invalid-name
 @requests_mock.Mocker()
-def test_get_dataset_returns_correct_error_when_http_503_error(mocker):
+def test_get_dataset_http_503(mocker):
     """Test that get_dataset function throws a MetaxConnectionError exception
     when requests.get() returns http 503 error
     """
@@ -392,9 +389,8 @@ def test_get_dataset_returns_correct_error_when_http_503_error(mocker):
         METAX_CLIENT.get_dataset('foo')
 
 
-# pylint: disable=invalid-name
 @requests_mock.Mocker()
-def test_get_xml_returns_correct_error_when_http_503_error(mocker):
+def test_get_xml_http_503(mocker):
     """Test that get_xml function throws a MetaxConnectionError exception
     when requests.get() returns http 503 error
     """
@@ -404,7 +400,8 @@ def test_get_xml_returns_correct_error_when_http_503_error(mocker):
 
 
 @requests_mock.Mocker()
-def test_set_preservation_state_returns_correct_error_when_http_503_error(mocker):
+# pylint: disable=invalid-name
+def test_set_preservation_state_http_503(mocker):
     """Test that set_preservation_state function throws a MetaxConnectionError
     exception when requests.patch() returns http 503 error
     """
@@ -415,7 +412,8 @@ def test_set_preservation_state_returns_correct_error_when_http_503_error(mocker
 
 
 @requests_mock.Mocker()
-def test_get_elasticsearchdata_returns_correct_error_when_http_503_error(mocker):
+# pylint: disable=invalid-name
+def test_get_elasticsearchdata_http_503(mocker):
     """Test that get_elasticsearchdata function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
@@ -429,7 +427,7 @@ def test_get_elasticsearchdata_returns_correct_error_when_http_503_error(mocker)
 
 
 @requests_mock.Mocker()
-def test_get_datacite_returns_correct_error_when_http_503_error(mocker):
+def test_get_datacite_http_503(mocker):
     """Test that get_datacite function throws a MetaxConnectionError exception
     when requests.get() returns http 503 error
     """
@@ -443,7 +441,7 @@ def test_get_datacite_returns_correct_error_when_http_503_error(mocker):
 
 
 @requests_mock.Mocker()
-def test_get_dataset_files_returns_correct_error_when_http_503_error(mocker):
+def test_get_dataset_files_http_503(mocker):
     """Test that get_dataset_files function throws a MetaxConnectionError
     exception when requests.get() returns http 503 error
     """
