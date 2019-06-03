@@ -507,7 +507,7 @@ class Metax(object):
         # Remove unchanged keys/value pairs to avoid
         # modifying preservation_state_timestamp
         data = {key: value for key, value in data.items()
-                if value is not dataset.get(key, None)}
+                if value != dataset.get(key, None)}
 
         if data:
             response = self._do_patch_request(url, data,
