@@ -65,6 +65,12 @@ class MetaxConnectionError(MetaxError):
         )
 
 
+class FileNotFoundError(MetaxError):
+    """Exception raised when file is not found from metax"""
+    def __init__(self, message="File not found"):
+        super(FileNotFoundError, self).__init__(message, 404)
+
+
 class DatasetNotFoundError(MetaxError):
     """Exception raised when dataset is not found from metax"""
     def __init__(self, message="Dataset not found"):
@@ -333,7 +339,9 @@ class Metax(object):
                                                            self.password))
 
         if response.status_code == 404:
-            raise Exception("Could not find metadata for file: %s" % file_id)
+            raise FileNotFoundError(
+                "Could not find metadata for file: %s" % file_id
+            )
         response.raise_for_status()
         return response.json()
 
@@ -391,8 +399,10 @@ class Metax(object):
                                         HTTPBasicAuth(self.username,
                                                       self.password))
         if response.status_code == 404:
-            raise Exception("Could not retrieve list of additional metadata "
-                            "XML for dataset %s: %s" % (entity_id, ns_key_url))
+            raise MetaxError(
+                "Could not retrieve list of additional metadata XML for "
+                "dataset %s: %s" % (entity_id, ns_key_url)
+            )
         response.raise_for_status()
         ns_key_list = response.json()
 
@@ -404,9 +414,10 @@ class Metax(object):
                                             HTTPBasicAuth(self.username,
                                                           self.password))
             if not response.status_code == 200:
-                raise Exception("Could not retrieve additional metadata XML "
-                                "for dataset %s: %s" % (entity_id,
-                                                        ns_key_url + query))
+                raise MetaxError(
+                    "Could not retrieve additional metadata XML for "
+                    "dataset %s: %s" % (entity_id, ns_key_url + query)
+                )
             # pylint: disable=no-member
             xml_dict[ns_key] = lxml.etree.fromstring(response.content)\
                 .getroottree()
@@ -444,7 +455,9 @@ class Metax(object):
             if response.status_code != 201:
                 raise requests.exceptions.HTTPError(
                     "Expected 201 Created, got {} instead".format(
-                        response.status_code))
+                        response.status_code
+                    )
+                )
             return True
         else:
             return False
@@ -459,7 +472,7 @@ class Metax(object):
         response = self._do_get_request(url)
 
         if response.status_code == 404:
-            raise Exception("Could not find elastic search data.")
+            raise MetaxError("Could not find elastic search data.")
         response.raise_for_status()
         return response.json()
 
@@ -605,7 +618,7 @@ class Metax(object):
                                                            self.password))
 
         if response.status_code == 404:
-            raise Exception("Could not find dataset files metadata.")
+            raise MetaxError("Could not find dataset files metadata.")
         response.raise_for_status()
 
         return response.json()
@@ -625,7 +638,7 @@ class Metax(object):
         )
 
         if response.status_code == 404:
-            raise Exception("Could not find file metadata")
+            raise MetaxError("Could not find file metadata")
         response.raise_for_status()
 
         return response.json()
