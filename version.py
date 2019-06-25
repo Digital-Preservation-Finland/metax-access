@@ -30,7 +30,6 @@ PKG_INFO_FILENAME = os.path.join(PROJECT_ROOT, 'PKG-INFO')
 def call_git_describe():
     """docstring"""
     cmd = 'git describe --abbrev --tags --match v[0-9]*'.split()
-    print >> sys.stderr, ' '.join(cmd)
     proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
     stdout = proc.communicate()[0]
     return stdout.strip()
@@ -46,10 +45,6 @@ def write_pkg_info():
     else:
         version = '0.0'
 
-    #print >> sys.stderr, "%s: Writing version info to '%s'..." % (
-    #        PKG_INFO_FILENAME)
-    print >> sys.stderr, "Writing version info to '%s'..." % (
-            PKG_INFO_FILENAME)
     with open(PKG_INFO_FILENAME, 'w') as info:
         info.write("Metadata-Version: 1.0\n")
         info.write("Name: microservice\n")
@@ -77,16 +72,11 @@ def get_version():
         else:
             version = '0.0'
 
-        print >>sys.stderr, "Version number from GIT repo: " + version
 
     else:
         write_pkg_info()
         with open(os.path.join(PKG_INFO_FILENAME)) as f:
             version = VERSION_RE.search(f.read()).group(1)
-        print >> sys.stderr, "Version number from PKG-INFO: " + version
 
     return version
 
-
-if __name__ == '__main__':
-    print "__version__ = '%s'" % get_version()

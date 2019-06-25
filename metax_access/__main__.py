@@ -12,36 +12,36 @@ def post(metax_client, args):
 
     if args.resource == 'dataset':
         response = metax_client.post_dataset(data)
-        print json.dumps(response.json(), indent=4)
+        print(json.dumps(response.json(), indent=4))
     elif args.resource == 'file':
         response = metax_client.post_file(data)
-        print json.dumps(response.json(), indent=4)
+        print(json.dumps(response.json(), indent=4))
     elif args.resource == 'contract':
         response = metax_client.post_contract(data)
-        print json.dumps(response.json(), indent=4)
+        print(json.dumps(response.json(), indent=4))
 
 
 def get(metax_client, args):
     """Get file/dataset"""
     if args.resource == 'dataset':
-        print json.dumps(metax_client.get_dataset(args.identifier), indent=4)
+        print(json.dumps(metax_client.get_dataset(args.identifier), indent=4))
     elif args.resource == 'file':
-        print json.dumps(metax_client.get_file(args.identifier), indent=4)
+        print(json.dumps(metax_client.get_file(args.identifier), indent=4))
     elif args.resource == 'contract':
-        print json.dumps(metax_client.get_contract(args.identifier), indent=4)
+        print(json.dumps(metax_client.get_contract(args.identifier), indent=4))
 
 
 def delete(metax_client, args):
     """Delete file/dataset"""
     if args.resource == 'dataset':
         response = metax_client.delete_dataset(args.identifier)
-        print 'Status:' + str(response.status_code)
+        print('Status:' + str(response.status_code))
     elif args.resource == 'file':
         response = metax_client.delete_file(args.identifier)
-        print 'Status:' + str(response.status_code)
+        print('Status:' + str(response.status_code))
     elif args.resource == 'contract':
         response = metax_client.delete_contract(args.identifier)
-        print 'Status:' + str(response.status_code)
+        print('Status:' + str(response.status_code))
 
 
 def main():
