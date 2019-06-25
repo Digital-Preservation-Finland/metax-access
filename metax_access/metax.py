@@ -208,6 +208,28 @@ class Metax(object):
         response.raise_for_status()
         return response.json()
 
+    def patch_contract(self, contract_id, data):
+        """Patch a contract.
+
+        :param str contract_id: id or identifier of the contract
+        :param dict data: A contract metadata dictionary that contains only the
+                          key/value pairs that will be updated
+        :returns: ``None``
+        """
+
+        # The original data must be added to updated objects since Metax patch
+        # request will just overwrite them
+        original_data = self.get_contract(contract_id)
+        for key in data:
+            if isinstance(data[key], dict) and key in original_data:
+                data[key] = _update_nested_dict(original_data[key], data[key])
+
+        url = "".join([self.baseurl, "contracts/", contract_id])
+        response = self._do_patch_request(url, data,
+                                          HTTPBasicAuth(self.username,
+                                                        self.password))
+        response.raise_for_status()
+
     def get_dataset(self, dataset_id):
         """Get dataset metadata from Metax.
 
@@ -253,7 +275,7 @@ class Metax(object):
         # request will just overwrite them
         original_data = self.get_dataset(dataset_id)
         for key in data:
-            if key in original_data:
+            if isinstance(data[key], dict) and key in original_data:
                 data[key] = _update_nested_dict(original_data[key], data[key])
 
         url = "".join([self.baseurl, "datasets/", dataset_id])
@@ -541,7 +563,7 @@ class Metax(object):
         # request will just overwrite them
         original_data = self.get_file(file_id)
         for key in data:
-            if key in original_data:
+            if isinstance(data[key], dict) and key in original_data:
                 data[key] = _update_nested_dict(original_data[key], data[key])
 
         url = "".join([self.baseurl, "files/", file_id])

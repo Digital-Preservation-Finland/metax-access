@@ -22,7 +22,7 @@ def post(metax_client, args):
 
 
 def get(metax_client, args):
-    """Get file/dataset"""
+    """Get file, dataset, or contract"""
     if args.resource == 'dataset':
         print(json.dumps(metax_client.get_dataset(args.identifier), indent=4))
     elif args.resource == 'file':
@@ -32,7 +32,7 @@ def get(metax_client, args):
 
 
 def delete(metax_client, args):
-    """Delete file/dataset"""
+    """Delete file, dataset, or contract"""
     if args.resource == 'dataset':
         response = metax_client.delete_dataset(args.identifier)
         print('Status:' + str(response.status_code))
@@ -42,6 +42,24 @@ def delete(metax_client, args):
     elif args.resource == 'contract':
         response = metax_client.delete_contract(args.identifier)
         print('Status:' + str(response.status_code))
+
+
+def patch(metax_client, args):
+    """Patch file, dataset, or contract"""
+    with open(args.filepath) as open_file:
+        data = json.load(open_file)
+    if args.resource == 'dataset':
+        print(
+            json.dumps(
+                metax_client.patch_dataset(args.identifier, data), indent=4
+            )
+        )
+    if args.resource == 'file':
+        print(
+            json.dumps(
+                metax_client.patch_file(args.identifier, data), indent=4
+            )
+        )
 
 
 def main():
@@ -85,6 +103,19 @@ def main():
                                help="Resource type")
     delete_parser.add_argument('identifier', help="Resource identifier")
     delete_parser.set_defaults(func=delete)
+
+    # Patch command parser
+    patch_parser = subparsers.add_parser(
+        'patch',
+        help='Patch file, dataset or contract metadata'
+    )
+    patch_parser.add_argument('resource',
+                              choices=('dataset', 'file', 'contract'),
+                              help="Resource type")
+    patch_parser.add_argument('identifier', help="Resource identifier")
+    patch_parser.add_argument('filepath',
+                             help="Path to metadata patch file")
+    patch_parser.set_defaults(func=patch)
 
     # Parse arguments
     args = parser.parse_args()
