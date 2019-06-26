@@ -230,6 +230,8 @@ class Metax(object):
                                                         self.password))
         response.raise_for_status()
 
+        return response.json()
+
     def get_dataset(self, dataset_id):
         """Get dataset metadata from Metax.
 
@@ -283,6 +285,8 @@ class Metax(object):
                                           HTTPBasicAuth(self.username,
                                                         self.password))
         response.raise_for_status()
+
+        return response.json()
 
     def get_dataset_filetypes(self, dataset_id):
         """Gets the unique triples of file_format, format_version, encoding
@@ -671,12 +675,11 @@ class Metax(object):
         :returns: requests Response
         """
         url = self.baseurl + 'files/' + file_id
-        response = requests.delete(
+        requests.delete(
             url=url,
             auth=HTTPBasicAuth(self.username, self.password),
             verify=self.verify
         )
-        return response
 
     def delete_files(self, file_id_list):
         """Delete file metadata from Metax.
@@ -691,7 +694,7 @@ class Metax(object):
             auth=HTTPBasicAuth(self.username, self.password),
             verify=self.verify
         )
-        return response
+        return response.json()
 
     def delete_dataset(self, dataset_id):
         """Delete metadata of dataset.
@@ -700,12 +703,11 @@ class Metax(object):
         :returns: requests Response
         """
         url = self.baseurl + 'datasets/' + dataset_id
-        response = requests.delete(
+        requests.delete(
             url=url,
             auth=HTTPBasicAuth(self.username, self.password),
             verify=self.verify
         )
-        return response
 
     def delete_dataset_files(self, dataset_id):
         """Delete metadata of files of a dataset.
@@ -731,7 +733,7 @@ class Metax(object):
             auth=HTTPBasicAuth(self.username, self.password),
             verify=self.verify
         )
-        return response
+        return response.json()
 
     def post_dataset(self, metadata):
         """Post dataset metadata.
@@ -745,7 +747,7 @@ class Metax(object):
             auth=HTTPBasicAuth(self.username, self.password),
             verify=self.verify
         )
-        return response
+        return response.json()
 
     def post_contract(self, metadata):
         """Post contract metadata.
@@ -759,7 +761,7 @@ class Metax(object):
             auth=HTTPBasicAuth(self.username, self.password),
             verify=self.verify
         )
-        return response
+        return response.json()
 
     def delete_contract(self, contract_id):
         """Delete metadata of contract.
@@ -768,12 +770,11 @@ class Metax(object):
         :returns: requests Response
         """
         url = self.baseurl + 'contracts/' + contract_id
-        response = requests.delete(
+        requests.delete(
             url=url,
             auth=HTTPBasicAuth(self.username, self.password),
             verify=self.verify
         )
-        return response
 
     def get_directory_files(self, directory_identifier):
         """Get files of the directory.

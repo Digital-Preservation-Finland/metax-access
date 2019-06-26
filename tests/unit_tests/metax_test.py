@@ -482,34 +482,32 @@ def test_delete_dataset():
     assert httpretty.last_request().path == '/rest/v1/datasets/dataset1'
 
 
-@httpretty.activate
-def test_post_file():
+@requests_mock.Mocker()
+def test_post_file(mocker):
     """Test that ``post_file`` function sends HTTP POST request to correct
     url
     """
-    httpretty.register_uri(httpretty.POST, METAX_URL + '/rest/v1/files/')
+    mocker.post(METAX_URL + '/rest/v1/files/', json={'identifier': '1'})
 
     METAX_CLIENT.post_file({'identifier': '1'})
 
-    assert httpretty.last_request().method == httpretty.POST
-    assert httpretty.last_request().headers.get('host') \
-        == 'foobar'
-    assert httpretty.last_request().path == '/rest/v1/files/'
+    assert mocker.last_request.method == "POST"
+    assert mocker.last_request.hostname == 'foobar'
+    assert mocker.last_request.path == '/rest/v1/files/'
 
 
-@httpretty.activate
-def test_post_dataset():
-    """Test that ``post_dataset`` function sends HTTP POST request to
-    correct url
+@requests_mock.Mocker()
+def test_post_dataset(mocker):
+    """Test that ``post_dataset`` function sends HTTP POST request to correct
+    url
     """
-    httpretty.register_uri(httpretty.POST, METAX_URL + '/rest/v1/datasets/')
+    mocker.post(METAX_URL + '/rest/v1/datasets/', json={'identifier': '1'})
 
     METAX_CLIENT.post_dataset({'identifier': '1'})
 
-    assert httpretty.last_request().method == httpretty.POST
-    assert httpretty.last_request().headers.get('host') \
-        == 'foobar'
-    assert httpretty.last_request().path == '/rest/v1/datasets/'
+    assert mocker.last_request.method == "POST"
+    assert mocker.last_request.hostname == 'foobar'
+    assert mocker.last_request.path == '/rest/v1/datasets/'
 
 
 @requests_mock.Mocker()
