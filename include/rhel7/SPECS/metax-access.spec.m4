@@ -50,6 +50,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -f INSTALLED_FILES
 %defattr(-,root,root,-)
+%config /etc/metax.cfg
 
 
 # TODO: For now changelog must be last, because it is generated automatically
