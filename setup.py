@@ -13,7 +13,8 @@ def main():
         install_requires=[
             "requests",
             "lxml",
-            "jsonschema"
+            "jsonschema",
+            "argcomplete"
         ],
         entry_points={
             'console_scripts': [

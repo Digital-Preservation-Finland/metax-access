@@ -11,6 +11,7 @@ requests_mock
 lxml
 requests
 flask
+argcomplete
 
 # TODO: docutils is required by python-daemon. Can be removed when this issue:
 # https://pagure.io/python-daemon/issue/18 is solved

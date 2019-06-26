@@ -1,3 +1,4 @@
+# PYTHON_ARGCOMPLETE_OK
 """Commandline interface to Metax."""
 import argparse
 import configparser
@@ -5,6 +6,7 @@ import json
 import os
 import sys
 
+import argcomplete
 import metax_access
 
 
@@ -130,6 +132,9 @@ def main():
     patch_parser.add_argument('filepath',
                              help="Path to metadata patch file")
     patch_parser.set_defaults(func=patch)
+
+    # Bash tab completion
+    argcomplete.autocomplete(parser)
 
     # Parse arguments
     args = parser.parse_args()
