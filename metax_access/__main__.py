@@ -15,55 +15,53 @@ def post(metax_client, args):
         data = json.load(open_file)
 
     if args.resource == 'dataset':
-        response = metax_client.post_dataset(data)
-        print(json.dumps(response.json(), indent=4))
+        _pprint(metax_client.post_dataset(data))
     elif args.resource == 'file':
-        response = metax_client.post_file(data)
-        print(json.dumps(response.json(), indent=4))
+        _pprint(metax_client.post_file(data))
     elif args.resource == 'contract':
-        response = metax_client.post_contract(data)
-        print(json.dumps(response.json(), indent=4))
+        _pprint(metax_client.post_contract(data))
 
 
 def get(metax_client, args):
     """Get file, dataset, or contract"""
     if args.resource == 'dataset':
-        print(json.dumps(metax_client.get_dataset(args.identifier), indent=4))
+        _pprint(metax_client.get_dataset(args.identifier))
     elif args.resource == 'file':
-        print(json.dumps(metax_client.get_file(args.identifier), indent=4))
+        _pprint(metax_client.get_file(args.identifier))
     elif args.resource == 'contract':
-        print(json.dumps(metax_client.get_contract(args.identifier), indent=4))
+        _pprint(metax_client.get_contract(args.identifier))
 
 
 def delete(metax_client, args):
     """Delete file, dataset, or contract"""
     if args.resource == 'dataset':
-        response = metax_client.delete_dataset(args.identifier)
-        print('Status:' + str(response.status_code))
+        metax_client.delete_dataset(args.identifier)
     elif args.resource == 'file':
-        response = metax_client.delete_file(args.identifier)
-        print('Status:' + str(response.status_code))
+        metax_client.delete_file(args.identifier)
     elif args.resource == 'contract':
-        response = metax_client.delete_contract(args.identifier)
-        print('Status:' + str(response.status_code))
+        metax_client.delete_contract(args.identifier)
 
 
 def patch(metax_client, args):
     """Patch file, dataset, or contract"""
     with open(args.filepath) as open_file:
         data = json.load(open_file)
+
     if args.resource == 'dataset':
-        print(
-            json.dumps(
-                metax_client.patch_dataset(args.identifier, data), indent=4
-            )
-        )
-    if args.resource == 'file':
-        print(
-            json.dumps(
-                metax_client.patch_file(args.identifier, data), indent=4
-            )
-        )
+        _pprint(metax_client.patch_dataset(args.identifier, data))
+    elif args.resource == 'file':
+        _pprint(metax_client.patch_file(args.identifier, data))
+    elif args.resource == 'contract':
+        _pprint(metax_client.patch_contract(args.identifier, data))
+
+
+def _pprint(dictionary):
+    """Pretty print dictionary to stdout
+
+    :param dictionary: dictionary
+    :returns: ``None``
+    """
+    print(json.dumps(dictionary, indent=4))
 
 
 def main():
