@@ -675,11 +675,12 @@ class Metax(object):
         :returns: requests Response
         """
         url = self.baseurl + 'files/' + file_id
-        requests.delete(
+        response = requests.delete(
             url=url,
             auth=HTTPBasicAuth(self.username, self.password),
             verify=self.verify
         )
+        response.raise_for_status()
 
     def delete_files(self, file_id_list):
         """Delete file metadata from Metax.
@@ -694,6 +695,7 @@ class Metax(object):
             auth=HTTPBasicAuth(self.username, self.password),
             verify=self.verify
         )
+        response.raise_for_status()
         return response.json()
 
     def delete_dataset(self, dataset_id):
@@ -703,11 +705,12 @@ class Metax(object):
         :returns: requests Response
         """
         url = self.baseurl + 'datasets/' + dataset_id
-        requests.delete(
+        response = requests.delete(
             url=url,
             auth=HTTPBasicAuth(self.username, self.password),
             verify=self.verify
         )
+        response.raise_for_status()
 
     def delete_dataset_files(self, dataset_id):
         """Delete metadata of files of a dataset.
@@ -733,6 +736,7 @@ class Metax(object):
             auth=HTTPBasicAuth(self.username, self.password),
             verify=self.verify
         )
+        response.raise_for_status()
         return response.json()
 
     def post_dataset(self, metadata):
@@ -747,6 +751,7 @@ class Metax(object):
             auth=HTTPBasicAuth(self.username, self.password),
             verify=self.verify
         )
+        response.raise_for_status()
         return response.json()
 
     def post_contract(self, metadata):
@@ -761,6 +766,7 @@ class Metax(object):
             auth=HTTPBasicAuth(self.username, self.password),
             verify=self.verify
         )
+        response.raise_for_status()
         return response.json()
 
     def delete_contract(self, contract_id):
@@ -770,11 +776,12 @@ class Metax(object):
         :returns: requests Response
         """
         url = self.baseurl + 'contracts/' + contract_id
-        requests.delete(
+        response = requests.delete(
             url=url,
             auth=HTTPBasicAuth(self.username, self.password),
             verify=self.verify
         )
+        response.raise_for_status()
 
     def get_directory_files(self, directory_identifier):
         """Get files of the directory.
