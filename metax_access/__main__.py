@@ -1,6 +1,10 @@
 """Commandline interface to Metax."""
-import json
 import argparse
+import configparser
+import json
+import os
+import sys
+
 import metax_access
 
 
@@ -66,42 +70,54 @@ def main():
     """Parse arguments, init metax client, and run command."""
     # Parser
     parser = argparse.ArgumentParser(description="Manage metadata in Metax.")
-    parser.add_argument('--host', metavar='host',
+    parser.add_argument('-c', '--config',
+                        metavar='config',
+                        help="Configuration file")
+    parser.add_argument('--host',
+                        metavar='host',
                         help="Metax hostname")
-    parser.add_argument('-u', '--user', metavar='user',
+    parser.add_argument('-u', '--user',
+                        metavar='user',
                         help="Metax username")
-    parser.add_argument('-p', '--password', metavar='password',
+    parser.add_argument('-p', '--password',
+                        metavar='password',
                         help="Metax password")
     subparsers = parser.add_subparsers(title='command')
 
     # Post command parser
-    post_parser = subparsers.add_parser('post',
-                                        help='Post file, dataset or contract '
-                                        'metadata.')
+    post_parser = subparsers.add_parser(
+        'post',
+        help='Post file, dataset or contract metadata.'
+    )
     post_parser.add_argument('resource',
                              choices=('file', 'dataset', 'contract'),
                              help="Resource type")
-    post_parser.add_argument('filepath', help="Path to metadata file")
+    post_parser.add_argument('filepath',
+                             help="Path to metadata file")
     post_parser.set_defaults(func=post)
 
     # Get command parser
-    get_parser = subparsers.add_parser('get',
-                                       help='Print file, dataset or contract '
-                                       'metadata.')
+    get_parser = subparsers.add_parser(
+        'get',
+        help='Print file, dataset or contract metadata.'
+    )
     get_parser.add_argument('resource',
                             choices=('file', 'dataset', 'contract'),
                             help="Resource type")
-    get_parser.add_argument('identifier', help="Resource identifier")
+    get_parser.add_argument('identifier',
+                            help="Resource identifier")
     get_parser.set_defaults(func=get)
 
     # Delete command parser
     delete_parser = subparsers.add_parser(
-        'delete', help='Delete file, dataset or contract metadata'
+        'delete',
+        help='Delete file, dataset or contract metadata'
     )
     delete_parser.add_argument('resource',
                                choices=('file', 'dataset', 'contract'),
                                help="Resource type")
-    delete_parser.add_argument('identifier', help="Resource identifier")
+    delete_parser.add_argument('identifier',
+                               help="Resource identifier")
     delete_parser.set_defaults(func=delete)
 
     # Patch command parser
@@ -120,8 +136,26 @@ def main():
     # Parse arguments
     args = parser.parse_args()
 
+    # Read config file if it was defined or the default config file exists
+    config = os.path.expanduser(args.config or '~/.metax.cfg')
+    if args.config and not os.path.isfile(config):
+        sys.exit('Configuration file {} not found.'.format(args.config))
+    if os.path.isfile(config):
+        configuration = configparser.ConfigParser()
+        configuration.read(os.path.expanduser(config))
+        if args.host:
+            configuration.set('metax', 'host', args.host)
+        if args.user:
+            configuration.set('metax', 'user', args.user)
+        if args.password:
+            configuration.set('metax', 'password', args.password)
+
     # Init metax client
-    metax_client = metax_access.Metax(args.host, args.user, args.password)
+    metax_client = metax_access.Metax(
+        configuration.get('metax', 'host'),
+        configuration.get('metax', 'user'),
+        configuration.get('metax', 'password')
+    )
 
     # Run command
     args.func(metax_client, args)
