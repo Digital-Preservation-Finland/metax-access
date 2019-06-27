@@ -161,14 +161,16 @@ def main():
 
     # Read config file
     configuration = configparser.ConfigParser()
+    configuration.add_section('metax')
     if config:
         configuration.read(os.path.expanduser(config))
-    if args.host:
-        configuration.set('metax', 'host', args.host)
-    if args.user:
-        configuration.set('metax', 'user', args.user)
-    if args.password:
-        configuration.set('metax', 'password', args.password)
+
+    # Override configuration file with commandline options
+    for option in ['host', 'user', 'password']:
+        if vars(args)[option]:
+            configuration.set('metax', option)
+        if not configuration.has_option('metax', option):
+            sys.exit("Option '{}' is required".format(option))
 
     # Init metax client
     metax_client = metax_access.Metax(
