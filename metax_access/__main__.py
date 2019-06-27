@@ -10,6 +10,11 @@ import argcomplete
 import metax_access
 
 
+DEFAULT_CONFIG_FILES = ['/etc/metax.cfg',
+                        '~/.local/etc/metax.cfg',
+                        '~/.metax.cfg']
+
+
 def post(metax_client, args):
     """Post file/dataset"""
     # Read metadata file
@@ -72,7 +77,9 @@ def main():
     parser = argparse.ArgumentParser(description="Manage metadata in Metax.")
     parser.add_argument('-c', '--config',
                         metavar='config',
-                        help="Configuration file")
+                        help="Configuration file. If not set, default config "
+                             "file: ~/.metax.cfg, ~/.local/etc/metax.cfg, "
+                             "or /etc/metax.cfg is used.")
     parser.add_argument('--host',
                         metavar='host',
                         help="Metax hostname")
@@ -139,19 +146,29 @@ def main():
     # Parse arguments
     args = parser.parse_args()
 
-    # Read config file if it was defined or the default config file exists
-    config = os.path.expanduser(args.config or '~/.metax.cfg')
-    if args.config and not os.path.isfile(config):
-        sys.exit('Configuration file {} not found.'.format(args.config))
-    if os.path.isfile(config):
-        configuration = configparser.ConfigParser()
+    # Choose config file
+    config = None
+    if args.config:
+        config = os.path.expanduser(args.config)
+        if not os.path.isfile(config):
+            # Explicitly set config file does not exist
+            sys.exit('Configuration file {} not found.'.format(config))
+    else:
+        for file_ in DEFAULT_CONFIG_FILES:
+            path = os.path.expanduser(file_)
+            if os.path.isfile(path):
+                config = path
+
+    # Read config file
+    configuration = configparser.ConfigParser()
+    if config:
         configuration.read(os.path.expanduser(config))
-        if args.host:
-            configuration.set('metax', 'host', args.host)
-        if args.user:
-            configuration.set('metax', 'user', args.user)
-        if args.password:
-            configuration.set('metax', 'password', args.password)
+    if args.host:
+        configuration.set('metax', 'host', args.host)
+    if args.user:
+        configuration.set('metax', 'user', args.user)
+    if args.password:
+        configuration.set('metax', 'password', args.password)
 
     # Init metax client
     metax_client = metax_access.Metax(

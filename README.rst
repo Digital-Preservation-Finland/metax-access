@@ -14,9 +14,20 @@ A simple commandline interface can be used for posting, retrieving, or deleting 
 
    metax_access --host https://metax-test.csc.fi -u tpas -p password get dataset 1
 
+Alternatively ``host``, ``user``, and ``password`` may be read from configuration file::
+
+   # /home/vagrant/metax.cfg
+   [metax]
+   host=https://metax-test.csc.fi
+   user=tpas
+   password=password
+
+   metax_access -c /home/vagrant/metax.cfg get dataset 1
+
 For more information see::
 
    metax_access -h
+
 
 
 Testing
