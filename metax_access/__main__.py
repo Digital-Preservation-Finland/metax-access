@@ -1,7 +1,10 @@
 # PYTHON_ARGCOMPLETE_OK
 """Commandline interface to Metax."""
+from __future__ import unicode_literals
+
 import argparse
 import configparser
+import io
 import json
 import os
 import sys
@@ -9,16 +12,21 @@ import sys
 import argcomplete
 import metax_access
 
-
 DEFAULT_CONFIG_FILES = ['/etc/metax.cfg',
                         '~/.local/etc/metax.cfg',
                         '~/.metax.cfg']
 
 
 def post(metax_client, args):
-    """Post file/dataset"""
+    """Post file/dataset to Metax and print the result
+
+    :param metax_client: `metax_access.Metax` instance
+    :param args: Named tuple of parsed arguments from
+                 :func:`__main__.parse_args()`
+
+    """
     # Read metadata file
-    with open(args.filepath) as open_file:
+    with io.open(args.filepath, "rt") as open_file:
         data = json.load(open_file)
 
     if args.resource == 'dataset':
@@ -30,7 +38,12 @@ def post(metax_client, args):
 
 
 def get(metax_client, args):
-    """Get file, dataset, or contract"""
+    """Get file, dataset, or contract
+
+    :param metax_client: `metax_access.Metax` instance
+    :param args: Named tuple of parsed arguments from
+                 :func:`__main__.parse_args()`
+    """
     if args.resource == 'dataset':
         _pprint(metax_client.get_dataset(args.identifier))
     elif args.resource == 'file':
@@ -40,7 +53,12 @@ def get(metax_client, args):
 
 
 def delete(metax_client, args):
-    """Delete file, dataset, or contract"""
+    """Delete file, dataset, or contract
+
+    :param metax_client: `metax_access.Metax` instance
+    :param args: Named tuple of parsed arguments from
+                 :func:`__main__.parse_args()`
+    """
     if args.resource == 'dataset':
         metax_client.delete_dataset(args.identifier)
     elif args.resource == 'file':
@@ -50,8 +68,13 @@ def delete(metax_client, args):
 
 
 def patch(metax_client, args):
-    """Patch file, dataset, or contract"""
-    with open(args.filepath) as open_file:
+    """Patch file, dataset, or contract
+
+    :param metax_client: `metax_access.Metax` instance
+    :param args: Named tuple of parsed arguments from
+                 :func:`__main__.parse_args()`
+    """
+    with io.open(args.filepath, "rt") as open_file:
         data = json.load(open_file)
 
     if args.resource == 'dataset':
@@ -68,11 +91,14 @@ def _pprint(dictionary):
     :param dictionary: dictionary
     :returns: ``None``
     """
-    print(json.dumps(dictionary, indent=4))
+    print(json.dumps(dictionary, indent=4, ensure_ascii=False))
 
 
 def main():
-    """Parse arguments, init metax client, and run command."""
+    """
+    Parse arguments, init metax client, and run correct command depending
+    on the action (post, get or delete).
+    """
     # Parser
     parser = argparse.ArgumentParser(description="Manage metadata in Metax.")
     parser.add_argument('-c', '--config',
@@ -137,7 +163,7 @@ def main():
                               help="Resource type")
     patch_parser.add_argument('identifier', help="Resource identifier")
     patch_parser.add_argument('filepath',
-                             help="Path to metadata patch file")
+                              help="Path to metadata patch file")
     patch_parser.set_defaults(func=patch)
 
     # Bash tab completion

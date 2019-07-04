@@ -1,14 +1,22 @@
 """Configure py.test default values and functionality"""
+from __future__ import unicode_literals
 
-import os
-import sys
-import re
 import logging
-import tempfile
+import os
+import re
 import shutil
-import urllib
-import httpretty
+import sys
+import tempfile
+
 import pytest
+import six
+
+import httpretty
+
+try:
+    from urllib.parse import quote
+except ImportError:  # Python 2
+    from urllib import quote
 
 
 # Print debug messages to stdout
@@ -60,8 +68,8 @@ def testmetax(request):
     def dynamic_response(request, url, headers):
         """Return HTTP response according to url and query string"""
         logging.debug("Dynamic response for HTTP GET url: %s", url)
-        logging.debug("Request: %s", str(request))
-        logging.debug("Header: %s", str(headers))
+        logging.debug("Request: %s", six.text_type(request))
+        logging.debug("Header: %s", six.text_type(headers))
         # url without basepath:
         path = url.split(METAX_URL)[1]
         logging.debug("Path: %s", path)
@@ -78,14 +86,14 @@ def testmetax(request):
             # everything is added to the filename url encoded
             tail = path.split('/%s/%s' % (subdir, body_file))[1]
             if tail:
-                body_file += urllib.quote(tail, safe='%')
+                body_file += quote(tail, safe='%')
 
             full_path = "%s/%s/%s" % (METAX_PATH, subdir, body_file)
         logging.debug("Looking for file: %s", full_path)
         if not os.path.isfile(full_path):
             return (403, headers, "File not found")
 
-        with open(full_path) as open_file:
+        with open(full_path, "rb") as open_file:
             body = open_file.read()
 
         return (200, headers, body)
@@ -93,8 +101,8 @@ def testmetax(request):
     def dynamic_patch_response(request, url, headers):
         """Return HTTP response according to url and query string"""
         logging.debug("Dynamic response for HTTP PATCH url: %s", url)
-        logging.debug("Request: %s", str(request))
-        logging.debug("Header: %s", str(headers))
+        logging.debug("Request: %s", six.text_type(request))
+        logging.debug("Header: %s", six.text_type(headers))
         return (200, headers, body)
 
     # Enable http-server in beginning of test function
@@ -131,7 +139,8 @@ def testmetax(request):
     # register response for get_elasticsearchdata-function
     elasticsearchdata_url = 'https://metax-test.csc.fi/es/reference_data/'\
                             'use_category/_search?pretty&size=100'
-    with open('tests/httpretty_data/metax_elastic_search.json') as open_file:
+    with open('tests/httpretty_data/metax_elastic_search.json', "rb") \
+            as open_file:
         body = open_file.read()
     httpretty.register_uri(
         httpretty.GET,

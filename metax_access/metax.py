@@ -1,11 +1,14 @@
 """Metax interface class."""
+from __future__ import unicode_literals
 
 import copy
-import lxml.etree
-from requests import get, post, patch
-from requests.auth import HTTPBasicAuth
-import requests
 
+import requests
+import six
+from requests import get, patch, post
+from requests.auth import HTTPBasicAuth
+
+import lxml.etree
 
 DS_STATE_INITIALIZED = 0
 DS_STATE_PROPOSED_FOR_DIGITAL_PRESERVATION = 10
@@ -149,7 +152,9 @@ class Metax(object):
         :returns: datasets from Metax as json.
         """
         if states is None:
-            states = ','.join(str(state) for state in DS_STATE_ALL_STATES)
+            states = ','.join(
+                six.text_type(state) for state in DS_STATE_ALL_STATES
+            )
 
         pas_filter_str = ''
         if pas_filter is not None:
@@ -164,6 +169,7 @@ class Metax(object):
                        "datasets", "?state=", states, "&limit=",
                        limit, "&offset=", offset, pas_filter_str,
                        org_filter_str, ordering_str])
+        print(url, self.username, self.password)
         response = self._do_get_request(url, HTTPBasicAuth(self.username,
                                                            self.password))
         if response.status_code == 404:
@@ -243,6 +249,7 @@ class Metax(object):
         response = self._do_get_request(url, HTTPBasicAuth(self.username,
                                                            self.password))
 
+
         if response.status_code == 404:
             raise DatasetNotFoundError(
                 message="Could not find metadata for dataset: %s" % dataset_id
@@ -304,7 +311,7 @@ class Metax(object):
         temp_types = set()
         mime_types = []
         url = "".join([self.baseurl,
-                       "datasets/", str(dataset_id), '/files'])
+                       "datasets/", six.text_type(dataset_id), '/files'])
         response = self._do_get_request(url, HTTPBasicAuth(self.username,
                                                            self.password))
         if response.status_code == 404:
@@ -330,7 +337,7 @@ class Metax(object):
                 temp_types.add(file_format + '||' + format_version +
                                '||' + encoding)
         for temp_type in temp_types:
-            attrs = str(temp_type).split('||')
+            attrs = six.text_type(temp_type).split('||')
             mime_types.append({'file_format': attrs[0],
                                'format_version': attrs[1],
                                'encoding': attrs[2]})
@@ -346,7 +353,9 @@ class Metax(object):
         :param str pid: id or identifier attribute of contract
         :returns: The datasets from Metax as json.
         """
-        url = "".join([self.baseurl, "contracts/", str(pid), '/datasets'])
+        url = "".join([
+            self.baseurl, "contracts/", six.text_type(pid), '/datasets'
+        ])
         response = self._do_get_request(url, HTTPBasicAuth(self.username,
                                                            self.password))
         response.raise_for_status()

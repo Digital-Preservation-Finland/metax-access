@@ -8,8 +8,9 @@ def main():
     """Install metax-access"""
     setup(
         name='metax-access',
-        version=get_version(),
         packages=find_packages(exclude=['tests', 'tests.*']),
+        include_package_data=True,
+        version=get_version(),
         data_files=[('etc', ['include/etc/metax.cfg'])],
         install_requires=[
             "requests",

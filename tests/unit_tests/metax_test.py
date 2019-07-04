@@ -1,6 +1,8 @@
 # coding=utf-8
 # pylint: disable=no-member
 """Tests for ``metax_access.metax`` module"""
+from __future__ import unicode_literals
+
 import json
 
 import httpretty
@@ -279,7 +281,7 @@ def test_get_datacite():
     xpath_str = '/ns:resource/ns:creators/ns:creator/ns:creatorName'
     creatorname = xml.xpath(xpath_str, namespaces={'ns': ns_string})[0].text
     # Check that "creatorName" is same as in the original XML file
-    assert creatorname == u"Puupää, Pekka"
+    assert creatorname == "Puupää, Pekka"
 
 
 def test_get_datacite_fails(requests_mock):
@@ -485,7 +487,9 @@ def test_post_dataset(requests_mock):
     """Test that ``post_dataset`` function sends HTTP POST request to correct
     url
     """
-    requests_mock.post(METAX_URL + '/rest/v1/datasets/', json={'identifier': '1'})
+    requests_mock.post(
+        METAX_URL + '/rest/v1/datasets/', json={'identifier': '1'}
+    )
 
     METAX_CLIENT.post_dataset({'identifier': '1'})
 
