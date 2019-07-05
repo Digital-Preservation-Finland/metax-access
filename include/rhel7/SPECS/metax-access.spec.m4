@@ -23,7 +23,7 @@ Requires:       python-lxml
 Requires:       python-requests
 Requires:       python-scandir
 Requires:       python-mock
-Requires:       python-argcomplete
+Requires:       python2-argcomplete
 BuildRequires:  python-setuptools
 BuildRequires:  pytest
 BuildRequires:  python-httpretty
