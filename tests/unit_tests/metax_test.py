@@ -2,9 +2,12 @@
 # pylint: disable=no-member
 """Tests for ``metax_access.metax`` module"""
 import json
+
 import httpretty
 import lxml.etree
 import pytest
+import requests_mock
+
 from metax_access.metax import (
     Metax, MetaxConnectionError,
     DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
@@ -13,7 +16,6 @@ from metax_access.metax import (
     DataCatalogNotFoundError,
     DataciteGenerationError
 )
-import requests_mock
 
 METAX_URL = 'https://foobar'
 METAX_REST_URL = METAX_URL+'/rest/v1'
@@ -544,3 +546,42 @@ def test_set_preservation_id(mocker):
     assert mocker.last_request.url \
         == (METAX_URL + "/rpc/datasets/set_preservation_identifier?identifier="
             "identifier1234")
+
+
+@requests_mock.Mocker()
+def test_get_dataset_file_mapping(mocker):
+    """Tests that ``get_dataset_file_mapping`` function returns the correct
+    PAS id -> IDA id mapping.
+    """
+    mocker.get(
+        METAX_URL + '/rest/v1/datasets/pid:urn:pas',
+        json={
+            "identifier": "pid:urn:pas",
+            "preservation_dataset_origin_version": {
+                "identifier": "pid:urn:ida"
+            }
+        }
+    )
+    mocker.get(
+        METAX_URL + '/rest/v1/datasets/pid:urn:pas/files',
+        json=[
+            {"identifier": "pid:urn:pas_file_1", "file_path": "/file_1"},
+            {"identifier": "pid:urn:pas_file_2", "file_path": "/file_2"}
+        ]
+    )
+    mocker.get(
+        METAX_URL + '/rest/v1/datasets/pid:urn:ida',
+        json={"identifier": "pid:urn:ida"}
+    )
+    mocker.get(
+        METAX_URL + '/rest/v1/datasets/pid:urn:ida/files',
+        json=[
+            {"identifier": "pid:urn:ida_file_1", "file_path": "/file_1"},
+            {"identifier": "pid:urn:ida_file_2", "file_path": "/file_2"}
+        ]
+    )
+
+    assert METAX_CLIENT.get_dataset_file_mapping("pid:urn:pas") == {
+        "pid:urn:pas_file_1": "pid:urn:ida_file_1",
+        "pid:urn:pas_file_2": "pid:urn:ida_file_2"
+    }
