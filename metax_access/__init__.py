@@ -14,4 +14,4 @@ from .metax import (DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION,
                     DS_STATE_VALIDATED_METADATA_UPDATED, ContractNotFoundError,
                     DataciteGenerationError, DatasetNotFoundError,
                     DirectoryNotFoundError, Metax, MetaxConnectionError,
-                    MetaxError)
+                    MetaxError, FileNotFoundError)
