@@ -420,7 +420,9 @@ def test_get_datacite_http_503(requests_mock):
     """Test that get_datacite function throws a MetaxConnectionError exception
     when requests.get() returns http 503 error
     """
-    requests_mock.get(METAX_REST_URL + '/datasets/foo', json={'identifier': 'bar'})
+    requests_mock.get(
+        METAX_REST_URL + '/datasets/foo', json={'identifier': 'bar'}
+    )
     requests_mock.post(
         METAX_URL + '/rpc/datasets/set_preservation_identifier?identifier=bar',
         status_code=503

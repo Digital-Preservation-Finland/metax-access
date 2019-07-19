@@ -82,8 +82,8 @@ def testmetax(request):
             subdir = path.split('/')[1]
             # file to be used as response body:
             body_file = path.split('/')[2]
-            # if url contains query strings or more directories after the filename,
-            # everything is added to the filename url encoded
+            # if url contains query strings or more directories after the
+            # filename, everything is added to the filename url encoded
             tail = path.split('/%s/%s' % (subdir, body_file))[1]
             if tail:
                 body_file += quote(tail, safe='%')

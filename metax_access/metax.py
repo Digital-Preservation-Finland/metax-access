@@ -3,8 +3,8 @@ from __future__ import unicode_literals
 
 import copy
 
-import requests
 import six
+import requests
 from requests import get, patch, post
 from requests.auth import HTTPBasicAuth
 
@@ -248,7 +248,6 @@ class Metax(object):
 
         response = self._do_get_request(url, HTTPBasicAuth(self.username,
                                                            self.password))
-
 
         if response.status_code == 404:
             raise DatasetNotFoundError(
@@ -684,7 +683,6 @@ class Metax(object):
         }
 
         return {pas_dict[key]: ida_dict[key] for key in pas_dict}
-
 
     def get_file_datasets(self, file_id):
         """GET a list of datasets associated with file_id

@@ -2,7 +2,7 @@
 pytest
 coverage
 pytest-cov
-httpretty==0.8.14 # Use version available in epel RPM repositories
+httpretty
 mock
 Sphinx==1.7.9
 requests_mock
