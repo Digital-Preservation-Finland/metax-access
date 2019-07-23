@@ -6,7 +6,7 @@ Installation
 ------------
 On Centos 7 metax-access can be installed from `DPres RPM repository <https://dpres-rpms.csc.fi/>`_::
 
-   yum install metax-acess
+   yum install metax-access
 
 Usage
 -----
@@ -14,13 +14,15 @@ A simple commandline interface can be used for posting, retrieving, or deleting 
 
    metax_access --host https://metax-test.csc.fi -u tpas -p password get dataset 1
 
-Alternatively ``host``, ``user``, and ``password`` may be read from configuration file::
+Alternatively ``host``, ``user``, and ``password`` may be to configuration file ``/home/vagrant/metax.cfg``::
 
-   # /home/vagrant/metax.cfg
    [metax]
    host=https://metax-test.csc.fi
    user=tpas
    password=password
+
+
+which can be used wifh ``-c`` flag ::
 
    metax_access -c /home/vagrant/metax.cfg get dataset 1
 
