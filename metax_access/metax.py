@@ -169,7 +169,6 @@ class Metax(object):
                        "datasets", "?state=", states, "&limit=",
                        limit, "&offset=", offset, pas_filter_str,
                        org_filter_str, ordering_str])
-        print(url, self.username, self.password)
         response = self._do_get_request(url, HTTPBasicAuth(self.username,
                                                            self.password))
         if response.status_code == 404:
