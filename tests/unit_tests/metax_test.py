@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 
 import json
 
-import httpretty
 import lxml.etree
 import pytest
 
@@ -25,13 +24,16 @@ METAX_PASSWORD = 'password'
 METAX_CLIENT = Metax(METAX_URL, METAX_USER, METAX_PASSWORD, verify=False)
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_get_datasets():
-    """Test get_datasets function. Reads sample datasets JSON from testmetax
-    and checks that returned dict contains the correct values.
+def test_get_datasets(requests_mock):
+    """Test get_datasets function. Mocks Metax to return simple JSON as HTTP
+    response and checks that the returned dict contains the correct values.
 
     :returns: None
     """
+    requests_mock.get(
+        METAX_REST_URL + "/datasets",
+        json={"results": [{"identifier": "foo"}, {"identifier": "bar"}]}
+    )
     datasets = METAX_CLIENT.get_datasets('datasets')
     assert len(datasets["results"]) == 2
 
@@ -54,25 +56,28 @@ def test_get_datasets_http_404(requests_mock):
         METAX_CLIENT.get_datasets()
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_get_dataset():
-    """Test get_dataset function. Reads sample dataset JSON from testmetax and
-    checks that returned dict contains the correct values.
+def test_get_dataset(requests_mock):
+    """Test get_dataset function. Mocks Metax to return simple JSON as HTTP
+    response and checks that the returned dict contains the correct values.
 
     :returns: None
     """
-    dataset = METAX_CLIENT.get_dataset("mets_test_dataset")
-    assert (dataset["research_dataset"]["provenance"][0]['preservation_event']
-            ['pref_label']['en'] == 'creation')
+    requests_mock.get(METAX_REST_URL + "/datasets/test_id",
+                      json={"foo": "bar"})
+    dataset = METAX_CLIENT.get_dataset("test_id")
+    assert dataset["foo"] == "bar"
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_get_contracts():
-    """Test get_contracts function. Reads sample contracts JSON from testmetax
-    and checks that returned dict contains the correct values.
+def test_get_contracts(requests_mock):
+    """Test get_contracts function. Mocks Metax to return simple JSON as HTTP
+    response and checks that the returned dict contains the correct values.
 
     :returns: None
     """
+    requests_mock.get(
+        METAX_REST_URL + "/contracts",
+        json={"results": [{"identifier": "foo"}, {"identifier": "bar"}]}
+    )
     contracts = METAX_CLIENT.get_contracts()
     assert len(contracts['results']) == 2
 
@@ -95,18 +100,16 @@ def test_get_contracts_http_404(requests_mock):
         METAX_CLIENT.get_contracts()
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_get_contract():
-    """Test get_contract function. Reads sample contract JSON from testmetax
-    and checks that returned dict contains the correct values.
+def test_get_contract(requests_mock):
+    """Test get_contract function. Mocks Metax to return simple JSON as HTTP
+    response and checks that the returned dict contains the correct values.
 
     :returns: None
     """
-    contract = METAX_CLIENT.get_contract(
-        'urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001'
-    )
-    assert contract['contract_json']['identifier'] \
-        == 'urn:uuid:99ddffff-2f73-46b0-92d1-614409d83001'
+    requests_mock.get(METAX_REST_URL + "/contracts/test_id",
+                      json={"foo": "bar"})
+    contract = METAX_CLIENT.get_contract('test_id')
+    assert contract['foo'] == "bar"
 
 
 def test_get_contract_http_503(requests_mock):
@@ -127,18 +130,17 @@ def test_get_contract_http_404(requests_mock):
         METAX_CLIENT.get_contract('foo')
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_get_datacatalog():
-    """Test get_datacatalog function. Reads sample dataset JSON from testmetax
+def test_get_datacatalog(requests_mock):
+    """Test get_datacatalog function. Mocks HTTP response to return simple JSON
     and checks that returned dict contains the correct values.
 
     :returns: None
     """
-    contract = METAX_CLIENT.get_datacatalog(
-        'urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2'
-    )
-    assert contract['catalog_json']['identifier'] \
-        == 'urn:nbn:fi:att:2955e904-e3dd-4d7e-99f1-3fed446f96d2'
+    requests_mock.get(METAX_REST_URL + "/datacatalogs/test_catalog",
+                      json={"catalog_json": {"identifier": 'foo'}})
+
+    catalog = METAX_CLIENT.get_datacatalog('test_catalog')
+    assert catalog['catalog_json']['identifier'] == 'foo'
 
 
 def test_get_catalog_http_503(requests_mock):
@@ -159,14 +161,33 @@ def test_get_catalog_http_404(requests_mock):
         METAX_CLIENT.get_datacatalog('foo')
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_get_dataset_filestypes():
-    """Test get_xml function. Reads some test xml from testmetax checks that
-    the function returns dictionary with correct items
+def test_get_dataset_filetypes(requests_mock):
+    """Test get_dataset filetypes function. Mocks Metax HTTP response and
+    checks that the function returns dictionary with correct items
 
     :returns: None
     """
-    filetypes = METAX_CLIENT.get_dataset_filetypes('mets_test_dataset')
+    requests_mock.get(
+        METAX_REST_URL + '/datasets/test_id/files',
+        json=[
+            {
+                "file_characteristics": {
+                    "file_format": "text/plain",
+                    "format_version": "",
+                    "encoding": "UTF-8",
+                }
+            },
+            {
+                "file_characteristics": {
+                    "file_format": "text/html",
+                    "format_version": "4.01",
+                    "encoding": "UTF-8",
+                }
+            }
+        ]
+    )
+
+    filetypes = METAX_CLIENT.get_dataset_filetypes('test_id')
     assert isinstance(filetypes, dict)
     assert filetypes['total_count'] == 2
     assert filetypes['filetypes'][0]['encoding'] == 'UTF-8'
@@ -176,36 +197,52 @@ def test_get_dataset_filestypes():
         filetypes['filetypes'][0]['format_version'] == '4.01'
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_patch_dataset():
+def test_patch_dataset(requests_mock):
     """Test patch_dataset function. Patch a dataset with few updated key/value
     pairs and check that correct HTTP request was sent to Metax.
 
     :returns: None
     """
+    requests_mock.patch(METAX_REST_URL + '/datasets/test_id', json={})
+    requests_mock.get(
+        METAX_REST_URL + '/datasets/test_id',
+        json={'research_dataset': {"provenance": ['foo', 'bar']}}
+    )
+
     update = {
         'foo1': 'bar1',
         'research_dataset': {
             'foo2': 'bar2'
         }
     }
-    METAX_CLIENT.patch_dataset('mets_test_dataset', update)
-    assert httpretty.last_request().method == 'PATCH'
-    request_body = json.loads(httpretty.last_request().body)
+    METAX_CLIENT.patch_dataset('test_id', update)
+    assert requests_mock.last_request.method == 'PATCH'
 
+    request_body = json.loads(requests_mock.last_request.body)
     assert isinstance(request_body['research_dataset']['provenance'], list)
     assert request_body['research_dataset']['foo2'] == 'bar2'
     assert request_body['foo1'] == 'bar1'
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_get_xml():
-    """Test get_xml function. Reads some test xml from testmetax checks that
-    the function returns dictionary with correct items
+def test_get_xml(requests_mock):
+    """Test get_xml function. Mocks Metax HTTP responses and and checks that
+    the function returns dictionary that contains xml objects.
 
     :returns: None
     """
-    xml_dict = METAX_CLIENT.get_xml('files', "metax_xml_test")
+    requests_mock.get(METAX_REST_URL + '/files/test_id/xml',
+                      json=["http://www.loc.gov/METS/",
+                            "http://www.arkivverket.no/standarder/addml"])
+    requests_mock.get((METAX_REST_URL + '/files/test_id/xml?namespace=http://'
+                       'www.arkivverket.no/standarder/addml'),
+                      text=('<root xmlns:addml="http://www.arkivverket.no/'
+                            'standarder/addml"></root>'))
+    requests_mock.get(
+        METAX_REST_URL+'/files/test_id/xml?namespace=http://www.loc.gov/METS/',
+        text='<root xmlns:mets="http://www.loc.gov/METS/"></root>'
+    )
+
+    xml_dict = METAX_CLIENT.get_xml('files', "test_id")
     assert isinstance(xml_dict, dict)
 
     # The keys of returned dictionary should be xml namespace urls and
@@ -217,13 +254,16 @@ def test_get_xml():
     assert xml_dict[mets_url].getroot().nsmap['mets'] == mets_url
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_set_xml():
+def test_set_xml(requests_mock):
     """Test set_xml functions. Reads XML file and posts it to Metax. The body
     and headers of HTTP request are checked.
 
     :returns: None
     """
+    requests_mock.get(METAX_REST_URL + '/files/set_xml_1/xml', json=[])
+    requests_mock.post(METAX_REST_URL + '/files/set_xml_1/xml',
+                       status_code=201)
+
     # Read sample MIX xml file
     mix = lxml.etree.parse('./tests/data/mix_sample.xml').getroot()
 
@@ -231,28 +271,32 @@ def test_set_xml():
     assert METAX_CLIENT.set_xml('set_xml_1', mix)
 
     # Check that posted message body is valid XML
-    lxml.etree.fromstring(httpretty.last_request().body)
+    lxml.etree.fromstring(requests_mock.last_request.body)
 
     # Check message headers
-    assert httpretty.last_request().headers['content-type'] \
+    assert requests_mock.last_request.headers['content-type'] \
         == 'application/xml'
 
     # Check that message method is correct
-    assert httpretty.last_request().method == 'POST'
+    assert requests_mock.last_request.method == 'POST'
 
     # Check that message query string has correct parameters
-    assert httpretty.last_request().querystring['namespace'][0] \
+    assert requests_mock.last_request.qs['namespace'][0] \
         == 'http://www.loc.gov/mix/v20'
 
 
-@pytest.mark.usefixtures('testmetax')
-# pylint: disable=invalid-name
-def test_set_xml_metadata_already_set():
+def test_set_xml_metadata_already_set(requests_mock):
     """Test set_xml functions. Reads XML file and posts it to Metax. The body
     and headers of HTTP request are checked.
 
     :returns: None
     """
+    requests_mock.get(METAX_REST_URL + '/files/xml_metadata_already_set/xml',
+                      json=['http://www.loc.gov/mix/v20'])
+    requests_mock.get(METAX_REST_URL + '/files/xml_metadata_already_set/xml'
+                      '?namespace=http://www.loc.gov/mix/v20',
+                      text='<foo></foo>')
+
     # Read sample MIX xml file
     mix = lxml.etree.parse('./tests/data/mix_sample.xml').getroot()
 
@@ -260,26 +304,43 @@ def test_set_xml_metadata_already_set():
     assert not METAX_CLIENT.set_xml('xml_metadata_already_set', mix)
 
     # Check that message method is correct
-    assert httpretty.last_request().method == 'GET'
-    assert httpretty.last_request().querystring['namespace'][0] ==\
+    assert requests_mock.last_request.method == 'GET'
+    assert requests_mock.last_request.qs['namespace'][0] ==\
         'http://www.loc.gov/mix/v20'
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_get_datacite():
+def test_get_datacite(requests_mock):
     """Test get_datacite function. Read one field from returned etree object
     and check its correctness.
+
     :returns: None
     """
-    xml = METAX_CLIENT.get_datacite("datacite_test_1")
+    # Read sample datacite from file and create mocked HTTP response
+    datacite = lxml.etree.parse('tests/data/datacite_sample.xml')
+    requests_mock.get(
+        METAX_REST_URL + '/datasets/test_id?dataset_format=datacite',
+        complete_qs=True,
+        text=lxml.etree.tostring(datacite)
+    )
+
+    requests_mock.get(METAX_REST_URL + "/datasets/test_id",
+                      complete_qs=True,
+                      json={'identifier': 'test_id'})
+    requests_mock.post(METAX_URL + "/rpc/datasets/set_preservation_identifier"
+                       "?identifier=test_id")
+
+    xml = METAX_CLIENT.get_datacite("test_id")
+
     # make sure Metax is called for preservation_identifier generation
-    assert httpretty.HTTPretty.latest_requests[-2].path == \
-        ("/rpc/datasets/set_preservation_identifier?identifier="
-         "datacite_test_1")
+    assert requests_mock.request_history[-2].path \
+        == "/rpc/datasets/set_preservation_identifier"
+    assert requests_mock.request_history[-2].qs == {"identifier": ["test_id"]}
+
     # Read field "creatorName" from xml file
     ns_string = 'http://datacite.org/schema/kernel-4'
     xpath_str = '/ns:resource/ns:creators/ns:creator/ns:creatorName'
     creatorname = xml.xpath(xpath_str, namespaces={'ns': ns_string})[0].text
+
     # Check that "creatorName" is same as in the original XML file
     assert creatorname == "Puupää, Pekka"
 
@@ -321,8 +382,7 @@ def test_get_datacite_fails(requests_mock):
         METAX_CLIENT.get_datacite("foo")
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_set_preservation_state():
+def test_set_preservation_state(requests_mock):
     """Test set_preservation_state function. Metadata in Metax is modified by
     sending HTTP PATCH request with modified metadata in JSON format. This test
     checks that correct HTTP request is sent to Metax. The effect of the
@@ -330,25 +390,27 @@ def test_set_preservation_state():
 
     :returns: None
     """
+    requests_mock.get(METAX_REST_URL + '/datasets/test_id', json={})
+    requests_mock.patch(METAX_REST_URL + '/datasets/test_id')
+
     METAX_CLIENT.set_preservation_state(
-        "mets_test_dataset",
+        "test_id",
         state=DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
         system_description='Accepted to preservation'
     )
 
     # Check the body of last HTTP request
-    request_body = json.loads(httpretty.last_request().body)
+    request_body = json.loads(requests_mock.last_request.body)
     assert request_body["preservation_state"] ==\
         DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE
     assert request_body["preservation_description"] \
         == "Accepted to preservation"
 
     # Check the method of last HTTP request
-    assert httpretty.last_request().method == 'PATCH'
+    assert requests_mock.last_request.method == 'PATCH'
 
 
-@pytest.mark.usefixtures('testmetax')
-def test_patch_file():
+def test_patch_file(requests_mock):
     """Test patch_file function. Metadata in Metax is modified by sending HTTP
     PATCH request with modified metadata in JSON format. This test checks that
     correct HTTP request is sent to Metax. The effect of the request is not
@@ -356,6 +418,8 @@ def test_patch_file():
 
     :returns: None
     """
+    requests_mock.get(METAX_REST_URL + '/files/test_id', json={})
+    requests_mock.patch(METAX_REST_URL + '/files/test_id')
     sample_data = {
         "file_characteristics": {
             "file_format": "text/plain",
@@ -363,14 +427,14 @@ def test_patch_file():
             "encoding": "UTF-8"
         }
     }
-    METAX_CLIENT.patch_file('pid:urn:set_file_characteristics_1', sample_data)
+    METAX_CLIENT.patch_file('test_id', sample_data)
 
     # Check the body of last HTTP request
-    request_body = json.loads(httpretty.last_request().body)
+    request_body = json.loads(requests_mock.last_request.body)
     assert request_body == sample_data
 
     # Check the method of last HTTP request
-    assert httpretty.last_request().method == 'PATCH'
+    assert requests_mock.last_request.method == 'PATCH'
 
 
 def test_get_dataset_http_503(requests_mock):
@@ -440,36 +504,30 @@ def test_get_dataset_files_http_503(requests_mock):
         METAX_CLIENT.get_dataset_files("foo")
 
 
-@httpretty.activate
-def test_delete_file():
+def test_delete_file(requests_mock):
     """Test that ``delete_file`` function sends HTTP DELETE request to correct
     url
     """
-    httpretty.register_uri(httpretty.DELETE,
-                           METAX_URL + '/rest/v1/files/file1')
+    requests_mock.delete(METAX_REST_URL + "/files/file1")
 
     METAX_CLIENT.delete_file('file1')
 
-    assert httpretty.last_request().method == httpretty.DELETE
-    assert httpretty.last_request().headers.get('host') \
-        == 'foobar'
-    assert httpretty.last_request().path == '/rest/v1/files/file1'
+    assert requests_mock.last_request.method == "DELETE"
+    assert requests_mock.last_request.hostname == 'foobar'
+    assert requests_mock.last_request.path == '/rest/v1/files/file1'
 
 
-@httpretty.activate
-def test_delete_dataset():
+def test_delete_dataset(requests_mock):
     """Test that ``delete_dataset`` function sends HTTP DELETE request to
     correct url
     """
-    httpretty.register_uri(httpretty.DELETE,
-                           METAX_URL + '/rest/v1/datasets/dataset1')
+    requests_mock.delete(METAX_REST_URL + "/datasets/dataset1")
 
     METAX_CLIENT.delete_dataset('dataset1')
 
-    assert httpretty.last_request().method == httpretty.DELETE
-    assert httpretty.last_request().headers.get('host') \
-        == 'foobar'
-    assert httpretty.last_request().path == '/rest/v1/datasets/dataset1'
+    assert requests_mock.last_request.method == "DELETE"
+    assert requests_mock.last_request.hostname == 'foobar'
+    assert requests_mock.last_request.path == '/rest/v1/datasets/dataset1'
 
 
 def test_post_file(requests_mock):

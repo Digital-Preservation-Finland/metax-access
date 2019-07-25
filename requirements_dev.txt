@@ -2,7 +2,6 @@
 pytest
 coverage
 pytest-cov
-httpretty
 mock
 Sphinx==1.7.9
 requests_mock

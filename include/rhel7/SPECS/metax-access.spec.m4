@@ -26,7 +26,6 @@ Requires:       python-mock
 Requires:       python2-argcomplete
 BuildRequires:  python-setuptools
 BuildRequires:  pytest
-BuildRequires:  python-httpretty
 BuildRequires:  python-sphinx
 
 %description
