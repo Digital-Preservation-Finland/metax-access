@@ -320,7 +320,7 @@ def test_get_datacite(requests_mock):
     requests_mock.get(
         METAX_REST_URL + '/datasets/test_id?dataset_format=datacite',
         complete_qs=True,
-        text=lxml.etree.tostring(datacite)
+        content=lxml.etree.tostring(datacite)
     )
 
     requests_mock.get(METAX_REST_URL + "/datasets/test_id",
