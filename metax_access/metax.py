@@ -122,7 +122,6 @@ class Metax(object):
         self.username = metax_user
         self.password = metax_password
         self.baseurl = metax_url + '/rest/v1/'
-        self.elasticsearch_url = metax_url + '/es/'
         self.rpcurl = metax_url + '/rpc'
         self.verify = verify
 
@@ -493,20 +492,6 @@ class Metax(object):
             return True
         else:
             return False
-
-    def get_elasticsearchdata(self):
-        """Get elastic search data from Metax
-
-        :returns: json
-        """
-        url = self.elasticsearch_url + "reference_data/use_category/_search?"\
-                                       "pretty&size=100"
-        response = self._do_get_request(url)
-
-        if response.status_code == 404:
-            raise MetaxError("Could not find elastic search data.")
-        response.raise_for_status()
-        return response.json()
 
     def set_preservation_state(self, dataset_id, state=None,
                                user_description=None,

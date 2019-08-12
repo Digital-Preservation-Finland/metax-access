@@ -466,20 +466,6 @@ def test_set_preservation_state_http_503(requests_mock):
         METAX_CLIENT.set_preservation_state('foobar', '10', 'foo', 'bar')
 
 
-# pylint: disable=invalid-name
-def test_get_elasticsearchdata_http_503(requests_mock):
-    """Test that get_elasticsearchdata function throws a MetaxConnectionError
-    exception when requests.get() returns http 503 error
-    """
-
-    requests_mock.get(
-        METAX_URL + "/es/reference_data/use_category/_search?pretty&size=100",
-        status_code=503
-    )
-    with pytest.raises(MetaxConnectionError):
-        METAX_CLIENT.get_elasticsearchdata()
-
-
 def test_get_datacite_http_503(requests_mock):
     """Test that get_datacite function throws a MetaxConnectionError exception
     when requests.get() returns http 503 error
