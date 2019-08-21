@@ -692,7 +692,7 @@ class Metax(object):
         """Delete metadata of a file.
 
         :param file_id: file identifier
-        :returns: ``None``
+        :returns: JSON response from Metax
         """
         url = self.baseurl + 'files/' + file_id
         response = requests.delete(
@@ -701,6 +701,8 @@ class Metax(object):
             verify=self.verify
         )
         response.raise_for_status()
+
+        return response.json()
 
     def delete_files(self, file_id_list):
         """Delete file metadata from Metax.

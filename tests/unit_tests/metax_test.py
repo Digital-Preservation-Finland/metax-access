@@ -494,7 +494,8 @@ def test_delete_file(requests_mock):
     """Test that ``delete_file`` function sends HTTP DELETE request to correct
     url
     """
-    requests_mock.delete(METAX_REST_URL + "/files/file1")
+    requests_mock.delete(METAX_REST_URL + "/files/file1",
+                         json={"deleted_files_count": 1})
 
     METAX_CLIENT.delete_file('file1')
 
