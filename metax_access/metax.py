@@ -692,7 +692,7 @@ class Metax(object):
         """Delete metadata of a file.
 
         :param file_id: file identifier
-        :returns: requests Response
+        :returns: ``None``
         """
         url = self.baseurl + 'files/' + file_id
         response = requests.delete(
@@ -706,7 +706,7 @@ class Metax(object):
         """Delete file metadata from Metax.
 
         :param file_id_list: List of ids to delete from Metax
-        :returns: HTTP response returned by Metax
+        :returns: JSON returned by Metax
         """
         url = self.baseurl + 'files'
         response = requests.delete(
@@ -722,7 +722,7 @@ class Metax(object):
         """Delete metadata of dataset.
 
         :param dataset_id: dataset identifier
-        :returns: requests Response
+        :returns: ``None``
         """
         url = self.baseurl + 'datasets/' + dataset_id
         response = requests.delete(
@@ -747,7 +747,7 @@ class Metax(object):
         """Post file metadata.
 
         :param metadata: file metadata dictionary
-        :returns: requests Response
+        :returns: JSON response from Metax
         """
         url = self.baseurl + 'files/'
         response = requests.post(
@@ -763,7 +763,7 @@ class Metax(object):
         """Post dataset metadata.
 
         :param metadata: dataset metadata dictionary
-        :returns: requests Response
+        :returns: JSON response from Metax
         """
         url = self.baseurl + 'datasets/'
         response = requests.post(
@@ -778,7 +778,7 @@ class Metax(object):
         """Post contract metadata.
 
         :param metadata: contract metadata dictionary
-        :returns: requests Response
+        :returns: JSON response from Metax
         """
         url = self.baseurl + 'contracts/'
         response = requests.post(
@@ -793,7 +793,7 @@ class Metax(object):
         """Delete metadata of contract.
 
         :param dataset_id: contract identifier
-        :returns: requests Response
+        :returns: ``None``
         """
         url = self.baseurl + 'contracts/' + contract_id
         response = requests.delete(
