@@ -640,34 +640,6 @@ class Metax(object):
 
         return response.json()
 
-    def get_dataset_file_mapping(self, dataset_id):
-        """Returns a dict, which maps PAS dataset file identifiers to
-        IDA dataset file identifiers.
-
-        :param str dataset_id: id or identifier attribute of dataset
-        :returns: A dict {PAS_file_id: IDA_file_id}
-        """
-        pas_dataset = self.get_dataset(dataset_id)
-        pas_files = self.get_dataset_files(dataset_id)
-
-        if "preservation_dataset_origin_version" not in pas_dataset:
-            return {
-                _file["identifier"]: _file["identifier"] for _file in pas_files
-            }
-
-        dataset_origin = pas_dataset["preservation_dataset_origin_version"]
-        ida_dataset_id = dataset_origin["identifier"]
-        ida_files = self.get_dataset_files(ida_dataset_id)
-
-        pas_dict = {
-            _file["file_path"]: _file["identifier"] for _file in pas_files
-        }
-        ida_dict = {
-            _file["file_path"]: _file["identifier"] for _file in ida_files
-        }
-
-        return {pas_dict[key]: ida_dict[key] for key in pas_dict}
-
     def get_file_datasets(self, file_id):
         """GET a list of datasets associated with file_id
 
