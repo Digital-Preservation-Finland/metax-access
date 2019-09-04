@@ -635,7 +635,7 @@ class Metax(object):
                                                            self.password))
 
         if response.status_code == 404:
-            raise MetaxError("Could not find dataset files metadata.")
+            raise DatasetNotFoundError
         response.raise_for_status()
 
         return response.json()

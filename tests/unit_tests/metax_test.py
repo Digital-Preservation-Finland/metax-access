@@ -490,6 +490,15 @@ def test_get_dataset_files_http_503(requests_mock):
         METAX_CLIENT.get_dataset_files("foo")
 
 
+def test_get_dataset_files_http_404(requests_mock):
+    """Test that get_dataset_files function throws a DatasetNotFoundError
+    exception when requests.get() returns http 404 error
+    """
+    requests_mock.get(METAX_REST_URL+'/datasets/foo/files', status_code=404)
+    with pytest.raises(DatasetNotFoundError):
+        METAX_CLIENT.get_dataset_files("foo")
+
+
 def test_delete_file(requests_mock):
     """Test that ``delete_file`` function sends HTTP DELETE request to correct
     url
