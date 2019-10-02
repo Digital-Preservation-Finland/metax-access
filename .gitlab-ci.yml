@@ -39,7 +39,6 @@ unit-test-python27:
     - docker
   script:
     - 'unit-test-virtualenv.sh'
-  allow_failure: false
   except:
     - master
 
@@ -49,7 +48,6 @@ unit-test-python36:
     - docker
   script:
     - 'unit-test-virtualenv.sh python36'
-  allow_failure: false
   except:
     - master
 
