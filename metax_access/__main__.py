@@ -45,10 +45,23 @@ def get(metax_client, args):
     :param args: Named tuple of parsed arguments from
                  :func:`__main__.parse_args()`
     """
+
     if args.resource == 'dataset':
-        _pprint(metax_client.get_dataset(args.identifier))
+        if args.identifier == 'template':
+            with open("dataset_template.json", "wb") as _file:
+                dataset_template = metax_client.get_dataset_template()
+                _file.write(json.dumps(
+                    dataset_template,
+                    indent=4,
+                    ensure_ascii=False
+                ))
+                print("Created dataset_template.json")
+        else:
+            _pprint(metax_client.get_dataset(args.identifier))
+
     elif args.resource == 'file':
         _pprint(metax_client.get_file(args.identifier))
+
     elif args.resource == 'contract':
         _pprint(metax_client.get_contract(args.identifier))
 

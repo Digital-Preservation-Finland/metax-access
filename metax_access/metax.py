@@ -253,6 +253,18 @@ class Metax(object):
         response.raise_for_status()
         return response.json()
 
+    def get_dataset_template(self):
+        """Get minimal dataset template
+
+        :returns: Template as json
+        """
+        rpc_url = "%s/datasets/get_minimal_dataset_template?type=enduser" % (
+            self.rpcurl
+        )
+        response = self._do_get_request(rpc_url)
+        response.raise_for_status()
+        return response.json()
+
     def get_datacatalog(self, catalog_id):
         """Gets the metadata of a datacatalog from Metax.
 
