@@ -464,13 +464,16 @@ class Metax(object):
             url = '%sfiles/%s/xml?namespace=%s' % (self.baseurl,
                                                    file_id,
                                                    namespace)
+
             headers = {'Content-Type': 'application/xml'}
-            response = post(url,
-                            data=data,
-                            headers=headers,
-                            auth=HTTPBasicAuth(self.username,
-                                               self.password),
-                            verify=self.verify)
+            kwargs = {"data": data, "headers": headers, "verify": self.verify}
+            if self.token:
+                kwargs["headers"]["Authorization"] = "Bearer %s" % self.token
+            else:
+                kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
+
+            response = post(url, **kwargs)
+
             if response.status_code != 201:
                 raise requests.exceptions.HTTPError(
                     "Expected 201 Created, got {} instead".format(
@@ -627,12 +630,14 @@ class Metax(object):
         :returns: List of datasets associated with file_id
         """
         url = self.baseurl + 'files/datasets'
-        response = requests.post(
-            url,
-            json=[file_id],
-            auth=HTTPBasicAuth(self.username, self.password),
-            verify=self.verify
-        )
+
+        kwargs = {"json": [file_id], "verify": self.verify}
+        if self.token:
+            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
+        else:
+            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
+
+        response = requests.post(url, **kwargs)
 
         if response.status_code == 404:
             raise MetaxError("Could not find file metadata")
@@ -647,11 +652,14 @@ class Metax(object):
         :returns: JSON response from Metax
         """
         url = self.baseurl + 'files/' + file_id
-        response = requests.delete(
-            url=url,
-            auth=HTTPBasicAuth(self.username, self.password),
-            verify=self.verify
-        )
+
+        kwargs = {"verify": self.verify}
+        if self.token:
+            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
+        else:
+            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
+
+        response = requests.delete(url, **kwargs)
         response.raise_for_status()
 
         return response.json()
@@ -663,12 +671,14 @@ class Metax(object):
         :returns: JSON returned by Metax
         """
         url = self.baseurl + 'files'
-        response = requests.delete(
-            url=url,
-            json=file_id_list,
-            auth=HTTPBasicAuth(self.username, self.password),
-            verify=self.verify
-        )
+
+        kwargs = {"json": file_id_list, "verify": self.verify}
+        if self.token:
+            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
+        else:
+            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
+
+        response = requests.delete(url, **kwargs)
         response.raise_for_status()
         return response.json()
 
@@ -679,11 +689,14 @@ class Metax(object):
         :returns: ``None``
         """
         url = self.baseurl + 'datasets/' + dataset_id
-        response = requests.delete(
-            url=url,
-            auth=HTTPBasicAuth(self.username, self.password),
-            verify=self.verify
-        )
+
+        kwargs = {"verify": self.verify}
+        if self.token:
+            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
+        else:
+            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
+
+        response = requests.delete(url, **kwargs)
         response.raise_for_status()
 
     def delete_dataset_files(self, dataset_id):
@@ -704,12 +717,14 @@ class Metax(object):
         :returns: JSON response from Metax
         """
         url = self.baseurl + 'files/'
-        response = requests.post(
-            url=url,
-            json=metadata,
-            auth=HTTPBasicAuth(self.username, self.password),
-            verify=self.verify
-        )
+
+        kwargs = {"json": metadata, "verify": self.verify}
+        if self.token:
+            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
+        else:
+            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
+
+        response = requests.post(url, **kwargs)
         response.raise_for_status()
         return response.json()
 
@@ -720,11 +735,14 @@ class Metax(object):
         :returns: JSON response from Metax
         """
         url = self.baseurl + 'datasets/'
-        response = requests.post(
-            url, json=metadata,
-            auth=HTTPBasicAuth(self.username, self.password),
-            verify=self.verify
-        )
+
+        kwargs = {"json": metadata, "verify": self.verify}
+        if self.token:
+            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
+        else:
+            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
+
+        response = requests.post(url, **kwargs)
         response.raise_for_status()
         return response.json()
 
@@ -735,11 +753,14 @@ class Metax(object):
         :returns: JSON response from Metax
         """
         url = self.baseurl + 'contracts/'
-        response = requests.post(
-            url, json=metadata,
-            auth=HTTPBasicAuth(self.username, self.password),
-            verify=self.verify
-        )
+
+        kwargs = {"json": metadata, "verify": self.verify}
+        if self.token:
+            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
+        else:
+            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
+
+        response = requests.post(url, **kwargs)
         response.raise_for_status()
         return response.json()
 
@@ -750,11 +771,14 @@ class Metax(object):
         :returns: ``None``
         """
         url = self.baseurl + 'contracts/' + contract_id
-        response = requests.delete(
-            url=url,
-            auth=HTTPBasicAuth(self.username, self.password),
-            verify=self.verify
-        )
+
+        kwargs = {"verify": self.verify}
+        if self.token:
+            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
+        else:
+            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
+
+        response = requests.delete(url, **kwargs)
         response.raise_for_status()
 
     def get_directory_files(self, directory_identifier):
