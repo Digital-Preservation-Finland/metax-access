@@ -1,6 +1,7 @@
 # PYTHON_ARGCOMPLETE_OK
 """Commandline interface to Metax."""
 from __future__ import unicode_literals
+from __future__ import print_function
 
 import argparse
 import configparser
@@ -115,6 +116,9 @@ def main():
     parser.add_argument('-p', '--password',
                         metavar='password',
                         help="Metax password")
+    parser.add_argument('-t', '--token',
+                        metavar='token',
+                        help="Bearer token")
     subparsers = parser.add_subparsers(title='command')
 
     # Post command parser
@@ -192,7 +196,7 @@ def main():
         configuration.read(os.path.expanduser(config))
 
     # Override configuration file with commandline options
-    for option in ['host', 'user', 'password']:
+    for option in ['host', 'user', 'password', 'token']:
         if vars(args)[option]:
             configuration.set('metax', option)
         if not configuration.has_option('metax', option):
@@ -202,7 +206,8 @@ def main():
     metax_client = metax_access.Metax(
         configuration.get('metax', 'host'),
         configuration.get('metax', 'user'),
-        configuration.get('metax', 'password')
+        configuration.get('metax', 'password'),
+        token=configuration.get('metax', 'token')
     )
 
     # Run command

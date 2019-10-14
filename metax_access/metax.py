@@ -112,7 +112,12 @@ class DataciteGenerationError(MetaxError):
 class Metax(object):
     """Get metadata from metax as dict object."""
 
-    def __init__(self, metax_url, metax_user, metax_password, verify=True):
+    def __init__(self,
+                 metax_url,
+                 metax_user,
+                 metax_password,
+                 token=None,
+                 verify=True):
         """ Initialize Metax object.
 
         :param metax_url: Metax url
@@ -121,6 +126,7 @@ class Metax(object):
         """
         self.username = metax_user
         self.password = metax_password
+        self.token = token
         self.baseurl = metax_url + '/rest/v1/'
         self.rpcurl = metax_url + '/rpc'
         self.verify = verify
@@ -320,7 +326,7 @@ class Metax(object):
                 format_version = fil['file_characteristics']['format_version']
             if 'encoding' in fil['file_characteristics']:
                 encoding = fil['file_characteristics']['encoding']
-            if len(file_format) > 0:
+            if file_format:
                 temp_types.add(file_format + '||' + format_version +
                                '||' + encoding)
         for temp_type in temp_types:
@@ -789,11 +795,14 @@ class Metax(object):
 
         :returns: requests response
         """
-        response = get(
-            url,
-            auth=HTTPBasicAuth(self.username, self.password),
-            verify=self.verify
-        )
+        kwargs = {"verify": self.verify}
+        if self.token:
+            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
+        else:
+            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
+
+        response = get(url, **kwargs)
+
         if response.status_code == 503:
             raise MetaxConnectionError
         return response
@@ -804,12 +813,14 @@ class Metax(object):
 
         :returns: requests response
         """
-        response = patch(
-            url,
-            json=data,
-            auth=HTTPBasicAuth(self.username, self.password),
-            verify=self.verify
-        )
+        kwargs = {"json": data, "verify": self.verify}
+        if self.token:
+            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
+        else:
+            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
+
+        response = patch(url, **kwargs)
+
         if response.status_code == 503:
             raise MetaxConnectionError
         return response
@@ -820,12 +831,14 @@ class Metax(object):
 
         :returns: requests response
         """
-        response = post(
-            url,
-            json=data,
-            auth=HTTPBasicAuth(self.username, self.password),
-            verify=self.verify
-        )
+        kwargs = {"json": data, "verify": self.verify}
+        if self.token:
+            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
+        else:
+            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
+
+        response = post(url, **kwargs)
+
         if response.status_code == 503:
             raise MetaxConnectionError
         return response
