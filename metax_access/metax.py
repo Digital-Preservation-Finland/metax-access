@@ -5,7 +5,6 @@ import copy
 
 import six
 import requests
-from requests import get, patch, post
 from requests.auth import HTTPBasicAuth
 
 import lxml.etree
@@ -174,7 +173,7 @@ class Metax(object):
                        "datasets", "?state=", states, "&limit=",
                        limit, "&offset=", offset, pas_filter_str,
                        org_filter_str, ordering_str])
-        response = self._do_get_request(url)
+        response = self.get(url)
         if response.status_code == 404:
             raise DatasetNotFoundError
         response.raise_for_status()
@@ -196,7 +195,7 @@ class Metax(object):
         url = "".join([self.baseurl, 'contracts?limit=', limit,
                        '&offset=', offset,
                        org_filter_str])
-        response = self._do_get_request(url)
+        response = self.get(url)
         if response.status_code == 404:
             raise ContractNotFoundError
         response.raise_for_status()
@@ -209,7 +208,7 @@ class Metax(object):
         :returns: The contract from Metax as json.
         """
         url = "".join([self.baseurl, "contracts/", pid])
-        response = self._do_get_request(url)
+        response = self.get(url)
         if response.status_code == 404:
             raise ContractNotFoundError
         response.raise_for_status()
@@ -232,7 +231,7 @@ class Metax(object):
                 data[key] = _update_nested_dict(original_data[key], data[key])
 
         url = "".join([self.baseurl, "contracts/", contract_id])
-        response = self._do_patch_request(url, data)
+        response = self.patch(url, json=data)
         response.raise_for_status()
 
         return response.json()
@@ -245,7 +244,7 @@ class Metax(object):
         """
         url = self.baseurl + 'datasets' + '/' + dataset_id
 
-        response = self._do_get_request(url)
+        response = self.get(url)
 
         if response.status_code == 404:
             raise DatasetNotFoundError(
@@ -261,7 +260,7 @@ class Metax(object):
         :returns: The datacatalog as json.
         """
         url = "".join([self.baseurl, "datacatalogs/", catalog_id])
-        response = self._do_get_request(url)
+        response = self.get(url)
         if response.status_code == 404:
             raise DataCatalogNotFoundError
         response.raise_for_status()
@@ -284,7 +283,7 @@ class Metax(object):
                 data[key] = _update_nested_dict(original_data[key], data[key])
 
         url = "".join([self.baseurl, "datasets/", dataset_id])
-        response = self._do_patch_request(url, data)
+        response = self.patch(url, json=data)
         response.raise_for_status()
 
         return response.json()
@@ -306,7 +305,7 @@ class Metax(object):
         mime_types = []
         url = "".join([self.baseurl,
                        "datasets/", six.text_type(dataset_id), '/files'])
-        response = self._do_get_request(url)
+        response = self.get(url)
         if response.status_code == 404:
             raise DatasetNotFoundError
         elif response.status_code >= 300:
@@ -349,7 +348,7 @@ class Metax(object):
         url = "".join([
             self.baseurl, "contracts/", six.text_type(pid), '/datasets'
         ])
-        response = self._do_get_request(url)
+        response = self.get(url)
         response.raise_for_status()
         return response.json()
 
@@ -361,7 +360,7 @@ class Metax(object):
         """
         url = self.baseurl + 'files' + '/' + file_id
 
-        response = self._do_get_request(url)
+        response = self.get(url)
 
         if response.status_code == 404:
             raise FileNotFoundError(
@@ -381,7 +380,7 @@ class Metax(object):
 
         # GET 10000 files every iteration until all files are read
         while url is not None:
-            response = self._do_get_request(url).json()
+            response = self.get(url).json()
             url = response["next"]
             files.extend(response["results"])
 
@@ -418,7 +417,7 @@ class Metax(object):
 
         # Get list of xml namespaces
         ns_key_url = self.baseurl + entity_url + '/' + entity_id + '/xml'
-        response = self._do_get_request(ns_key_url)
+        response = self.get(ns_key_url)
         if response.status_code == 404:
             raise MetaxError(
                 "Could not retrieve list of additional metadata XML for "
@@ -431,7 +430,7 @@ class Metax(object):
         # add it to result dict
         for ns_key in ns_key_list:
             query = '?namespace=' + ns_key
-            response = self._do_get_request(ns_key_url + query)
+            response = self.get(ns_key_url + query)
             if not response.status_code == 200:
                 raise MetaxError(
                     "Could not retrieve additional metadata XML for "
@@ -466,13 +465,7 @@ class Metax(object):
                                                    namespace)
 
             headers = {'Content-Type': 'application/xml'}
-            kwargs = {"data": data, "headers": headers, "verify": self.verify}
-            if self.token:
-                kwargs["headers"]["Authorization"] = "Bearer %s" % self.token
-            else:
-                kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
-
-            response = post(url, **kwargs)
+            response = self.post(url, data=data, headers=headers)
 
             if response.status_code != 201:
                 raise requests.exceptions.HTTPError(
@@ -531,7 +524,7 @@ class Metax(object):
                 if value != dataset.get(key, None)}
 
         if data:
-            response = self._do_patch_request(url, data)
+            response = self.patch(url, json=data)
             # Raise exception if request fails
             response.raise_for_status()
 
@@ -552,7 +545,7 @@ class Metax(object):
                 data[key] = _update_nested_dict(original_data[key], data[key])
 
         url = "".join([self.baseurl, "files/", file_id])
-        response = self._do_patch_request(url, data)
+        response = self.patch(url, json=data)
         response.raise_for_status()
 
     def set_preservation_id(self, dataset_id):
@@ -568,7 +561,7 @@ class Metax(object):
             self.rpcurl, dataset_identifier
         )
 
-        response = self._do_post_request(rpc_url)
+        response = self.post(rpc_url)
 
         if response.status_code == 400:
             detail = _get_detailed_error(
@@ -591,7 +584,7 @@ class Metax(object):
 
         url = "%sdatasets/%s?dataset_format=datacite" % (self.baseurl,
                                                          dataset_id)
-        response = self._do_get_request(url)
+        response = self.get(url)
 
         if response.status_code == 400:
             detail = _get_detailed_error(
@@ -615,7 +608,7 @@ class Metax(object):
         """
         url = self.baseurl + 'datasets/' + dataset_id + '/files'
 
-        response = self._do_get_request(url)
+        response = self.get(url)
 
         if response.status_code == 404:
             raise DatasetNotFoundError
@@ -630,14 +623,7 @@ class Metax(object):
         :returns: List of datasets associated with file_id
         """
         url = self.baseurl + 'files/datasets'
-
-        kwargs = {"json": [file_id], "verify": self.verify}
-        if self.token:
-            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
-        else:
-            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
-
-        response = requests.post(url, **kwargs)
+        response = self.post(url, json=[file_id])
 
         if response.status_code == 404:
             raise MetaxError("Could not find file metadata")
@@ -652,14 +638,7 @@ class Metax(object):
         :returns: JSON response from Metax
         """
         url = self.baseurl + 'files/' + file_id
-
-        kwargs = {"verify": self.verify}
-        if self.token:
-            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
-        else:
-            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
-
-        response = requests.delete(url, **kwargs)
+        response = self.delete(url)
         response.raise_for_status()
 
         return response.json()
@@ -671,15 +650,9 @@ class Metax(object):
         :returns: JSON returned by Metax
         """
         url = self.baseurl + 'files'
-
-        kwargs = {"json": file_id_list, "verify": self.verify}
-        if self.token:
-            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
-        else:
-            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
-
-        response = requests.delete(url, **kwargs)
+        response = self.delete(url, json=file_id_list)
         response.raise_for_status()
+
         return response.json()
 
     def delete_dataset(self, dataset_id):
@@ -689,14 +662,7 @@ class Metax(object):
         :returns: ``None``
         """
         url = self.baseurl + 'datasets/' + dataset_id
-
-        kwargs = {"verify": self.verify}
-        if self.token:
-            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
-        else:
-            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
-
-        response = requests.delete(url, **kwargs)
+        response = self.delete(url)
         response.raise_for_status()
 
     def delete_dataset_files(self, dataset_id):
@@ -717,15 +683,9 @@ class Metax(object):
         :returns: JSON response from Metax
         """
         url = self.baseurl + 'files/'
-
-        kwargs = {"json": metadata, "verify": self.verify}
-        if self.token:
-            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
-        else:
-            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
-
-        response = requests.post(url, **kwargs)
+        response = self.post(url, json=metadata)
         response.raise_for_status()
+
         return response.json()
 
     def post_dataset(self, metadata):
@@ -735,15 +695,9 @@ class Metax(object):
         :returns: JSON response from Metax
         """
         url = self.baseurl + 'datasets/'
-
-        kwargs = {"json": metadata, "verify": self.verify}
-        if self.token:
-            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
-        else:
-            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
-
-        response = requests.post(url, **kwargs)
+        response = self.post(url, json=metadata)
         response.raise_for_status()
+
         return response.json()
 
     def post_contract(self, metadata):
@@ -753,15 +707,9 @@ class Metax(object):
         :returns: JSON response from Metax
         """
         url = self.baseurl + 'contracts/'
-
-        kwargs = {"json": metadata, "verify": self.verify}
-        if self.token:
-            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
-        else:
-            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
-
-        response = requests.post(url, **kwargs)
+        response = self.post(url, json=metadata)
         response.raise_for_status()
+
         return response.json()
 
     def delete_contract(self, contract_id):
@@ -771,14 +719,7 @@ class Metax(object):
         :returns: ``None``
         """
         url = self.baseurl + 'contracts/' + contract_id
-
-        kwargs = {"verify": self.verify}
-        if self.token:
-            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
-        else:
-            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
-
-        response = requests.delete(url, **kwargs)
+        response = self.delete(url)
         response.raise_for_status()
 
     def get_directory_files(self, directory_identifier):
@@ -813,55 +754,93 @@ class Metax(object):
 
         return response.json()
 
-    def _do_get_request(self, url):
+    def get(self, url, **kwargs):
         """Wrapper function for requests.get() function. Raises
         MetaxConnectionError if status code is 503 (Service unavailable)
 
         :returns: requests response
         """
-        kwargs = {"verify": self.verify}
+        if "verify" not in kwargs:
+            kwargs["verify"] = self.verify
+
         if self.token:
-            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
+            if "headers" in kwargs:
+                kwargs["headers"]["Authorization"] = "Bearer %s" % self.token
+            else:
+                kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
         else:
             kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
 
-        response = get(url, **kwargs)
+        response = requests.get(url, **kwargs)
 
         if response.status_code == 503:
             raise MetaxConnectionError
         return response
 
-    def _do_patch_request(self, url, data):
+    def patch(self, url, **kwargs):
         """Wrapper function for requests.patch() function. Raises
         MetaxConnectionError if status code is 503 (Service unavailable
 
         :returns: requests response
         """
-        kwargs = {"json": data, "verify": self.verify}
+        if "verify" not in kwargs:
+            kwargs["verify"] = self.verify
+
         if self.token:
-            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
+            if "headers" in kwargs:
+                kwargs["headers"]["Authorization"] = "Bearer %s" % self.token
+            else:
+                kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
         else:
             kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
 
-        response = patch(url, **kwargs)
+        response = requests.patch(url, **kwargs)
 
         if response.status_code == 503:
             raise MetaxConnectionError
         return response
 
-    def _do_post_request(self, url, data=None):
-        """Wrapper function for requests.patch() function. Raises
+    def post(self, url, **kwargs):
+        """Wrapper function for requests.post() function. Raises
         MetaxConnectionError if status code is 503 (Service unavailable
 
         :returns: requests response
         """
-        kwargs = {"json": data, "verify": self.verify}
+        if "verify" not in kwargs:
+            kwargs["verify"] = self.verify
+
         if self.token:
-            kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
+            if "headers" in kwargs:
+                kwargs["headers"]["Authorization"] = "Bearer %s" % self.token
+            else:
+                kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
         else:
             kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
 
-        response = post(url, **kwargs)
+        response = requests.post(url, **kwargs)
+
+        if response.status_code == 503:
+            raise MetaxConnectionError
+        return response
+
+    def delete(self, url, **kwargs):
+        """Wrapper function for requests.delete() function. Raises
+        MetaxConnectionError if status code is 503 (Service unavailable)
+
+        :returns: requests response
+        """
+        if "verify" not in kwargs:
+            kwargs["verify"] = self.verify
+
+        if self.token:
+            if "headers" in kwargs:
+                kwargs["headers"]["Authorization"] = "Bearer %s" % self.token
+            else:
+                kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
+        else:
+            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
+
+        response = requests.delete(url, **kwargs)
 
         if response.status_code == 503:
             raise MetaxConnectionError
