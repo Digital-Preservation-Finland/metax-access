@@ -48,7 +48,7 @@ def get(metax_client, args):
 
     if args.resource == 'dataset':
         if args.identifier == 'template':
-            with open("dataset_template.json", "wb") as _file:
+            with io.open("dataset_template.json", "wt") as _file:
                 dataset_template = metax_client.get_dataset_template()
                 _file.write(json.dumps(
                     dataset_template,
