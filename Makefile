@@ -13,6 +13,16 @@ install:
 	# Use Python setuptools
 	python ./setup.py install -O1 --prefix="${PREFIX}" --root="${DESTDIR}" --record=INSTALLED_FILES
 
+github:
+	python3 -mvenv venv; \
+	    source venv/bin/activate; \
+	    pip install --upgrade pip setuptools; \
+	    pip install -r requirements_github.txt; \
+	    pip install .; \
+	    if [ ! -f ~/.metax.cfg ]; then \
+	    	cp include/etc/metax.cfg ~/.metax.cfg; \
+	    fi
+
 test:
 	py.test -svvvv --junitprefix=dpres-siptools-research --junitxml=junit.xml tests/unit_tests
 
