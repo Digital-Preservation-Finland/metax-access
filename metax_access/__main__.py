@@ -47,17 +47,20 @@ def get(metax_client, args):
     """
 
     if args.resource == 'dataset':
-        if args.identifier == 'template':
-            dataset_template = metax_client.get_dataset_template()
-            _pprint(dataset_template, args.output)
-        else:
-            _pprint(metax_client.get_dataset(args.identifier), args.output)
+        _pprint(metax_client.get_dataset(args.identifier), args.output)
 
     elif args.resource == 'file':
         _pprint(metax_client.get_file(args.identifier), args.output)
 
     elif args.resource == 'contract':
         _pprint(metax_client.get_contract(args.identifier), args.output)
+
+    elif args.resource == 'template':
+        if args.identifier == 'dataset':
+            dataset_template = metax_client.get_dataset_template()
+            _pprint(dataset_template, args.output)
+        else:
+            raise ValueError("Only supported template is: 'dataset'")
 
 
 def delete(metax_client, args):
@@ -154,9 +157,11 @@ def main():
         'get',
         help='Print file, dataset or contract metadata.'
     )
-    get_parser.add_argument('resource',
-                            choices=('file', 'dataset', 'contract'),
-                            help="Resource type")
+    get_parser.add_argument(
+        'resource',
+        choices=('file', 'dataset', 'contract', 'template'),
+        help="Resource type"
+    )
     get_parser.add_argument('identifier',
                             help="Resource identifier")
     get_parser.set_defaults(func=get)
