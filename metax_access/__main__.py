@@ -31,11 +31,11 @@ def post(metax_client, args):
         data = json.load(open_file)
 
     if args.resource == 'dataset':
-        _pprint(metax_client.post_dataset(data))
+        _pprint(metax_client.post_dataset(data), args.output)
     elif args.resource == 'file':
-        _pprint(metax_client.post_file(data))
+        _pprint(metax_client.post_file(data), args.output)
     elif args.resource == 'contract':
-        _pprint(metax_client.post_contract(data))
+        _pprint(metax_client.post_contract(data), args.output)
 
 
 def get(metax_client, args):
@@ -48,22 +48,16 @@ def get(metax_client, args):
 
     if args.resource == 'dataset':
         if args.identifier == 'template':
-            with io.open("dataset_template.json", "wt") as _file:
-                dataset_template = metax_client.get_dataset_template()
-                _file.write(json.dumps(
-                    dataset_template,
-                    indent=4,
-                    ensure_ascii=False
-                ))
-                print("Created dataset_template.json")
+            dataset_template = metax_client.get_dataset_template()
+            _pprint(dataset_template, args.output)
         else:
-            _pprint(metax_client.get_dataset(args.identifier))
+            _pprint(metax_client.get_dataset(args.identifier), args.output)
 
     elif args.resource == 'file':
-        _pprint(metax_client.get_file(args.identifier))
+        _pprint(metax_client.get_file(args.identifier), args.output)
 
     elif args.resource == 'contract':
-        _pprint(metax_client.get_contract(args.identifier))
+        _pprint(metax_client.get_contract(args.identifier), args.output)
 
 
 def delete(metax_client, args):
@@ -92,20 +86,26 @@ def patch(metax_client, args):
         data = json.load(open_file)
 
     if args.resource == 'dataset':
-        _pprint(metax_client.patch_dataset(args.identifier, data))
+        _pprint(metax_client.patch_dataset(args.identifier, data), args.output)
     elif args.resource == 'file':
-        _pprint(metax_client.patch_file(args.identifier, data))
+        _pprint(metax_client.patch_file(args.identifier, data), args.output)
     elif args.resource == 'contract':
-        _pprint(metax_client.patch_contract(args.identifier, data))
+        _pprint(metax_client.patch_contract(args.identifier, data), args.output)
 
 
-def _pprint(dictionary):
+def _pprint(dictionary, fpath=None):
     """Pretty print dictionary to stdout
 
     :param dictionary: dictionary
+    :param fpath: Path to the file where output is written
     :returns: ``None``
     """
-    print(json.dumps(dictionary, indent=4, ensure_ascii=False))
+    output = json.dumps(dictionary, indent=4, ensure_ascii=False)
+    if not fpath:
+        print(output)
+    else:
+        with io.open(fpath, "wt") as _file:
+            _file.write(output)
 
 
 def main():
@@ -132,6 +132,9 @@ def main():
     parser.add_argument('-t', '--token',
                         metavar='token',
                         help="Bearer token")
+    parser.add_argument('-o', '--output',
+                        metavar='output',
+                        help="Path to the file where output is written")
     subparsers = parser.add_subparsers(title='command')
 
     # Post command parser
