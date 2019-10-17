@@ -730,7 +730,7 @@ class Metax(object):
         """
         url = self.baseurl + 'directories/' + directory_identifier + '/files'
 
-        response = self._do_get_request(url)
+        response = self.get(url)
 
         if response.status_code == 404:
             raise DirectoryNotFoundError
@@ -746,7 +746,7 @@ class Metax(object):
         """
         url = self.baseurl + 'directories/' + directory_identifier
 
-        response = self._do_get_request(url)
+        response = self.get(url)
 
         if response.status_code == 404:
             raise DirectoryNotFoundError
