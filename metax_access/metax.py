@@ -261,7 +261,7 @@ class Metax(object):
         rpc_url = "%s/datasets/get_minimal_dataset_template?type=enduser" % (
             self.rpcurl
         )
-        response = self._do_get_request(rpc_url)
+        response = self.get(rpc_url)
         response.raise_for_status()
         return response.json()
 
