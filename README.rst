@@ -4,9 +4,9 @@ Library for accessing Metax.
 
 Installation
 ------------
-On Centos 7 metax-access can be installed from `DPres RPM repository <https://dpres-rpms.csc.fi/>`_::
+Clone this repository and install with pip::
 
-   yum install metax-access
+   pip install ./metax-access/
 
 Usage
 -----
@@ -61,6 +61,7 @@ Build RPM::
 
 Generating documentation
 ------------------------
-Documentation for modules is automatically generated from docstrings using Sphinx (`https://wiki.csc.fi/KDK/PythonKoodinDokumentointi <https://wiki.csc.fi/KDK/PythonKoodinDokumentointi>`_)::
+
+Documentation for modules is automatically generated from docstrings using `Sphinx <https://www.sphinx-doc.org/en/master/>`_::
 
    make doc
