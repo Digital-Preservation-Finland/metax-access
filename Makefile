@@ -17,7 +17,7 @@ github:
 	python3 -mvenv venv; \
 	    source venv/bin/activate; \
 	    pip install --upgrade pip setuptools; \
-	    pip install -r requirements_github.txt; \
+	    pip install -r requirements_dev.txt; \
 	    pip install .; \
 	    if [ ! -f ~/.metax.cfg ]; then \
 	    	cp include/etc/metax.cfg ~/.metax.cfg; \
