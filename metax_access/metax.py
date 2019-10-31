@@ -263,7 +263,19 @@ class Metax(object):
         )
         response = self.get(rpc_url)
         response.raise_for_status()
-        return response.json()
+
+        template = response.json()
+
+        # Add "issued" field if it is not provided by Metax
+        if "issued" not in template["research_dataset"]:
+            template["research_dataset"]["issued"] = "2019-01-01"
+
+        # Add "publisher" field if it is not provided by Metax
+        if "publisher" not in template["research_dataset"]:
+            creator = template["research_dataset"]["creator"][0]
+            template['research_dataset']['publisher'] = creator
+
+        return template
 
     def get_datacatalog(self, catalog_id):
         """Gets the metadata of a datacatalog from Metax.
