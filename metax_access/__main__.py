@@ -11,6 +11,8 @@ import os
 import sys
 
 import argcomplete
+from requests.exceptions import HTTPError
+
 import metax_access
 
 DEFAULT_CONFIG_FILES = ['/etc/metax.cfg',
@@ -24,18 +26,22 @@ def post(metax_client, args):
     :param metax_client: `metax_access.Metax` instance
     :param args: Named tuple of parsed arguments from
                  :func:`__main__.parse_args()`
-
     """
     # Read metadata file
     with io.open(args.filepath, "rt") as open_file:
         data = json.load(open_file)
 
-    if args.resource == 'dataset':
-        _pprint(metax_client.post_dataset(data), args.output)
-    elif args.resource == 'file':
-        _pprint(metax_client.post_file(data), args.output)
-    elif args.resource == 'contract':
-        _pprint(metax_client.post_contract(data), args.output)
+    funcs = {
+        "dataset": metax_client.post_dataset,
+        "file": metax_client.post_file,
+        "contract": metax_client.post_contract
+    }
+    try:
+        response = funcs[args.resource](data)
+    except HTTPError as error:
+        response = error.response.json()
+
+    _pprint(response, args.output)
 
 
 def get(metax_client, args):
@@ -45,22 +51,27 @@ def get(metax_client, args):
     :param args: Named tuple of parsed arguments from
                  :func:`__main__.parse_args()`
     """
-
-    if args.resource == 'dataset':
-        _pprint(metax_client.get_dataset(args.identifier), args.output)
-
-    elif args.resource == 'file':
-        _pprint(metax_client.get_file(args.identifier), args.output)
-
-    elif args.resource == 'contract':
-        _pprint(metax_client.get_contract(args.identifier), args.output)
-
-    elif args.resource == 'template':
+    if args.resource == 'template':
         if args.identifier == 'dataset':
-            dataset_template = metax_client.get_dataset_template()
-            _pprint(dataset_template, args.output)
+            try:
+                response = metax_client.get_dataset_template()
+            except HTTPError as error:
+                response = error.response.json()
         else:
             raise ValueError("Only supported template is: 'dataset'")
+
+    else:
+        funcs = {
+            "dataset": metax_client.get_dataset,
+            "file": metax_client.get_file,
+            "contract": metax_client.get_contract
+        }
+        try:
+            response = funcs[args.resource](args.identifier)
+        except HTTPError as error:
+            response = error.response.json()
+
+    _pprint(response, args.output)
 
 
 def delete(metax_client, args):
@@ -70,12 +81,15 @@ def delete(metax_client, args):
     :param args: Named tuple of parsed arguments from
                  :func:`__main__.parse_args()`
     """
-    if args.resource == 'dataset':
-        metax_client.delete_dataset(args.identifier)
-    elif args.resource == 'file':
-        metax_client.delete_file(args.identifier)
-    elif args.resource == 'contract':
-        metax_client.delete_contract(args.identifier)
+    funcs = {
+        "dataset": metax_client.delete_dataset,
+        "file": metax_client.delete_file,
+        "contract": metax_client.delete_contract
+    }
+    try:
+        funcs[args.resource](args.identifier)
+    except HTTPError as error:
+        _pprint(error.response.json(), args.output)
 
 
 def patch(metax_client, args):
@@ -88,12 +102,17 @@ def patch(metax_client, args):
     with io.open(args.filepath, "rt") as open_file:
         data = json.load(open_file)
 
-    if args.resource == 'dataset':
-        _pprint(metax_client.patch_dataset(args.identifier, data), args.output)
-    elif args.resource == 'file':
-        _pprint(metax_client.patch_file(args.identifier, data), args.output)
-    elif args.resource == 'contract':
-        _pprint(metax_client.patch_contract(args.identifier, data), args.output)
+    funcs = {
+        "dataset": metax_client.patch_dataset,
+        "file": metax_client.patch_file,
+        "contract": metax_client.patch_contract
+    }
+    try:
+        response = funcs[args.resource](args.identifier, data)
+    except HTTPError as error:
+        response = error.response.json()
+
+    _pprint(response, args.output)
 
 
 def _pprint(dictionary, fpath=None):
