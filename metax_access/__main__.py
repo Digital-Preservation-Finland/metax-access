@@ -47,6 +47,8 @@ def post(metax_client, args):
     try:
         response = funcs[args.resource](data)
     except HTTPError as error:
+        if error.response.status_code > 499:
+            raise
         response = _get_metax_error(error)
 
     _pprint(response, args.output)
@@ -64,6 +66,8 @@ def get(metax_client, args):
             try:
                 response = metax_client.get_dataset_template()
             except HTTPError as error:
+                if error.response.status_code > 499:
+                    raise
                 response = _get_metax_error(error)
         else:
             raise ValueError("Only supported template is: 'dataset'")
@@ -77,6 +81,8 @@ def get(metax_client, args):
         try:
             response = funcs[args.resource](args.identifier)
         except HTTPError as error:
+            if error.response.status_code > 499:
+                raise
             response = _get_metax_error(error)
 
     _pprint(response, args.output)
@@ -97,6 +103,8 @@ def delete(metax_client, args):
     try:
         funcs[args.resource](args.identifier)
     except HTTPError as error:
+        if error.response.status_code > 499:
+            raise
         _pprint(_get_metax_error(error), args.output)
 
 
@@ -118,6 +126,8 @@ def patch(metax_client, args):
     try:
         response = funcs[args.resource](args.identifier, data)
     except HTTPError as error:
+        if error.response.status_code > 499:
+            raise
         response = _get_metax_error(error)
 
     _pprint(response, args.output)
