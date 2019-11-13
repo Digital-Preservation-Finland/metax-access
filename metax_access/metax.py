@@ -572,40 +572,12 @@ class Metax(object):
         response = self.patch(url, json=data)
         response.raise_for_status()
 
-    def set_preservation_id(self, dataset_id):
-        """Generates preservation_identifier for dataset with identifier
-        dataset_identifier. If preservation_identifier already exists, does
-        nothing.
-
-        :param dataset_id: id or identifier attribute of dataset
-        :returns: ``None``
-        """
-        dataset_identifier = self.get_dataset(dataset_id)["identifier"]
-        rpc_url = "%s/datasets/set_preservation_identifier?identifier=%s" % (
-            self.rpcurl, dataset_identifier
-        )
-
-        response = self.post(rpc_url)
-
-        if response.status_code == 400:
-            detail = _get_detailed_error(
-                response,
-                default='Assigning preservation identifier failed in Metax'
-            )
-            raise DataciteGenerationError(detail)
-        elif response.status_code == 404:
-            raise DatasetNotFoundError
-
-        response.raise_for_status()
-
     def get_datacite(self, dataset_id):
         """Get descriptive metadata in datacite xml format.
 
         :param dataset_id: id or identifier attribute of dataset
         :returns: Datacite XML (lxml.etree.ElementTree object)
         """
-        self.set_preservation_id(dataset_id)
-
         url = "%sdatasets/%s?dataset_format=datacite" % (self.baseurl,
                                                          dataset_id)
         response = self.get(url)

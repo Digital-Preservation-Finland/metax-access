@@ -326,15 +326,8 @@ def test_get_datacite(requests_mock):
     requests_mock.get(METAX_REST_URL + "/datasets/test_id",
                       complete_qs=True,
                       json={'identifier': 'test_id'})
-    requests_mock.post(METAX_URL + "/rpc/datasets/set_preservation_identifier"
-                       "?identifier=test_id")
 
     xml = METAX_CLIENT.get_datacite("test_id")
-
-    # make sure Metax is called for preservation_identifier generation
-    assert requests_mock.request_history[-2].path \
-        == "/rpc/datasets/set_preservation_identifier"
-    assert requests_mock.request_history[-2].qs == {"identifier": ["test_id"]}
 
     # Read field "creatorName" from xml file
     ns_string = 'http://datacite.org/schema/kernel-4'
@@ -370,12 +363,6 @@ def test_get_datacite_fails(requests_mock):
         METAX_REST_URL + '/datasets/foo?dataset_format=datacite',
         json=response,
         status_code=400
-    )
-
-    # Mock set_preservation_identifier API request
-    requests_mock.post(
-        METAX_URL + '/rpc/datasets/set_preservation_identifier?identifier=foo',
-        text='foobar',
     )
 
     with pytest.raises(DataciteGenerationError):
@@ -471,11 +458,7 @@ def test_get_datacite_http_503(requests_mock):
     when requests.get() returns http 503 error
     """
     requests_mock.get(
-        METAX_REST_URL + '/datasets/foo', json={'identifier': 'bar'}
-    )
-    requests_mock.post(
-        METAX_URL + '/rpc/datasets/set_preservation_identifier?identifier=bar',
-        status_code=503
+        METAX_REST_URL + '/datasets/foo', status_code=503
     )
     with pytest.raises(MetaxConnectionError):
         METAX_CLIENT.get_datacite("foo")
@@ -552,38 +535,3 @@ def test_post_dataset(requests_mock):
     assert requests_mock.last_request.method == "POST"
     assert requests_mock.last_request.hostname == 'foobar'
     assert requests_mock.last_request.path == '/rest/v1/datasets/'
-
-
-def test_set_preservation_id(requests_mock):
-    """Tests that ``set_preservation_id`` function sends correct http request
-    to Metax. The same request should be sent when `id` or `identifier`
-    attribute of dataset is used as parameter.
-    """
-
-    # Mock dataset with id="1234" and identifier="identifier1234"
-    requests_mock.get(
-        METAX_URL + '/rest/v1/datasets/1234',
-        json={"identifier": "identifier1234"}
-    )
-    requests_mock.get(
-        METAX_URL + '/rest/v1/datasets/identifier1234',
-        json={"identifier": "identifier1234"}
-    )
-    requests_mock.post(
-        METAX_URL + "/rpc/datasets/set_preservation_identifier?identifier="
-        "identifier1234"
-    )
-
-    # Call function with id attribute as parameter
-    METAX_CLIENT.set_preservation_id('1234')
-    assert requests_mock.call_count == 2
-    assert requests_mock.last_request.url \
-        == (METAX_URL + "/rpc/datasets/set_preservation_identifier?identifier="
-            "identifier1234")
-
-    # Call function with identifier attricute as parameter
-    METAX_CLIENT.set_preservation_id('identifier1234')
-    assert requests_mock.call_count == 4
-    assert requests_mock.last_request.url \
-        == (METAX_URL + "/rpc/datasets/set_preservation_identifier?identifier="
-            "identifier1234")
