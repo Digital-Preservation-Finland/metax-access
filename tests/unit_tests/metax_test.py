@@ -318,7 +318,8 @@ def test_get_datacite(requests_mock):
     # Read sample datacite from file and create mocked HTTP response
     datacite = lxml.etree.parse('tests/data/datacite_sample.xml')
     requests_mock.get(
-        METAX_REST_URL + '/datasets/test_id?dataset_format=datacite',
+        METAX_REST_URL +
+        '/datasets/test_id?dataset_format=datacite&dummy_doi=false',
         complete_qs=True,
         content=lxml.etree.tostring(datacite)
     )

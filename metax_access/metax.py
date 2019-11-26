@@ -572,14 +572,17 @@ class Metax(object):
         response = self.patch(url, json=data)
         response.raise_for_status()
 
-    def get_datacite(self, dataset_id):
+    def get_datacite(self, dataset_id, dummy_doi="false"):
         """Get descriptive metadata in datacite xml format.
 
         :param dataset_id: id or identifier attribute of dataset
+        :param dummy_doi: "false" or "true". "true" asks Metax to use
+                          a dummy DOI if the actual DOI is not yet generated
         :returns: Datacite XML (lxml.etree.ElementTree object)
         """
-        url = "%sdatasets/%s?dataset_format=datacite" % (self.baseurl,
-                                                         dataset_id)
+        url = "%sdatasets/%s?dataset_format=datacite&dummy_doi=%s" % (
+            self.baseurl, dataset_id, dummy_doi
+        )
         response = self.get(url)
 
         if response.status_code == 400:
