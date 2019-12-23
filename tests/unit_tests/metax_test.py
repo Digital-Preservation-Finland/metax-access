@@ -24,6 +24,15 @@ METAX_PASSWORD = 'password'
 METAX_CLIENT = Metax(METAX_URL, METAX_USER, METAX_PASSWORD, verify=False)
 
 
+def test_init():
+    """Test that init function raises exception if required parameters are not
+    given.
+    """
+    with pytest.raises(ValueError) as exception:
+        Metax(METAX_URL)
+    assert str(exception.value) == "Metax user or access token is required."
+
+
 def test_get_datasets(requests_mock):
     """Test get_datasets function. Mocks Metax to return simple JSON as HTTP
     response and checks that the returned dict contains the correct values.
@@ -285,6 +294,7 @@ def test_set_xml(requests_mock):
         == 'http://www.loc.gov/mix/v20'
 
 
+# pylint: disable=invalid-name
 def test_set_xml_metadata_already_set(requests_mock):
     """Test set_xml functions. Reads XML file and posts it to Metax. The body
     and headers of HTTP request are checked.

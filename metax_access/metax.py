@@ -111,23 +111,22 @@ class DataciteGenerationError(MetaxError):
 class Metax(object):
     """Get metadata from metax as dict object."""
 
-    def __init__(self,
-                 metax_url,
-                 metax_user,
-                 metax_password,
-                 token=None,
-                 verify=True):
+    # pylint: disable=too-many-arguments
+    def __init__(self, url, user=None, password=None, token=None, verify=True):
         """ Initialize Metax object.
 
-        :param metax_url: Metax url
+        :param url: Metax url
         :param user: Metax user
         :param password: Metax user password
+        :param token: Metax access token
         """
-        self.username = metax_user
-        self.password = metax_password
+        if not user and not token:
+            raise ValueError('Metax user or access token is required.')
+        self.username = user
+        self.password = password
         self.token = token
-        self.baseurl = metax_url + '/rest/v1/'
-        self.rpcurl = metax_url + '/rpc'
+        self.baseurl = url + '/rest/v1/'
+        self.rpcurl = url + '/rpc'
         self.verify = verify
 
     # pylint: disable=too-many-arguments

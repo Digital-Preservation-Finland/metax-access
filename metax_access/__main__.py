@@ -8,7 +8,6 @@ import configparser
 import io
 import json
 import os
-import sys
 
 import argcomplete
 from requests.exceptions import HTTPError
@@ -172,6 +171,7 @@ def main():
     parser = argparse.ArgumentParser(description="Manage metadata in Metax.")
     parser.add_argument('-c', '--config',
                         metavar='config',
+                        default=None,
                         help="Configuration file. If not set, default config "
                              "file: ~/.metax.cfg, ~/.local/etc/metax.cfg, "
                              "or /etc/metax.cfg is used.")
@@ -246,42 +246,39 @@ def main():
     # Bash tab completion
     argcomplete.autocomplete(parser)
 
+    # Choose config file
+    config = parser.parse_args().config
+    if config:
+        config = os.path.expanduser(config)
+        if not os.path.isfile(config):
+            # Explicitly set config file does not exist
+            parser.error('Configuration file {} not found.'.format(config))
+    else:
+        for file_ in DEFAULT_CONFIG_FILES:
+            file_ = os.path.expanduser(file_)
+            if os.path.isfile(file_):
+                config = file_
+
+    # Read config file and use options as defaults when parsing command line
+    # arguments
+    if config:
+        configuration = configparser.ConfigParser()
+        configuration.read(config)
+        parser.set_defaults(**configuration['metax'])
+
     # Parse arguments
     args = parser.parse_args()
 
-    # Choose config file
-    config = None
-    if args.config:
-        config = os.path.expanduser(args.config)
-        if not os.path.isfile(config):
-            # Explicitly set config file does not exist
-            sys.exit('Configuration file {} not found.'.format(config))
-    else:
-        for file_ in DEFAULT_CONFIG_FILES:
-            path = os.path.expanduser(file_)
-            if os.path.isfile(path):
-                config = path
-
-    # Read config file
-    configuration = configparser.ConfigParser()
-    configuration.add_section('metax')
-    if config:
-        configuration.read(os.path.expanduser(config))
-
-    # Override configuration file with commandline options
-    for option in ['host', 'user', 'password', 'token']:
-        if vars(args)[option]:
-            configuration.set('metax', option)
-        if not configuration.has_option('metax', option):
-            sys.exit("Option '{}' is required".format(option))
-
     # Init metax client
-    metax_client = metax_access.Metax(
-        configuration.get('metax', 'host'),
-        configuration.get('metax', 'user'),
-        configuration.get('metax', 'password'),
-        token=configuration.get('metax', 'token')
-    )
+    if not args.host:
+        parser.error("Metax hostname must be provided.")
+    if args.token:
+        credentials = {'token': args.token}
+    elif args.user:
+        credentials = {'user': args.user, 'password': args.password}
+    else:
+        parser.error('Username and password or access token must be provided.')
+    metax_client = metax_access.Metax(args.host, credentials)
 
     # Run command
     args.func(metax_client, args)
