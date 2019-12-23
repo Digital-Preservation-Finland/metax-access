@@ -84,7 +84,10 @@ def get(metax_client, args):
             "contract": metax_client.get_contract
         }
         try:
-            response = funcs[args.resource](args.identifier)
+            response = funcs[args.resource](
+                args.identifier,
+                custom_errors=False
+            )
         except HTTPError as error:
             if error.response.status_code > 499:
                 raise
@@ -129,7 +132,10 @@ def patch(metax_client, args):
         "contract": metax_client.patch_contract
     }
     try:
-        response = funcs[args.resource](args.identifier, data)
+        response = funcs[args.resource](
+            args.identifier, data,
+            custom_errors=False
+        )
     except HTTPError as error:
         if error.response.status_code > 499:
             raise
