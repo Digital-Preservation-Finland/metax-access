@@ -201,40 +201,31 @@ class Metax(object):
         response.raise_for_status()
         return response.json()
 
-    def get_contract(self, pid, custom_errors=True):
+    def get_contract(self, pid):
         """Gets the contract data from Metax.
 
         :param str pid: id or ientifier attribute of contract
-        :param boolean custom_errors: Defines whether or not custom error
-                                      is raised when resource is not
-                                      found from Metax
         :returns: The contract from Metax as json.
         """
         url = "".join([self.baseurl, "contracts/", pid])
         response = self.get(url)
-        if response.status_code == 404 and custom_errors:
+        if response.status_code == 404:
             raise ContractNotFoundError
         response.raise_for_status()
         return response.json()
 
-    def patch_contract(self, contract_id, data, custom_errors=True):
+    def patch_contract(self, contract_id, data):
         """Patch a contract.
 
         :param str contract_id: id or identifier of the contract
         :param dict data: A contract metadata dictionary that contains only the
                           key/value pairs that will be updated
-        :param boolean custom_errors: Defines whether or not custom error
-                                      is raised when resource is not
-                                      found from Metax
         :returns: ``None``
         """
 
         # The original data must be added to updated objects since Metax patch
         # request will just overwrite them
-        original_data = self.get_contract(
-            contract_id,
-            custom_errors=custom_errors
-        )
+        original_data = self.get_contract(contract_id)
         for key in data:
             if isinstance(data[key], dict) and key in original_data:
                 data[key] = _update_nested_dict(original_data[key], data[key])
@@ -245,20 +236,17 @@ class Metax(object):
 
         return response.json()
 
-    def get_dataset(self, dataset_id, custom_errors=True):
+    def get_dataset(self, dataset_id):
         """Get dataset metadata from Metax.
 
         :param str dataset_id: id or identifier attribute of dataset
-        :param boolean custom_errors: Defines whether or not custom error
-                                      is raised when resource is not
-                                      found from Metax
         :returns: dataset as json
         """
         url = self.baseurl + 'datasets' + '/' + dataset_id
 
         response = self.get(url)
 
-        if response.status_code == 404 and custom_errors:
+        if response.status_code == 404:
             raise DatasetNotFoundError(
                 message="Could not find metadata for dataset: %s" % dataset_id
             )
@@ -302,24 +290,18 @@ class Metax(object):
         response.raise_for_status()
         return response.json()
 
-    def patch_dataset(self, dataset_id, data, custom_errors=True):
+    def patch_dataset(self, dataset_id, data):
         """Patch a dataset.
 
         :param str dataset_id: id or identifier of the dataset
         :param dict data: A dataset dictionary that contains only the
                           key/value pairs that will be updated
-        :param boolean custom_errors: Defines whether or not custom error
-                                            is raised when resource is not
-                                            found from Metax
         :returns: ``None``
         """
 
         # The original data must be added to updated objects since Metax patch
         # request will just overwrite them
-        original_data = self.get_dataset(
-            dataset_id,
-            custom_errors=custom_errors
-        )
+        original_data = self.get_dataset(dataset_id)
         for key in data:
             if isinstance(data[key], dict) and key in original_data:
                 data[key] = _update_nested_dict(original_data[key], data[key])
@@ -394,20 +376,17 @@ class Metax(object):
         response.raise_for_status()
         return response.json()
 
-    def get_file(self, file_id, custom_errors=True):
+    def get_file(self, file_id):
         """Get file metadata from Metax.
 
         :param str file_id: id or identifier attribute of file
-        :param boolean custom_errors: Defines whether or not custom error
-                                      is raised when resource is not
-                                      found from Metax
         :returns: file metadata as json
         """
         url = self.baseurl + 'files' + '/' + file_id
 
         response = self.get(url)
 
-        if response.status_code == 404 and custom_errors:
+        if response.status_code == 404:
             raise FileNotFoundError(
                 "Could not find metadata for file: %s" % file_id
             )
@@ -573,24 +552,18 @@ class Metax(object):
             # Raise exception if request fails
             response.raise_for_status()
 
-    def patch_file(self, file_id, data, custom_errors=True):
+    def patch_file(self, file_id, data):
         """Patch file metadata.
 
         :param str file_id: id or identifier of the file
         :param dict data: A file metadata dictionary that contains only the
                           key/value pairs that will be updated
-        :param boolean custom_errors: Defines whether or not custom error
-                                      is raised when resource is not
-                                      found from Metax
         :returns: ``None``
         """
 
         # The original data must be added to updated objects since Metax patch
         # request will just overwrite them
-        original_data = self.get_file(
-            file_id,
-            custom_errors=custom_errors
-        )
+        original_data = self.get_file(file_id)
         for key in data:
             if isinstance(data[key], dict) and key in original_data:
                 data[key] = _update_nested_dict(original_data[key], data[key])

@@ -19,6 +19,12 @@ DEFAULT_CONFIG_FILES = ['/etc/metax.cfg',
                         '~/.local/etc/metax.cfg',
                         '~/.metax.cfg']
 
+NOT_FOUND_ERRORS = (
+    metax_access.metax.FileNotFoundError,
+    metax_access.metax.DatasetNotFoundError,
+    metax_access.metax.ContractNotFoundError
+)
+
 
 def _get_metax_error(error):
     """Return Metax error message"""
@@ -84,14 +90,13 @@ def get(metax_client, args):
             "contract": metax_client.get_contract
         }
         try:
-            response = funcs[args.resource](
-                args.identifier,
-                custom_errors=False
-            )
+            response = funcs[args.resource](args.identifier)
         except HTTPError as error:
             if error.response.status_code > 499:
                 raise
             response = _get_metax_error(error)
+        except NOT_FOUND_ERRORS:
+            response = {"code": 404, "message": "Not found"}
 
     _pprint(response, args.output)
 
@@ -132,14 +137,13 @@ def patch(metax_client, args):
         "contract": metax_client.patch_contract
     }
     try:
-        response = funcs[args.resource](
-            args.identifier, data,
-            custom_errors=False
-        )
+        response = funcs[args.resource](args.identifier, data)
     except HTTPError as error:
         if error.response.status_code > 499:
             raise
         response = _get_metax_error(error)
+    except NOT_FOUND_ERRORS:
+        response = {"code": 404, "message": "Not found"}
 
     _pprint(response, args.output)
 
