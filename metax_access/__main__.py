@@ -22,10 +22,15 @@ DEFAULT_CONFIG_FILES = ['/etc/metax.cfg',
 
 def _get_metax_error(error):
     """Return Metax error message"""
-    if error.response.status_code == 403:
-        return {"code": 403, "status": "Unauthorized"}
+    try:
+        response = error.response.json()
+    except ValueError:
+        response = {
+            "code": error.response.status_code,
+            "message": "Metax did not return a json response"
+        }
 
-    return error.response.json()
+    return response
 
 
 def post(metax_client, args):
