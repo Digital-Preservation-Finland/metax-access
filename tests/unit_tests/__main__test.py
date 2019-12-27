@@ -58,4 +58,9 @@ def test_invalid_arguments(arguments, error_message, monkeypatch, capsys):
     assert exception.value.code == 2
 
     # Error message should be printed to stderr
-    assert capsys.readouterr().err.endswith(error_message + "\n")
+    #
+    # TODO: In pytest>=3.5, stderr is simply:
+    #    capsys.readouterr().err
+    # Change this when newer version of pytest is available on Centos
+    _, stderr = capsys.readouterr()
+    assert stderr.endswith(error_message + "\n")
