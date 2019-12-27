@@ -162,10 +162,12 @@ def _pprint(dictionary, fpath=None):
             _file.write(output)
 
 
-def main():
+def main(arguments=None):
     """
     Parse arguments, init metax client, and run correct command depending
     on the action (post, get or delete).
+
+    :param arguments: list of commandline arguments
     """
     # Parser
     parser = argparse.ArgumentParser(description="Manage metadata in Metax.")
@@ -247,7 +249,7 @@ def main():
     argcomplete.autocomplete(parser)
 
     # Choose config file
-    config = parser.parse_args().config
+    config = parser.parse_args(arguments).config
     if config:
         config = os.path.expanduser(config)
         if not os.path.isfile(config):
@@ -267,7 +269,7 @@ def main():
         parser.set_defaults(**configuration['metax'])
 
     # Parse arguments
-    args = parser.parse_args()
+    args = parser.parse_args(arguments)
 
     # Init metax client
     if not args.host:
