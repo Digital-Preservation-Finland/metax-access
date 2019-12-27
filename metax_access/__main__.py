@@ -117,7 +117,7 @@ def delete(metax_client, args):
     except HTTPError as error:
         if error.response.status_code > 499:
             raise
-        _pprint(_get_metax_error(error), args.output)
+        _pprint(_get_metax_error(error))
 
 
 def patch(metax_client, args):
@@ -189,9 +189,6 @@ def main(arguments=None):
     parser.add_argument('-t', '--token',
                         metavar='token',
                         help="Bearer token")
-    parser.add_argument('-o', '--output',
-                        metavar='output',
-                        help="Path to the file where output is written")
     subparsers = parser.add_subparsers(title='command')
 
     # Post command parser
@@ -205,6 +202,9 @@ def main(arguments=None):
     post_parser.add_argument('filepath',
                              help="Path to metadata file")
     post_parser.set_defaults(func=post)
+    post_parser.add_argument('-o', '--output',
+                             metavar='output',
+                             help="Path to the file where output is written")
 
     # Get command parser
     get_parser = subparsers.add_parser(
@@ -219,6 +219,9 @@ def main(arguments=None):
     get_parser.add_argument('identifier',
                             help="Resource identifier")
     get_parser.set_defaults(func=get)
+    get_parser.add_argument('-o', '--output',
+                            metavar='output',
+                            help="Path to the file where output is written")
 
     # Delete command parser
     delete_parser = subparsers.add_parser(
@@ -244,6 +247,9 @@ def main(arguments=None):
     patch_parser.add_argument('filepath',
                               help="Path to metadata patch file")
     patch_parser.set_defaults(func=patch)
+    patch_parser.add_argument('-o', '--output',
+                              metavar='output',
+                              help="Path to the file where output is written")
 
     # Bash tab completion
     argcomplete.autocomplete(parser)
