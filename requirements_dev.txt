@@ -9,7 +9,6 @@ requests_mock
 # Install requirements
 lxml
 requests
-flask
 argcomplete
 
 # TODO: docutils is required by python-daemon. Can be removed when this issue:
