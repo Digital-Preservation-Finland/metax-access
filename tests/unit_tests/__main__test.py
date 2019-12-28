@@ -2,6 +2,7 @@
 
 import metax_access.__main__
 import pytest
+import mock
 
 
 @pytest.mark.parametrize(
@@ -12,22 +13,20 @@ import pytest
         (['delete', 'dataset', 'foo'], 'metax_access.__main__.delete')
     ]
 )
-def test_main(arguments, function, mocker):
+def test_main(arguments, function):
     """Test that main function calls correct function for each subcommand
 
     :param arguments: list of command line arguments
     :param function: name of function excepted to be called
-    :param mocker: mocker fixture
 
     """
-    # Mock function that should be called in main
-    mocked_function = mocker.patch(function)
-
-    # Run main
-    metax_access.__main__.main(['--host', 'foo', '--token', 'bar']+arguments)
+    with mock.patch(function) as expected_function:
+        metax_access.__main__.main(
+            ['--host', 'foo', '--token', 'bar']+arguments
+        )
 
     # Expected function should be called once
-    assert mocked_function.called_once()
+    assert expected_function.called_once()
 
 
 @pytest.mark.parametrize(
