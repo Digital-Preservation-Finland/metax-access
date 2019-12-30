@@ -11,6 +11,7 @@ import os
 
 import argcomplete
 from requests.exceptions import HTTPError
+import six
 
 import metax_access
 
@@ -159,7 +160,7 @@ def _pprint(dictionary, fpath=None):
         print(output)
     else:
         with io.open(fpath, "wt") as _file:
-            _file.write(output)
+            _file.write(six.text_type(output))
 
 
 def main(arguments=None):

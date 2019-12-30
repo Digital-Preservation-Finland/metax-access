@@ -3,6 +3,7 @@
 import metax_access
 import pytest
 import mock
+import json
 
 
 @pytest.mark.parametrize(
@@ -75,3 +76,25 @@ def test_invalid_arguments(arguments, error_message, monkeypatch, capsys):
     # Change this when newer version of pytest is available on Centos
     _, stderr = capsys.readouterr()
     assert stderr.endswith(error_message + "\n")
+
+
+def test_output(tmp_path, monkeypatch):
+    """Test that output is written to file when --output parameter is used.
+
+    :param tmp_path: Temporary path for test data
+    :param monkeypatch: monkeypatch fixture
+    """
+    # Mock get_dataset-function to always return simple dict
+    monkeypatch.setattr('metax_access.Metax.get_dataset',
+                        lambda *args: {'foo': 'bar'})
+
+    # Use main function to get test data to output file
+    output_file = tmp_path / 'output_file'
+    arguments = ['--host', 'foo',
+                 '--token', 'bar',
+                 'get', 'dataset', '1',
+                 '--output', str(output_file)]
+    metax_access.__main__.main(arguments)
+
+    # Check that JSON output was written to file
+    assert json.loads(output_file.read_text())['foo'] == 'bar'
