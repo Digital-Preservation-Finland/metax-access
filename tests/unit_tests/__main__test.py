@@ -78,10 +78,12 @@ def test_invalid_arguments(arguments, error_message, monkeypatch, capsys):
     assert stderr.endswith(error_message + "\n")
 
 
-def test_output(tmp_path, monkeypatch):
+# TODO: Replace tmpdir fixture with tmp_path fixture when pytest>=3.9.1 is
+# available on Centos
+def test_output(tmpdir, monkeypatch):
     """Test that output is written to file when --output parameter is used.
 
-    :param tmp_path: Temporary path for test data
+    :param tmpdir: Temporary directory for test data
     :param monkeypatch: monkeypatch fixture
     """
     # Mock get_dataset-function to always return simple dict
@@ -89,7 +91,7 @@ def test_output(tmp_path, monkeypatch):
                         lambda *args: {'foo': 'bar'})
 
     # Use main function to get test data to output file
-    output_file = tmp_path / 'output_file'
+    output_file = tmpdir / 'output_file'
     arguments = ['--host', 'foo',
                  '--token', 'bar',
                  'get', 'dataset', '1',
@@ -97,4 +99,4 @@ def test_output(tmp_path, monkeypatch):
     metax_access.__main__.main(arguments)
 
     # Check that JSON output was written to file
-    assert json.loads(output_file.read_text())['foo'] == 'bar'
+    assert json.loads(output_file.read())['foo'] == 'bar'
