@@ -280,7 +280,7 @@ def main(arguments=None):
         credentials = {'user': args.user, 'password': args.password}
     else:
         parser.error('Username and password or access token must be provided.')
-    metax_client = metax_access.Metax(args.host, credentials)
+    metax_client = metax_access.Metax(args.host, **credentials)
 
     # Run command
     args.func(metax_client, args)

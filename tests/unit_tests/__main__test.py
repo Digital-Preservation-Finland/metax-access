@@ -1,6 +1,6 @@
 """Tests for `metax_acces.__main__` module"""
 
-import metax_access.__main__
+import metax_access
 import pytest
 import mock
 
@@ -27,6 +27,18 @@ def test_main(arguments, function):
 
     # Expected function should be called once
     assert expected_function.called_once()
+
+    # first parameter of called function should be Metax object
+    metax_client = expected_function.call_args[0][0]
+    assert isinstance(metax_client, metax_access.Metax)
+    assert metax_client.baseurl == 'foo/rest/v1/'
+    assert metax_client.token == 'bar'
+
+    # second parameter of called function should contain commandline args
+    args = expected_function.call_args[0][1]
+    assert args.resource == 'dataset'
+    assert args.host == 'foo'
+    assert args.token == 'bar'
 
 
 @pytest.mark.parametrize(
