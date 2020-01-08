@@ -210,7 +210,8 @@ def main(arguments=None):
     # Get command parser
     get_parser = subparsers.add_parser(
         'get',
-        help='Print file, dataset or contract metadata.'
+        help=('Print file, dataset or contract metadata, or template for '
+              'dataset metadata.')
     )
     get_parser.add_argument(
         'resource',
