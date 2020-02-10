@@ -178,6 +178,18 @@ class Metax(object):
         response.raise_for_status()
         return response.json()
 
+    def query_datasets(self, param_dict):
+        """Gets datasets from metax based on query parameters.
+
+        :param_dict a dict containing attribute-value -pairs to be used
+            as query parameters
+        :returns: datasets from Metax as json.
+        """
+        url = "".join([self.baseurl, "datasets"])
+        response = self.get(url, params=param_dict)
+        response.raise_for_status()
+        return response.json()
+
     def get_contracts(self, limit="1000000", offset="0", org_filter=None):
         """Gets the data for contracts list from Metax.
 

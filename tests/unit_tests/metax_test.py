@@ -546,3 +546,17 @@ def test_post_dataset(requests_mock):
     assert requests_mock.last_request.method == "POST"
     assert requests_mock.last_request.hostname == 'foobar'
     assert requests_mock.last_request.path == '/rest/v1/datasets/'
+
+
+def test_query_datasets(requests_mock):
+    """Test query_datasets function. Mocks Metax to return simple JSON as HTTP
+    response and checks that the returned dict contains the correct values.
+
+    :returns: None
+    """
+    requests_mock.get(
+        METAX_REST_URL + "/datasets?preferred_identifier=foobar",
+        json={"results": [{"identifier": "foo"}]}
+    )
+    datasets = METAX_CLIENT.query_datasets({'preferred_identifier': 'foobar'})
+    assert len(datasets["results"]) == 1
