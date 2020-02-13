@@ -434,7 +434,8 @@ class Metax(object):
         for _file in files:
             file_dict[_file["file_path"]] = {
                 "id": _file["id"],
-                "identifier": _file["identifier"]
+                "identifier": _file["identifier"],
+                "storage_identifier": _file["file_storage"]["identifier"]
             }
 
         return file_dict
