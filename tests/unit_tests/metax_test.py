@@ -560,3 +560,52 @@ def test_query_datasets(requests_mock):
     )
     datasets = METAX_CLIENT.query_datasets({'preferred_identifier': 'foobar'})
     assert len(datasets["results"]) == 1
+
+
+def test_get_files_dict(requests_mock):
+    """Test get_files_dict function. Metax is mocked to return files as two
+    reponses.
+
+    :returns: None
+    """
+    first_resp_str = """{
+    "next": "https://next.url",
+    "results": [
+        {
+            "id": 28260,
+            "file_path": "/path/file1",
+            "file_storage": {
+                "id": 1,
+                "identifier": "urn:nbn:fi:att:file-storage-pas"
+            },
+            "identifier": "file1_identifier"
+        }
+    ]}"""
+    second_resp_str = """{
+    "next": null,
+    "results": [
+        {
+            "id": 23125,
+            "file_path": "/path/file2",
+            "file_storage": {
+                "id": 1,
+                "identifier": "urn:nbn:fi:att:file-storage-pas"
+            },
+            "identifier": "file2_identifier"
+        }
+    ]}"""
+    requests_mock.get(
+        METAX_REST_URL + "/files?limit=10000&project_identifier=test",
+        json=json.loads(first_resp_str)
+    )
+    requests_mock.get(
+        "https://next.url",
+        json=json.loads(second_resp_str)
+    )
+    files = METAX_CLIENT.get_files_dict("test")
+    assert "/path/file1" in files
+    assert "/path/file2" in files
+    assert files["/path/file1"]['id'] == 28260
+    assert files["/path/file1"]['identifier'] == "file1_identifier"
+    assert files["/path/file1"]['storage_identifier'] ==\
+        "urn:nbn:fi:att:file-storage-pas"

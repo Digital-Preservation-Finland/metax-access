@@ -411,7 +411,7 @@ class Metax(object):
         :returns: list of files
         """
         files = []
-        url = self.baseurl + 'files/?limit=10000&project_identifier=' + project
+        url = self.baseurl + 'files?limit=10000&project_identifier=' + project
 
         # GET 10000 files every iteration until all files are read
         while url is not None:
