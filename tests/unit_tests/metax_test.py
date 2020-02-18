@@ -568,39 +568,41 @@ def test_get_files_dict(requests_mock):
 
     :returns: None
     """
-    first_resp_str = """{
-    "next": "https://next.url",
-    "results": [
-        {
-            "id": 28260,
-            "file_path": "/path/file1",
-            "file_storage": {
-                "id": 1,
-                "identifier": "urn:nbn:fi:att:file-storage-pas"
-            },
-            "identifier": "file1_identifier"
-        }
-    ]}"""
-    second_resp_str = """{
-    "next": null,
-    "results": [
-        {
-            "id": 23125,
-            "file_path": "/path/file2",
-            "file_storage": {
-                "id": 1,
-                "identifier": "urn:nbn:fi:att:file-storage-pas"
-            },
-            "identifier": "file2_identifier"
-        }
-    ]}"""
+    first_response = {
+        "next": "https://next.url",
+        "results": [
+            {
+                "id": 28260,
+                "file_path": "/path/file1",
+                "file_storage": {
+                    "id": 1,
+                    "identifier": "urn:nbn:fi:att:file-storage-pas"
+                },
+                "identifier": "file1_identifier"
+            }
+        ]
+    }
+    second_response = {
+        "next": None,
+        "results": [
+            {
+                "id": 23125,
+                "file_path": "/path/file2",
+                "file_storage": {
+                    "id": 1,
+                    "identifier": "urn:nbn:fi:att:file-storage-pas"
+                },
+                "identifier": "file2_identifier"
+            }
+        ]
+    }
     requests_mock.get(
         METAX_REST_URL + "/files?limit=10000&project_identifier=test",
-        json=json.loads(first_resp_str)
+        json=json.loads(json.dumps(first_response))
     )
     requests_mock.get(
         "https://next.url",
-        json=json.loads(second_resp_str)
+        json=json.loads(json.dumps(second_response))
     )
     files = METAX_CLIENT.get_files_dict("test")
     assert "/path/file1" in files

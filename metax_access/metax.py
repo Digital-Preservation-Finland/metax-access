@@ -181,8 +181,8 @@ class Metax(object):
     def query_datasets(self, param_dict):
         """Gets datasets from metax based on query parameters.
 
-        :param_dict a dict containing attribute-value -pairs to be used
-            as query parameters
+        :param dict param_dict: a dictionary containing attribute-value -pairs
+            to be used as query parameters
         :returns: datasets from Metax as json.
         """
         url = "".join([self.baseurl, "datasets"])
