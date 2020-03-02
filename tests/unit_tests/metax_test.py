@@ -598,11 +598,11 @@ def test_get_files_dict(requests_mock):
     }
     requests_mock.get(
         METAX_REST_URL + "/files?limit=10000&project_identifier=test",
-        json=json.loads(json.dumps(first_response))
+        json=first_response
     )
     requests_mock.get(
         "https://next.url",
-        json=json.loads(json.dumps(second_response))
+        json=second_response
     )
     files = METAX_CLIENT.get_files_dict("test")
     assert "/path/file1" in files
