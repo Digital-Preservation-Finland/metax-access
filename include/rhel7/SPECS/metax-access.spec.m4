@@ -24,6 +24,8 @@ Requires:       python-requests
 Requires:       python-scandir
 Requires:       python-mock
 Requires:       python2-argcomplete
+# python-configparser is required for python2 compatibility
+Requires:       python-configparser
 BuildRequires:  python-setuptools
 BuildRequires:  pytest
 BuildRequires:  python-sphinx
