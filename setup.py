@@ -1,11 +1,11 @@
-"""Install siptools-research package"""
+"""Install metax-access package."""
 from setuptools import setup, find_packages
 
 from version import get_version
 
 
 def main():
-    """Install metax-access"""
+    """Install metax-access."""
     setup(
         name='metax-access',
         packages=find_packages(exclude=['tests', 'tests.*']),
@@ -15,7 +15,6 @@ def main():
         install_requires=[
             "requests",
             "lxml",
-            "jsonschema",
             "argcomplete"
         ],
         entry_points={
