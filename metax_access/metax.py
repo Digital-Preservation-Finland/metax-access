@@ -188,6 +188,7 @@ class Metax(object):
         url = "".join([self.baseurl, "datasets"])
         response = self.get(url, params=param_dict)
         response.raise_for_status()
+
         return response.json()
 
     def get_contracts(self, limit="1000000", offset="0", org_filter=None):
@@ -210,10 +211,11 @@ class Metax(object):
         if response.status_code == 404:
             raise ContractNotFoundError
         response.raise_for_status()
+
         return response.json()
 
     def get_contract(self, pid):
-        """Gets the contract data from Metax.
+        """Get the contract data from Metax.
 
         :param str pid: id or ientifier attribute of contract
         :returns: The contract from Metax as json.
@@ -223,6 +225,7 @@ class Metax(object):
         if response.status_code == 404:
             raise ContractNotFoundError
         response.raise_for_status()
+
         return response.json()
 
     def patch_contract(self, contract_id, data):
@@ -233,7 +236,6 @@ class Metax(object):
                           key/value pairs that will be updated
         :returns: ``None``
         """
-
         # The original data must be added to updated objects since Metax patch
         # request will just overwrite them
         original_data = self.get_contract(contract_id)
@@ -262,10 +264,11 @@ class Metax(object):
                 message="Could not find metadata for dataset: %s" % dataset_id
             )
         response.raise_for_status()
+
         return response.json()
 
     def get_dataset_template(self):
-        """Get minimal dataset template
+        """Get minimal dataset template.
 
         :returns: Template as json
         """
@@ -289,7 +292,7 @@ class Metax(object):
         return template
 
     def get_datacatalog(self, catalog_id):
-        """Gets the metadata of a datacatalog from Metax.
+        """Get the metadata of a datacatalog from Metax.
 
         :param str catalog_id: id or identifier attribute of the datacatalog
         :returns: The datacatalog as json.
@@ -299,6 +302,7 @@ class Metax(object):
         if response.status_code == 404:
             raise DataCatalogNotFoundError
         response.raise_for_status()
+
         return response.json()
 
     def patch_dataset(self, dataset_id, data):
@@ -309,7 +313,6 @@ class Metax(object):
                           key/value pairs that will be updated
         :returns: ``None``
         """
-
         # The original data must be added to updated objects since Metax patch
         # request will just overwrite them
         original_data = self.get_dataset(dataset_id)
@@ -324,7 +327,7 @@ class Metax(object):
         return response.json()
 
     def get_dataset_filetypes(self, dataset_id):
-        """Gets the unique triples of file_format, format_version, encoding
+        """Get the unique triples of file_format, format_version, encoding
         of the files in dataset.
 
         :param str dataset_id: id or identifier of the dataset
@@ -375,7 +378,7 @@ class Metax(object):
         return file_types
 
     def get_contract_datasets(self, pid):
-        """Gets the datasets of a contract from Metax.
+        """Get the datasets of a contract from Metax.
 
         :param str pid: id or identifier attribute of contract
         :returns: The datasets from Metax as json.
@@ -385,6 +388,7 @@ class Metax(object):
         ])
         response = self.get(url)
         response.raise_for_status()
+
         return response.json()
 
     def get_file(self, file_id):
@@ -402,10 +406,11 @@ class Metax(object):
                 "Could not find metadata for file: %s" % file_id
             )
         response.raise_for_status()
+
         return response.json()
 
     def get_files(self, project):
-        """Get all files of a given project
+        """Get all files of a given project.
 
         :param project: project id
         :returns: list of files
@@ -422,8 +427,16 @@ class Metax(object):
         return files
 
     def get_files_dict(self, project):
-        """GET all the files of a given project as a dict
-        {file_path: {"id": id, "identifier": identifier}}
+        """Get all the files of a given project.
+
+        Files are returned as a dictionary:
+
+            {
+                file_path: {
+                    "id": id,
+                    "identifier": identifier
+                }
+            }
 
         :param project: project id
         :returns: Dict of all the files of a given project
@@ -570,9 +583,8 @@ class Metax(object):
         :param str file_id: id or identifier of the file
         :param dict data: A file metadata dictionary that contains only the
                           key/value pairs that will be updated
-        :returns: ``None``
+        :returns: JSON response from Metax
         """
-
         # The original data must be added to updated objects since Metax patch
         # request will just overwrite them
         original_data = self.get_file(file_id)
@@ -583,6 +595,8 @@ class Metax(object):
         url = "".join([self.baseurl, "files/", file_id])
         response = self.patch(url, json=data)
         response.raise_for_status()
+
+        return response.json()
 
     def get_datacite(self, dataset_id, dummy_doi="false"):
         """Get descriptive metadata in datacite xml format.
@@ -628,7 +642,7 @@ class Metax(object):
         return response.json()
 
     def get_file_datasets(self, file_id):
-        """GET a list of datasets associated with file_id
+        """Get a list of datasets associated with file_id.
 
         :param file_id: File identifier
         :returns: List of datasets associated with file_id
@@ -670,11 +684,13 @@ class Metax(object):
         """Delete metadata of dataset.
 
         :param dataset_id: dataset identifier
-        :returns: ``None``
+        :returns: JSON response from Metax
         """
         url = self.baseurl + 'datasets/' + dataset_id
         response = self.delete(url)
         response.raise_for_status()
+
+        return response.json()
 
     def delete_dataset_files(self, dataset_id):
         """Delete metadata of files of a dataset.
@@ -727,11 +743,13 @@ class Metax(object):
         """Delete metadata of contract.
 
         :param dataset_id: contract identifier
-        :returns: ``None``
+        :returns: JSON response from Metax
         """
         url = self.baseurl + 'contracts/' + contract_id
         response = self.delete(url)
         response.raise_for_status()
+
+        return response.json()
 
     def get_directory_files(self, directory_identifier):
         """Get files of the directory.
