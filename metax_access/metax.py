@@ -60,14 +60,6 @@ class MetaxError(Exception):
         return return_val
 
 
-class MetaxConnectionError(MetaxError):
-    """Exception raised when Metax is not available"""
-    def __init__(self):
-        super(MetaxConnectionError, self).__init__(
-            "No connection to Metax", 503
-        )
-
-
 class FileNotFoundError(MetaxError):
     """Exception raised when file is not found from metax."""
 
@@ -814,8 +806,6 @@ class Metax(object):
 
         response = requests.get(url, **kwargs)
 
-        if response.status_code == 503:
-            raise MetaxConnectionError
         return response
 
     def patch(self, url, **kwargs):
@@ -840,8 +830,6 @@ class Metax(object):
 
         response = requests.patch(url, **kwargs)
 
-        if response.status_code == 503:
-            raise MetaxConnectionError
         return response
 
     def post(self, url, **kwargs):
@@ -866,8 +854,6 @@ class Metax(object):
 
         response = requests.post(url, **kwargs)
 
-        if response.status_code == 503:
-            raise MetaxConnectionError
         return response
 
     def delete(self, url, **kwargs):
@@ -892,8 +878,6 @@ class Metax(object):
 
         response = requests.delete(url, **kwargs)
 
-        if response.status_code == 503:
-            raise MetaxConnectionError
         return response
 
 

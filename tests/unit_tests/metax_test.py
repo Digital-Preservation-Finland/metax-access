@@ -7,9 +7,10 @@ import json
 
 import lxml.etree
 import pytest
+import requests
 
 from metax_access.metax import (
-    Metax, MetaxConnectionError,
+    Metax,
     DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
     DatasetNotFoundError,
     ContractNotFoundError,
@@ -57,8 +58,9 @@ def test_get_datasets_http_503(requests_mock):
     http 503 error.
     """
     requests_mock.get(METAX_REST_URL + '/datasets', status_code=503)
-    with pytest.raises(MetaxConnectionError):
+    with pytest.raises(requests.HTTPError) as error:
         METAX_CLIENT.get_datasets()
+    assert error.value.response.status_code == 503
 
 
 def test_get_datasets_http_404(requests_mock):
@@ -109,8 +111,9 @@ def test_get_contracts_http_503(requests_mock):
     http 503 error.
     """
     requests_mock.get(METAX_REST_URL+'/contracts', status_code=503)
-    with pytest.raises(MetaxConnectionError):
+    with pytest.raises(requests.HTTPError) as error:
         METAX_CLIENT.get_contracts()
+    assert error.value.response.status_code == 503
 
 
 def test_get_contracts_http_404(requests_mock):
@@ -145,8 +148,9 @@ def test_get_contract_http_503(requests_mock):
     returns http 503 error.
     """
     requests_mock.get(METAX_REST_URL+'/contracts/foo', status_code=503)
-    with pytest.raises(MetaxConnectionError):
+    with pytest.raises(requests.HTTPError) as error:
         METAX_CLIENT.get_contract('foo')
+    assert error.value.response.status_code == 503
 
 
 def test_get_contract_http_404(requests_mock):
@@ -182,8 +186,9 @@ def test_get_catalog_http_503(requests_mock):
     http 503 error.
     """
     requests_mock.get(METAX_REST_URL+'/datacatalogs/foo', status_code=503)
-    with pytest.raises(MetaxConnectionError):
+    with pytest.raises(requests.HTTPError) as error:
         METAX_CLIENT.get_datacatalog('foo')
+    assert error.value.response.status_code == 503
 
 
 def test_get_catalog_http_404(requests_mock):
@@ -485,8 +490,9 @@ def test_get_dataset_http_503(requests_mock):
     503 error.
     """
     requests_mock.get(METAX_REST_URL + '/datasets/foo', status_code=503)
-    with pytest.raises(MetaxConnectionError):
+    with pytest.raises(requests.HTTPError) as error:
         METAX_CLIENT.get_dataset('foo')
+    assert error.value.response.status_code == 503
 
 
 def test_get_xml_http_503(requests_mock):
@@ -496,8 +502,9 @@ def test_get_xml_http_503(requests_mock):
     error.
     """
     requests_mock.get(METAX_REST_URL + '/files/foo/xml', status_code=503)
-    with pytest.raises(MetaxConnectionError):
+    with pytest.raises(requests.HTTPError) as error:
         METAX_CLIENT.get_xml('files', 'foo')
+    assert error.value.response.status_code == 503
 
 
 # pylint: disable=invalid-name
@@ -509,8 +516,9 @@ def test_set_preservation_state_http_503(requests_mock):
     """
     requests_mock.get(METAX_REST_URL + '/datasets/foobar', json={})
     requests_mock.patch(METAX_REST_URL + '/datasets/foobar', status_code=503)
-    with pytest.raises(MetaxConnectionError):
+    with pytest.raises(requests.HTTPError) as error:
         METAX_CLIENT.set_preservation_state('foobar', '10', 'foo', 'bar')
+    assert error.value.response.status_code == 503
 
 
 def test_get_datacite_http_503(requests_mock):
@@ -522,8 +530,9 @@ def test_get_datacite_http_503(requests_mock):
     requests_mock.get(
         METAX_REST_URL + '/datasets/foo', status_code=503
     )
-    with pytest.raises(MetaxConnectionError):
+    with pytest.raises(requests.HTTPError) as error:
         METAX_CLIENT.get_datacite("foo")
+    assert error.value.response.status_code == 503
 
 
 def test_get_dataset_files_http_503(requests_mock):
@@ -533,8 +542,9 @@ def test_get_dataset_files_http_503(requests_mock):
     returns http 503 error.
     """
     requests_mock.get(METAX_REST_URL+'/datasets/foo/files', status_code=503)
-    with pytest.raises(MetaxConnectionError):
+    with pytest.raises(requests.HTTPError) as error:
         METAX_CLIENT.get_dataset_files("foo")
+    assert error.value.response.status_code == 503
 
 
 def test_get_dataset_files_http_404(requests_mock):
