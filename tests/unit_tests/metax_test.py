@@ -409,15 +409,19 @@ def test_set_preservation_state(requests_mock):
 
 
 def test_patch_file(requests_mock):
-    """Test patch_file function. Metadata in Metax is modified by sending HTTP
-    PATCH request with modified metadata in JSON format. This test checks that
-    correct HTTP request is sent to Metax. The effect of the request is not
-    tested.
+    """Test patch_file function.
+
+    Metadata in Metax is modified by sending HTTP PATCH request with modified
+    metadata in JSON format. This test checks that correct HTTP request is sent
+    to Metax, and that patch_file returns JSON response from Metax.
 
     :returns: None
     """
+    # Mock Metax
     requests_mock.get(METAX_REST_URL + '/files/test_id', json={})
-    requests_mock.patch(METAX_REST_URL + '/files/test_id')
+    requests_mock.patch(METAX_REST_URL + '/files/test_id', json={'foo': 'bar'})
+
+    # Patch a file
     sample_data = {
         "file_characteristics": {
             "file_format": "text/plain",
@@ -425,7 +429,7 @@ def test_patch_file(requests_mock):
             "encoding": "UTF-8"
         }
     }
-    METAX_CLIENT.patch_file('test_id', sample_data)
+    assert METAX_CLIENT.patch_file('test_id', sample_data) == {'foo': 'bar'}
 
     # Check the body of last HTTP request
     request_body = json.loads(requests_mock.last_request.body)
