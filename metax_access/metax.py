@@ -684,13 +684,11 @@ class Metax(object):
         """Delete metadata of dataset.
 
         :param dataset_id: dataset identifier
-        :returns: JSON response from Metax
+        :returns: ``None``
         """
         url = self.baseurl + 'datasets/' + dataset_id
         response = self.delete(url)
         response.raise_for_status()
-
-        return response.json()
 
     def delete_dataset_files(self, dataset_id):
         """Delete metadata of files of a dataset.
@@ -743,13 +741,11 @@ class Metax(object):
         """Delete metadata of contract.
 
         :param dataset_id: contract identifier
-        :returns: JSON response from Metax
+        :returns: ``None``
         """
         url = self.baseurl + 'contracts/' + contract_id
         response = self.delete(url)
         response.raise_for_status()
-
-        return response.json()
 
     def get_directory_files(self, directory_identifier):
         """Get files of the directory.
