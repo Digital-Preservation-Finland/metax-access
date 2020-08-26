@@ -357,18 +357,14 @@ class Metax(object):
         """
         temp_types = set()
         mime_types = []
+
         url = "".join([self.baseurl,
                        "datasets/", six.text_type(dataset_id), '/files'])
         response = self.get(url)
         if response.status_code == 404:
             raise DatasetNotFoundError
-        elif response.status_code >= 300:
-            response.status_code = 500
-            if 'detail' in response.json():
-                response.reason = response.json()['detail']
-                response.raise_for_status()
-            else:
-                response.raise_for_status()
+        response.raise_for_status()
+
         for fil in response.json():
             file_format = ''
             format_version = ''
@@ -539,8 +535,8 @@ class Metax(object):
                     )
                 )
             return True
-        else:
-            return False
+
+        return False
 
     def set_preservation_state(self, dataset_id, state=None,
                                user_description=None,
@@ -635,9 +631,8 @@ class Metax(object):
                 default='Datacite generation failed in Metax'
             )
             raise DataciteGenerationError(detail)
-        elif response.status_code == 404:
+        if response.status_code == 404:
             raise DatasetNotFoundError
-
         response.raise_for_status()
 
         # pylint: disable=no-member
