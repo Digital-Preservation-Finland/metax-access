@@ -60,46 +60,47 @@ class MetaxError(Exception):
         return return_val
 
 
-class FileNotFoundError(MetaxError):
+class FileNotAvailableError(MetaxError):
     """Exception raised when file is not found from metax."""
 
     def __init__(self, message="File not found"):
-        """Init FileNotFoundError."""
-        super(FileNotFoundError, self).__init__(message, 404)
+        """Init FileNotAvailableError."""
+        super(FileNotAvailableError, self).__init__(message, 404)
 
 
-class DatasetNotFoundError(MetaxError):
+class DatasetNotAvailableError(MetaxError):
     """Exception raised when dataset is not found from metax."""
 
     def __init__(self, message="Dataset not found"):
-        """Init DatasetNotFoundError."""
-        super(DatasetNotFoundError, self).__init__(message, 404)
+        """Init DatasetNotAvailableError."""
+        super(DatasetNotAvailableError, self).__init__(message, 404)
 
 
-class ContractNotFoundError(MetaxError):
+class ContractNotAvailableError(MetaxError):
     """Exception raised when contract is not found from metax."""
 
     def __init__(self):
-        """Init ContractNotFoundError."""
-        super(ContractNotFoundError, self).__init__("Contract not found", 404)
+        """Init ContractNotAvailableError."""
+        super(ContractNotAvailableError, self).__init__("Contract not found",
+                                                        404)
 
 
-class DataCatalogNotFoundError(MetaxError):
+class DataCatalogNotAvailableError(MetaxError):
     """Exception raised when contract is not found from metax."""
 
     def __init__(self):
-        """Init DataCatalogNotFoundError."""
-        super(DataCatalogNotFoundError, self).__init__(
+        """Init DataCatalogNotAvailableError."""
+        super(DataCatalogNotAvailableError, self).__init__(
             "Datacatalog not found", 404
         )
 
 
-class DirectoryNotFoundError(MetaxError):
+class DirectoryNotAvailableError(MetaxError):
     """Exception raised when directory is not found from metax."""
 
     def __init__(self):
-        """Init DirectoryNotFoundError."""
-        super(DirectoryNotFoundError, self).__init__(
+        """Init DirectoryNotAvailableError."""
+        super(DirectoryNotAvailableError, self).__init__(
             'Directory not found', 404
         )
 
@@ -180,7 +181,7 @@ class Metax(object):
                        org_filter_str, ordering_str])
         response = self.get(url)
         if response.status_code == 404:
-            raise DatasetNotFoundError
+            raise DatasetNotAvailableError
         response.raise_for_status()
         return response.json()
 
@@ -215,7 +216,7 @@ class Metax(object):
                        org_filter_str])
         response = self.get(url)
         if response.status_code == 404:
-            raise ContractNotFoundError
+            raise ContractNotAvailableError
         response.raise_for_status()
 
         return response.json()
@@ -229,7 +230,7 @@ class Metax(object):
         url = "".join([self.baseurl, "contracts/", pid])
         response = self.get(url)
         if response.status_code == 404:
-            raise ContractNotFoundError
+            raise ContractNotAvailableError
         response.raise_for_status()
 
         return response.json()
@@ -266,7 +267,7 @@ class Metax(object):
         response = self.get(url)
 
         if response.status_code == 404:
-            raise DatasetNotFoundError(
+            raise DatasetNotAvailableError(
                 message="Could not find metadata for dataset: %s" % dataset_id
             )
         response.raise_for_status()
@@ -306,7 +307,7 @@ class Metax(object):
         url = "".join([self.baseurl, "datacatalogs/", catalog_id])
         response = self.get(url)
         if response.status_code == 404:
-            raise DataCatalogNotFoundError
+            raise DataCatalogNotAvailableError
         response.raise_for_status()
 
         return response.json()
@@ -354,7 +355,7 @@ class Metax(object):
                        "datasets/", six.text_type(dataset_id), '/files'])
         response = self.get(url)
         if response.status_code == 404:
-            raise DatasetNotFoundError
+            raise DatasetNotAvailableError
         response.raise_for_status()
 
         for fil in response.json():
@@ -406,7 +407,7 @@ class Metax(object):
         response = self.get(url)
 
         if response.status_code == 404:
-            raise FileNotFoundError(
+            raise FileNotAvailableError(
                 "Could not find metadata for file: %s" % file_id
             )
         response.raise_for_status()
@@ -624,7 +625,7 @@ class Metax(object):
             )
             raise DataciteGenerationError(detail)
         if response.status_code == 404:
-            raise DatasetNotFoundError
+            raise DatasetNotAvailableError
         response.raise_for_status()
 
         # pylint: disable=no-member
@@ -641,7 +642,7 @@ class Metax(object):
         response = self.get(url)
 
         if response.status_code == 404:
-            raise DatasetNotFoundError
+            raise DatasetNotAvailableError
         response.raise_for_status()
 
         return response.json()
@@ -763,7 +764,7 @@ class Metax(object):
         response = self.get(url)
 
         if response.status_code == 404:
-            raise DirectoryNotFoundError
+            raise DirectoryNotAvailableError
         response.raise_for_status()
 
         return response.json()
@@ -779,7 +780,7 @@ class Metax(object):
         response = self.get(url)
 
         if response.status_code == 404:
-            raise DirectoryNotFoundError
+            raise DirectoryNotAvailableError
         response.raise_for_status()
 
         return response.json()

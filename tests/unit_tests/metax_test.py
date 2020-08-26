@@ -12,9 +12,9 @@ import requests
 from metax_access.metax import (
     Metax,
     DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
-    DatasetNotFoundError,
-    ContractNotFoundError,
-    DataCatalogNotFoundError,
+    DatasetNotAvailableError,
+    ContractNotAvailableError,
+    DataCatalogNotAvailableError,
     DataciteGenerationError
 )
 
@@ -70,7 +70,7 @@ def test_get_datasets_http_404(requests_mock):
     ``requests.get`` returns http 404 error.
     """
     requests_mock.get(METAX_REST_URL + '/datasets', status_code=404)
-    with pytest.raises(DatasetNotFoundError):
+    with pytest.raises(DatasetNotAvailableError):
         METAX_CLIENT.get_datasets()
 
 
@@ -123,7 +123,7 @@ def test_get_contracts_http_404(requests_mock):
     ``requests.get`` returns http 503 error.
     """
     requests_mock.get(METAX_REST_URL+'/contracts', status_code=404)
-    with pytest.raises(ContractNotFoundError):
+    with pytest.raises(ContractNotAvailableError):
         METAX_CLIENT.get_contracts()
 
 
@@ -160,7 +160,7 @@ def test_get_contract_http_404(requests_mock):
     ``requests.get`` returns http 404 error.
     """
     requests_mock.get(METAX_REST_URL+'/contracts/foo', status_code=404)
-    with pytest.raises(ContractNotFoundError):
+    with pytest.raises(ContractNotAvailableError):
         METAX_CLIENT.get_contract('foo')
 
 
@@ -198,7 +198,7 @@ def test_get_catalog_http_404(requests_mock):
     exception when ``requests.get`` returns http 404 error.
     """
     requests_mock.get(METAX_REST_URL+'/datacatalogs/foo', status_code=404)
-    with pytest.raises(DataCatalogNotFoundError):
+    with pytest.raises(DataCatalogNotAvailableError):
         METAX_CLIENT.get_datacatalog('foo')
 
 
@@ -554,7 +554,7 @@ def test_get_dataset_files_http_404(requests_mock):
     exception when ``requests.get`` returns http 404 error.
     """
     requests_mock.get(METAX_REST_URL+'/datasets/foo/files', status_code=404)
-    with pytest.raises(DatasetNotFoundError):
+    with pytest.raises(DatasetNotAvailableError):
         METAX_CLIENT.get_dataset_files("foo")
 
 

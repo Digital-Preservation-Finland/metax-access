@@ -20,9 +20,9 @@ DEFAULT_CONFIG_FILES = ['/etc/metax.cfg',
                         '~/.metax.cfg']
 
 NOT_FOUND_ERRORS = (
-    metax_access.metax.FileNotFoundError,
-    metax_access.metax.DatasetNotFoundError,
-    metax_access.metax.ContractNotFoundError
+    metax_access.metax.FileNotAvailableError,
+    metax_access.metax.DatasetNotAvailableError,
+    metax_access.metax.ContractNotAvailableError
 )
 
 

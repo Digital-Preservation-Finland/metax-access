@@ -12,7 +12,8 @@ from .metax import (DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION,
                     DS_STATE_TECHNICAL_METADATA_GENERATION_FAILED,
                     DS_STATE_VALID_METADATA,
                     DS_STATE_VALIDATING_METADATA,
-                    DS_STATE_VALIDATED_METADATA_UPDATED, ContractNotFoundError,
-                    DataciteGenerationError, DatasetNotFoundError,
-                    DirectoryNotFoundError, Metax,
-                    MetaxError, FileNotFoundError)
+                    DS_STATE_VALIDATED_METADATA_UPDATED,
+                    ContractNotAvailableError,
+                    DataciteGenerationError, DatasetNotAvailableError,
+                    DirectoryNotAvailableError, Metax,
+                    MetaxError, FileNotAvailableError)
