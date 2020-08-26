@@ -1,6 +1,6 @@
 # coding=utf-8
 # pylint: disable=no-member
-"""Tests for ``metax_access.metax`` module"""
+"""Tests for ``metax_access.metax`` module."""
 from __future__ import unicode_literals
 
 import json
@@ -25,8 +25,9 @@ METAX_CLIENT = Metax(METAX_URL, METAX_USER, METAX_PASSWORD, verify=False)
 
 
 def test_init():
-    """Test that init function raises exception if required parameters are not
-    given.
+    """Test init function.
+
+    Init function should raise exception if required parameters are not given.
     """
     with pytest.raises(ValueError) as exception:
         Metax(METAX_URL)
@@ -34,8 +35,10 @@ def test_init():
 
 
 def test_get_datasets(requests_mock):
-    """Test get_datasets function. Mocks Metax to return simple JSON as HTTP
-    response and checks that the returned dict contains the correct values.
+    """Test ``get_datasets`` function.
+
+    Mocks Metax to return simple JSON as HTTP response and checks that the
+    returned dict contains the correct values.
 
     :returns: None
     """
@@ -48,8 +51,10 @@ def test_get_datasets(requests_mock):
 
 
 def test_get_datasets_http_503(requests_mock):
-    """Test that get_datasets function throws a MetaxConnectionError
-    exception when requests.get() returns http 503 error
+    """Test ``get_datasets`` function.
+
+    ``get_datasets`` should throw a HTTPError when ``requests.get`` returns
+    http 503 error.
     """
     requests_mock.get(METAX_REST_URL + '/datasets', status_code=503)
     with pytest.raises(MetaxConnectionError):
@@ -57,8 +62,10 @@ def test_get_datasets_http_503(requests_mock):
 
 
 def test_get_datasets_http_404(requests_mock):
-    """Test that get_datasets function throws a DatasetNotFoundError
-    exception when requests.get() returns http 404 error
+    """Test ``get_datasets`` function.
+
+    ``get_datasets`` should throw a DatasetNotAvailableError exception when
+    ``requests.get`` returns http 404 error.
     """
     requests_mock.get(METAX_REST_URL + '/datasets', status_code=404)
     with pytest.raises(DatasetNotFoundError):
@@ -66,7 +73,9 @@ def test_get_datasets_http_404(requests_mock):
 
 
 def test_get_dataset(requests_mock):
-    """Test get_dataset function. Mocks Metax to return simple JSON as HTTP
+    """Test ``get_dataset`` function.
+
+    Mocks Metax to return simple JSON as HTTP
     response and checks that the returned dict contains the correct values.
 
     :returns: None
@@ -78,7 +87,9 @@ def test_get_dataset(requests_mock):
 
 
 def test_get_contracts(requests_mock):
-    """Test get_contracts function. Mocks Metax to return simple JSON as HTTP
+    """Test ``get_contracts`` function.
+
+    Mocks Metax to return simple JSON as HTTP
     response and checks that the returned dict contains the correct values.
 
     :returns: None
@@ -92,8 +103,10 @@ def test_get_contracts(requests_mock):
 
 
 def test_get_contracts_http_503(requests_mock):
-    """Test that get_contracts function throws a MetaxConnectionError
-    exception when requests.get() returns http 503 error
+    """Test ``get_contracts`` function.
+
+    ``get_contracts`` should throw a HTTPError when ``requests.get`` returns
+    http 503 error.
     """
     requests_mock.get(METAX_REST_URL+'/contracts', status_code=503)
     with pytest.raises(MetaxConnectionError):
@@ -101,8 +114,10 @@ def test_get_contracts_http_503(requests_mock):
 
 
 def test_get_contracts_http_404(requests_mock):
-    """Test that get_contracts function throws a ContractNotFoundError
-    exception when requests.get() returns http 503 error
+    """Test ``get_contracts`` function.
+
+    ``get_contracts`` should throw a ContractNotAvailableError exception when
+    ``requests.get`` returns http 503 error.
     """
     requests_mock.get(METAX_REST_URL+'/contracts', status_code=404)
     with pytest.raises(ContractNotFoundError):
@@ -110,7 +125,9 @@ def test_get_contracts_http_404(requests_mock):
 
 
 def test_get_contract(requests_mock):
-    """Test get_contract function. Mocks Metax to return simple JSON as HTTP
+    """Test ``get_contract`` function.
+
+    Mocks Metax to return simple JSON as HTTP
     response and checks that the returned dict contains the correct values.
 
     :returns: None
@@ -122,8 +139,10 @@ def test_get_contract(requests_mock):
 
 
 def test_get_contract_http_503(requests_mock):
-    """Test that get_contract function throws a MetaxConnectionError
-    exception when requests.get() returns http 503 error
+    """Test ``get_contract`` function.
+
+    ``get_contract`` should throw a HTTPError when ``requests.get``
+    returns http 503 error.
     """
     requests_mock.get(METAX_REST_URL+'/contracts/foo', status_code=503)
     with pytest.raises(MetaxConnectionError):
@@ -131,8 +150,10 @@ def test_get_contract_http_503(requests_mock):
 
 
 def test_get_contract_http_404(requests_mock):
-    """Test that get_contract function throws a ContractNotFoundError
-    exception when requests.get() returns http 404 error
+    """Test ``get_contract`` function.
+
+    ``get_contract`` should throw a ContractNotAvailableError exception when
+    ``requests.get`` returns http 404 error.
     """
     requests_mock.get(METAX_REST_URL+'/contracts/foo', status_code=404)
     with pytest.raises(ContractNotFoundError):
@@ -140,10 +161,12 @@ def test_get_contract_http_404(requests_mock):
 
 
 def test_get_datacatalog(requests_mock):
-    """Test get_datacatalog function. Mocks HTTP response to return simple JSON
-    and checks that returned dict contains the correct values.
+    """Test ``get_datacatalog`` function.
 
-    :returns: None
+    Mocks HTTP response to return simple JSON and checks that returned dict
+    contains the correct values.
+
+    :returns: ``None``
     """
     requests_mock.get(METAX_REST_URL + "/datacatalogs/test_catalog",
                       json={"catalog_json": {"identifier": 'foo'}})
@@ -153,8 +176,10 @@ def test_get_datacatalog(requests_mock):
 
 
 def test_get_catalog_http_503(requests_mock):
-    """Test that get_datacatalog function throws a MetaxConnectionError
-    exception when requests.get() returns http 503 error
+    """Test ``get_datacatalog`` function.
+
+    ``get_datacatalog`` should throw a HTTPError when ``requests.get`` returns
+    http 503 error.
     """
     requests_mock.get(METAX_REST_URL+'/datacatalogs/foo', status_code=503)
     with pytest.raises(MetaxConnectionError):
@@ -162,8 +187,10 @@ def test_get_catalog_http_503(requests_mock):
 
 
 def test_get_catalog_http_404(requests_mock):
-    """Test that get_datacatalog function throws a DataCatalogNotFoundError
-    exception when requests.get() returns http 404 error
+    """Test ``get_datacatalog`` function.
+
+    ``get_datacatalog`` should throw a DataCatalogNotAvailableError
+    exception when ``requests.get`` returns http 404 error.
     """
     requests_mock.get(METAX_REST_URL+'/datacatalogs/foo', status_code=404)
     with pytest.raises(DataCatalogNotFoundError):
@@ -171,10 +198,12 @@ def test_get_catalog_http_404(requests_mock):
 
 
 def test_get_dataset_filetypes(requests_mock):
-    """Test get_dataset filetypes function. Mocks Metax HTTP response and
-    checks that the function returns dictionary with correct items
+    """Test ``get_dataset`` filetypes function.
 
-    :returns: None
+    Mocks Metax HTTP response and checks that the function returns dictionary
+    with correct items.
+
+    :returns: ``None``
     """
     requests_mock.get(
         METAX_REST_URL + '/datasets/test_id/files',
@@ -207,10 +236,12 @@ def test_get_dataset_filetypes(requests_mock):
 
 
 def test_patch_dataset(requests_mock):
-    """Test patch_dataset function. Patch a dataset with few updated key/value
-    pairs and check that correct HTTP request was sent to Metax.
+    """Test ``patch_dataset`` function.
 
-    :returns: None
+    Patch a dataset with few updated key/value pairs and check that correct
+    HTTP request was sent to Metax.
+
+    :returns: ``None``
     """
     requests_mock.patch(METAX_REST_URL + '/datasets/test_id', json={})
     requests_mock.get(
@@ -234,10 +265,12 @@ def test_patch_dataset(requests_mock):
 
 
 def test_get_xml(requests_mock):
-    """Test get_xml function. Mocks Metax HTTP responses and and checks that
-    the function returns dictionary that contains xml objects.
+    """Test ``get_xml`` function.
 
-    :returns: None
+    Mocks Metax HTTP responses and and checks that the function returns
+    dictionary that contains xml objects.
+
+    :returns: ``None``
     """
     requests_mock.get(METAX_REST_URL + '/files/test_id/xml',
                       json=["http://www.loc.gov/METS/",
@@ -264,10 +297,12 @@ def test_get_xml(requests_mock):
 
 
 def test_set_xml(requests_mock):
-    """Test set_xml functions. Reads XML file and posts it to Metax. The body
+    """Test ``set_xml`` functions.
+
+    Reads XML file and posts it to Metax. The body
     and headers of HTTP request are checked.
 
-    :returns: None
+    :returns: ``None``
     """
     requests_mock.get(METAX_REST_URL + '/files/set_xml_1/xml', json=[])
     requests_mock.post(METAX_REST_URL + '/files/set_xml_1/xml',
@@ -296,10 +331,12 @@ def test_set_xml(requests_mock):
 
 # pylint: disable=invalid-name
 def test_set_xml_metadata_already_set(requests_mock):
-    """Test set_xml functions. Reads XML file and posts it to Metax. The body
-    and headers of HTTP request are checked.
+    """Test ``set_xml`` functions.
 
-    :returns: None
+    Reads XML file and posts it to Metax. The body and headers of HTTP request
+    are checked.
+
+    :returns: ``None``
     """
     requests_mock.get(METAX_REST_URL + '/files/xml_metadata_already_set/xml',
                       json=['http://www.loc.gov/mix/v20'])
@@ -320,10 +357,11 @@ def test_set_xml_metadata_already_set(requests_mock):
 
 
 def test_get_datacite(requests_mock):
-    """Test get_datacite function. Read one field from returned etree object
-    and check its correctness.
+    """Test ``get_datacite`` function.
 
-    :returns: None
+    Read one field from returned etree object and check its correctness.
+
+    :returns: ``None``
     """
     # Read sample datacite from file and create mocked HTTP response
     datacite = lxml.etree.parse('tests/data/datacite_sample.xml')
@@ -350,9 +388,9 @@ def test_get_datacite(requests_mock):
 
 
 def test_get_datacite_fails(requests_mock):
-    """Test get_datacite function when Metax returns 400
+    """Test ``get_datacite`` function when Metax returns 400.
 
-    :returns: None
+    :returns: ``None``
     """
     # Mock metax dataset request response. Response body contains simplified
     # dataset metadata.
@@ -381,12 +419,13 @@ def test_get_datacite_fails(requests_mock):
 
 
 def test_set_preservation_state(requests_mock):
-    """Test set_preservation_state function. Metadata in Metax is modified by
-    sending HTTP PATCH request with modified metadata in JSON format. This test
-    checks that correct HTTP request is sent to Metax. The effect of the
-    request is not tested.
+    """Test ``set_preservation_state`` function.
 
-    :returns: None
+    Metadata in Metax is modified by sending HTTP PATCH request with modified
+    metadata in JSON format. This test checks that correct HTTP request is sent
+    to Metax. The effect of the request is not tested.
+
+    :returns: ``None``
     """
     requests_mock.get(METAX_REST_URL + '/datasets/test_id', json={})
     requests_mock.patch(METAX_REST_URL + '/datasets/test_id')
@@ -409,7 +448,7 @@ def test_set_preservation_state(requests_mock):
 
 
 def test_patch_file(requests_mock):
-    """Test patch_file function.
+    """Test ``patch_file`` function.
 
     Metadata in Metax is modified by sending HTTP PATCH request with modified
     metadata in JSON format. This test checks that correct HTTP request is sent
@@ -440,8 +479,10 @@ def test_patch_file(requests_mock):
 
 
 def test_get_dataset_http_503(requests_mock):
-    """Test that get_dataset function throws a MetaxConnectionError exception
-    when requests.get() returns http 503 error
+    """Test ``get_dataset`` function.
+
+    ``get_dataset`` should throw a HTTPError when ``requests.get`` returns http
+    503 error.
     """
     requests_mock.get(METAX_REST_URL + '/datasets/foo', status_code=503)
     with pytest.raises(MetaxConnectionError):
@@ -449,8 +490,10 @@ def test_get_dataset_http_503(requests_mock):
 
 
 def test_get_xml_http_503(requests_mock):
-    """Test that get_xml function throws a MetaxConnectionError exception
-    when requests.get() returns http 503 error
+    """Test ``get_xml`` function.
+
+    ``get_xml`` should throw a HTTPError when ``requests.get`` returns http 503
+    error.
     """
     requests_mock.get(METAX_REST_URL + '/files/foo/xml', status_code=503)
     with pytest.raises(MetaxConnectionError):
@@ -459,8 +502,10 @@ def test_get_xml_http_503(requests_mock):
 
 # pylint: disable=invalid-name
 def test_set_preservation_state_http_503(requests_mock):
-    """Test that set_preservation_state function throws a MetaxConnectionError
-    exception when requests.patch() returns http 503 error
+    """Test ``set_preservation_state`` function.
+
+    ``set_preservation_state`` should throw a HTTPError when requests.patch()
+    returns http 503 error.
     """
     requests_mock.get(METAX_REST_URL + '/datasets/foobar', json={})
     requests_mock.patch(METAX_REST_URL + '/datasets/foobar', status_code=503)
@@ -469,8 +514,10 @@ def test_set_preservation_state_http_503(requests_mock):
 
 
 def test_get_datacite_http_503(requests_mock):
-    """Test that get_datacite function throws a MetaxConnectionError exception
-    when requests.get() returns http 503 error
+    """Test that ``get_datacite`` function.
+
+    ``get_datacite`` should throw a HTTPError when ``requests.get`` returns
+    http 503 error.
     """
     requests_mock.get(
         METAX_REST_URL + '/datasets/foo', status_code=503
@@ -480,8 +527,10 @@ def test_get_datacite_http_503(requests_mock):
 
 
 def test_get_dataset_files_http_503(requests_mock):
-    """Test that get_dataset_files function throws a MetaxConnectionError
-    exception when requests.get() returns http 503 error
+    """Test that ``get_dataset_files`` function.
+
+    ``get_dataset_files`` should throw a HTTPError when ``requests.get``
+    returns http 503 error.
     """
     requests_mock.get(METAX_REST_URL+'/datasets/foo/files', status_code=503)
     with pytest.raises(MetaxConnectionError):
@@ -489,8 +538,10 @@ def test_get_dataset_files_http_503(requests_mock):
 
 
 def test_get_dataset_files_http_404(requests_mock):
-    """Test that get_dataset_files function throws a DatasetNotFoundError
-    exception when requests.get() returns http 404 error
+    """Test that ``get_dataset_files`` function.
+
+    ``get_dataset_files`` should throw a DatasetNotAvailableError
+    exception when ``requests.get`` returns http 404 error.
     """
     requests_mock.get(METAX_REST_URL+'/datasets/foo/files', status_code=404)
     with pytest.raises(DatasetNotFoundError):
@@ -498,8 +549,9 @@ def test_get_dataset_files_http_404(requests_mock):
 
 
 def test_delete_file(requests_mock):
-    """Test that ``delete_file`` function sends HTTP DELETE request to correct
-    url
+    """Test ``delete_file`` function.
+
+    Test that HTTP DELETE request is sent to correct url.
     """
     requests_mock.delete(METAX_REST_URL + "/files/file1",
                          json={"deleted_files_count": 1})
@@ -512,8 +564,9 @@ def test_delete_file(requests_mock):
 
 
 def test_delete_dataset(requests_mock):
-    """Test that ``delete_dataset`` function sends HTTP DELETE request to
-    correct url
+    """Test ``delete_dataset`` function.
+
+    Test that HTTP DELETE request is sent to correct url.
     """
     requests_mock.delete(METAX_REST_URL + "/datasets/dataset1")
 
@@ -525,8 +578,9 @@ def test_delete_dataset(requests_mock):
 
 
 def test_post_file(requests_mock):
-    """Test that ``post_file`` function sends HTTP POST request to correct
-    url
+    """Test ``post_file`` function.
+
+    Test that HTTP POST request is sent to correct url.
     """
     requests_mock.post(METAX_URL + '/rest/v1/files/', json={'identifier': '1'})
 
@@ -538,8 +592,9 @@ def test_post_file(requests_mock):
 
 
 def test_post_dataset(requests_mock):
-    """Test that ``post_dataset`` function sends HTTP POST request to correct
-    url
+    """Test ``post_dataset`` function.
+
+    Test that HTTP POST request is sent to correct url.
     """
     requests_mock.post(
         METAX_URL + '/rest/v1/datasets/', json={'identifier': '1'}
@@ -553,10 +608,12 @@ def test_post_dataset(requests_mock):
 
 
 def test_query_datasets(requests_mock):
-    """Test query_datasets function. Mocks Metax to return simple JSON as HTTP
-    response and checks that the returned dict contains the correct values.
+    """Test ``query_datasets`` function.
 
-    :returns: None
+    Mocks Metax to return simple JSON as HTTP response and checks that the
+    returned dict contains the correct values.
+
+    :returns: ``None``
     """
     requests_mock.get(
         METAX_REST_URL + "/datasets?preferred_identifier=foobar",
@@ -567,10 +624,11 @@ def test_query_datasets(requests_mock):
 
 
 def test_get_files_dict(requests_mock):
-    """Test get_files_dict function. Metax is mocked to return files as two
-    reponses.
+    """Test ``get_files_dict`` function.
 
-    :returns: None
+    Metax is mocked to return files as two reponses.
+
+    :returns: ``None``
     """
     first_response = {
         "next": "https://next.url",

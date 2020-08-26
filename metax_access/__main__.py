@@ -27,7 +27,7 @@ NOT_FOUND_ERRORS = (
 
 
 def _get_metax_error(error):
-    """Return Metax error message"""
+    """Return Metax error message."""
     try:
         response = error.response.json()
     except ValueError:
@@ -40,7 +40,7 @@ def _get_metax_error(error):
 
 
 def post(metax_client, args):
-    """Post file/dataset to Metax and print the result
+    """Post file/dataset to Metax and print the result.
 
     :param metax_client: `metax_access.Metax` instance
     :param args: Named tuple of parsed arguments from
@@ -66,7 +66,7 @@ def post(metax_client, args):
 
 
 def get(metax_client, args):
-    """Get file, dataset, or contract
+    """Get file, dataset, or contract.
 
     :param metax_client: `metax_access.Metax` instance
     :param args: Named tuple of parsed arguments from
@@ -102,7 +102,7 @@ def get(metax_client, args):
 
 
 def delete(metax_client, args):
-    """Delete file, dataset, or contract
+    """Delete file, dataset, or contract.
 
     :param metax_client: `metax_access.Metax` instance
     :param args: Named tuple of parsed arguments from
@@ -122,7 +122,7 @@ def delete(metax_client, args):
 
 
 def patch(metax_client, args):
-    """Patch file, dataset, or contract
+    """Patch file, dataset, or contract.
 
     :param metax_client: `metax_access.Metax` instance
     :param args: Named tuple of parsed arguments from
@@ -149,7 +149,7 @@ def patch(metax_client, args):
 
 
 def _pprint(dictionary, fpath=None):
-    """Pretty print dictionary to stdout
+    """Pretty print dictionary to stdout.
 
     :param dictionary: dictionary
     :param fpath: Path to the file where output is written
@@ -164,9 +164,7 @@ def _pprint(dictionary, fpath=None):
 
 
 def main(arguments=None):
-    """
-    Parse arguments, init metax client, and run correct command depending
-    on the action (post, get or delete).
+    """Run command defined by commandline arguments.
 
     :param arguments: list of commandline arguments
     """

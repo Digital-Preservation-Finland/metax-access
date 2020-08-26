@@ -43,16 +43,17 @@ DS_STATE_ALL_STATES = (
 
 
 class MetaxError(Exception):
-    """Generic invalid usage Exception"""
+    """Generic invalid usage Exception."""
 
     def __init__(self, message="Metax error", status_code=400, payload=None):
+        """Init MetaxError."""
         super(MetaxError, self).__init__(message)
         self.message = message
         self.status_code = status_code
         self.payload = payload
 
     def to_dict(self):
-        """Return dict with the error message"""
+        """Return dict with the error message."""
         return_val = dict(self.payload or ())
         return_val['error'] = self.message
         return_val['code'] = self.status_code
@@ -68,43 +69,55 @@ class MetaxConnectionError(MetaxError):
 
 
 class FileNotFoundError(MetaxError):
-    """Exception raised when file is not found from metax"""
+    """Exception raised when file is not found from metax."""
+
     def __init__(self, message="File not found"):
+        """Init FileNotFoundError."""
         super(FileNotFoundError, self).__init__(message, 404)
 
 
 class DatasetNotFoundError(MetaxError):
-    """Exception raised when dataset is not found from metax"""
+    """Exception raised when dataset is not found from metax."""
+
     def __init__(self, message="Dataset not found"):
+        """Init DatasetNotFoundError."""
         super(DatasetNotFoundError, self).__init__(message, 404)
 
 
 class ContractNotFoundError(MetaxError):
-    """Exception raised when contract is not found from metax"""
+    """Exception raised when contract is not found from metax."""
+
     def __init__(self):
+        """Init ContractNotFoundError."""
         super(ContractNotFoundError, self).__init__("Contract not found", 404)
 
 
 class DataCatalogNotFoundError(MetaxError):
-    """Exception raised when contract is not found from metax"""
+    """Exception raised when contract is not found from metax."""
+
     def __init__(self):
+        """Init DataCatalogNotFoundError."""
         super(DataCatalogNotFoundError, self).__init__(
             "Datacatalog not found", 404
         )
 
 
 class DirectoryNotFoundError(MetaxError):
-    """Exception raised when directory is not found from metax"""
+    """Exception raised when directory is not found from metax."""
+
     def __init__(self):
+        """Init DirectoryNotFoundError."""
         super(DirectoryNotFoundError, self).__init__(
             'Directory not found', 404
         )
 
 
 class DataciteGenerationError(MetaxError):
-    """Exception raised when Metax returned 400 for datacite"""
+    """Exception raised when Metax returned 400 for datacite."""
+
     def __init__(self, message="Datacite generation failed in Metax",
                  status_code=400):
+        """Init DataciteGenerationError."""
         super(DataciteGenerationError, self).__init__(message, status_code)
 
 
@@ -114,7 +127,7 @@ class Metax(object):
 
     # pylint: disable=too-many-arguments
     def __init__(self, url, user=None, password=None, token=None, verify=True):
-        """ Initialize Metax object.
+        """Initialize Metax object.
 
         :param url: Metax url
         :param user: Metax user
@@ -137,7 +150,7 @@ class Metax(object):
                      pas_filter=None,
                      org_filter=None,
                      ordering=None):
-        """Gets the metadata of datasets from Metax.
+        """Get the metadata of datasets from Metax.
 
         :param str states: string containing dataset preservation state values
         e.g "10,20" for filtering
@@ -180,7 +193,7 @@ class Metax(object):
         return response.json()
 
     def query_datasets(self, param_dict):
-        """Gets datasets from metax based on query parameters.
+        """Get datasets from metax based on query parameters.
 
         :param dict param_dict: a dictionary containing attribute-value -pairs
             to be used as query parameters
@@ -193,7 +206,7 @@ class Metax(object):
         return response.json()
 
     def get_contracts(self, limit="1000000", offset="0", org_filter=None):
-        """Gets the data for contracts list from Metax.
+        """Get the data for contracts list from Metax.
 
         :param str limit: max number of contracts to be returned
         :param str offset: offset for paging
@@ -328,8 +341,10 @@ class Metax(object):
         return response.json()
 
     def get_dataset_filetypes(self, dataset_id):
-        """Get the unique triples of file_format, format_version, encoding
-        of the files in dataset.
+        """Get list of filetypes in dataset.
+
+        Returns unique triples of file_format, format_version, encoding of the
+        files in dataset.
 
         :param str dataset_id: id or identifier of the dataset
         :returns dict:
@@ -530,7 +545,9 @@ class Metax(object):
     def set_preservation_state(self, dataset_id, state=None,
                                user_description=None,
                                system_description=None):
-        """Set values of `preservation_state`, `preservation_state_description`
+        """Set preservation state of dataset.
+
+        Sets values of `preservation_state`, `preservation_state_description`
         and `preservation_description` for dataset in Metax.
 
         0 = Initialized
@@ -765,7 +782,7 @@ class Metax(object):
         return response.json()
 
     def get_directory(self, directory_identifier):
-        """Gets directory.
+        """Get directory.
 
         :param str directory_identifier: identifier attribute of directory
         :returns: directory
@@ -781,9 +798,12 @@ class Metax(object):
         return response.json()
 
     def get(self, url, **kwargs):
-        """Wrapper function for requests.get() function. Raises
-        MetaxConnectionError if status code is 503 (Service unavailable)
+        """Send authenticated HTTP GET request.
 
+        This function is a wrapper function for requests.get with automatic
+        authentication.
+
+        :param url: Request URL
         :returns: requests response
         """
         if "verify" not in kwargs:
@@ -804,9 +824,12 @@ class Metax(object):
         return response
 
     def patch(self, url, **kwargs):
-        """Wrapper function for requests.patch() function. Raises
-        MetaxConnectionError if status code is 503 (Service unavailable
+        """Send authenticated HTTP PATCH request.
 
+        This function is a wrapper function for requests.patch with automatic
+        authentication.
+
+        :param url: Request URL
         :returns: requests response
         """
         if "verify" not in kwargs:
@@ -827,9 +850,12 @@ class Metax(object):
         return response
 
     def post(self, url, **kwargs):
-        """Wrapper function for requests.post() function. Raises
-        MetaxConnectionError if status code is 503 (Service unavailable
+        """Send authenticated HTTP POST request.
 
+        This function is a wrapper function for requests.post with automatic
+        authentication.
+
+        :param url: Request URL
         :returns: requests response
         """
         if "verify" not in kwargs:
@@ -850,9 +876,12 @@ class Metax(object):
         return response
 
     def delete(self, url, **kwargs):
-        """Wrapper function for requests.delete() function. Raises
-        MetaxConnectionError if status code is 503 (Service unavailable)
+        """Send authenticated HTTP DELETE request.
 
+        This function is a wrapper function for requests.delete with automatic
+        authentication.
+
+        :param url: Request URL
         :returns: requests response
         """
         if "verify" not in kwargs:
@@ -883,7 +912,9 @@ def _get_detailed_error(response, default="Metax error"):
 
 
 def _update_nested_dict(original, update):
-    """Update nested dictionary. The keys of update dictionary are appended to
+    """Update nested dictionary.
+
+    The keys of update dictionary are appended to
     original dictionary. If original already contains the key, it will be
     overwritten. If key value is dictionary, the original value is updated with
     the value from update dictionary.
