@@ -60,49 +60,54 @@ class MetaxError(Exception):
         return return_val
 
 
-class FileNotAvailableError(MetaxError):
+class ResourceNotAvailableError(MetaxError):
+    """Exception raised when resource is not found from metax."""
+
+    def __init__(self, message="Resource not found"):
+        """Init FileNotAvailableError."""
+        super(ResourceNotAvailableError, self).__init__(message, 404)
+
+
+class FileNotAvailableError(ResourceNotAvailableError):
     """Exception raised when file is not found from metax."""
 
-    def __init__(self, message="File not found"):
+    def __init__(self):
         """Init FileNotAvailableError."""
-        super(FileNotAvailableError, self).__init__(message, 404)
+        super(FileNotAvailableError, self).__init__("File not found")
 
 
-class DatasetNotAvailableError(MetaxError):
+class DatasetNotAvailableError(ResourceNotAvailableError):
     """Exception raised when dataset is not found from metax."""
 
-    def __init__(self, message="Dataset not found"):
+    def __init__(self):
         """Init DatasetNotAvailableError."""
-        super(DatasetNotAvailableError, self).__init__(message, 404)
+        super(DatasetNotAvailableError, self).__init__("Dataset not found")
 
 
-class ContractNotAvailableError(MetaxError):
+class ContractNotAvailableError(ResourceNotAvailableError):
     """Exception raised when contract is not found from metax."""
 
     def __init__(self):
         """Init ContractNotAvailableError."""
-        super(ContractNotAvailableError, self).__init__("Contract not found",
-                                                        404)
+        super(ContractNotAvailableError, self).__init__("Contract not found")
 
 
-class DataCatalogNotAvailableError(MetaxError):
+class DataCatalogNotAvailableError(ResourceNotAvailableError):
     """Exception raised when contract is not found from metax."""
 
     def __init__(self):
         """Init DataCatalogNotAvailableError."""
         super(DataCatalogNotAvailableError, self).__init__(
-            "Datacatalog not found", 404
+            "Datacatalog not found"
         )
 
 
-class DirectoryNotAvailableError(MetaxError):
+class DirectoryNotAvailableError(ResourceNotAvailableError):
     """Exception raised when directory is not found from metax."""
 
     def __init__(self):
         """Init DirectoryNotAvailableError."""
-        super(DirectoryNotAvailableError, self).__init__(
-            'Directory not found', 404
-        )
+        super(DirectoryNotAvailableError, self).__init__('Directory not found')
 
 
 class DataciteGenerationError(MetaxError):
@@ -267,9 +272,7 @@ class Metax(object):
         response = self.get(url)
 
         if response.status_code == 404:
-            raise DatasetNotAvailableError(
-                message="Could not find metadata for dataset: %s" % dataset_id
-            )
+            raise DatasetNotAvailableError
         response.raise_for_status()
 
         return response.json()
@@ -407,9 +410,7 @@ class Metax(object):
         response = self.get(url)
 
         if response.status_code == 404:
-            raise FileNotAvailableError(
-                "Could not find metadata for file: %s" % file_id
-            )
+            raise FileNotAvailableError
         response.raise_for_status()
 
         return response.json()

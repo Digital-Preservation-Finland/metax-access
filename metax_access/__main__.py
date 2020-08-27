@@ -19,12 +19,6 @@ DEFAULT_CONFIG_FILES = ['/etc/metax.cfg',
                         '~/.local/etc/metax.cfg',
                         '~/.metax.cfg']
 
-NOT_FOUND_ERRORS = (
-    metax_access.metax.FileNotAvailableError,
-    metax_access.metax.DatasetNotAvailableError,
-    metax_access.metax.ContractNotAvailableError
-)
-
 
 def _get_metax_error(error):
     """Return Metax error message."""
@@ -95,7 +89,7 @@ def get(metax_client, args):
             if error.response.status_code > 499:
                 raise
             response = _get_metax_error(error)
-        except NOT_FOUND_ERRORS:
+        except metax_access.ResourceNotAvailableError:
             response = {"code": 404, "message": "Not found"}
 
     _pprint(response, args.output)
@@ -142,7 +136,7 @@ def patch(metax_client, args):
         if error.response.status_code > 499:
             raise
         response = _get_metax_error(error)
-    except NOT_FOUND_ERRORS:
+    except metax_access.ResourceNotAvailableError:
         response = {"code": 404, "message": "Not found"}
 
     _pprint(response, args.output)

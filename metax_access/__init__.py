@@ -1,4 +1,5 @@
-from .metax import (DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION,
+"""Expose public interface from submodules."""
+from .metax import (DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION,  # noqa: F401
                     DS_STATE_ALL_STATES, DS_STATE_IN_DIGITAL_PRESERVATION,
                     DS_STATE_IN_DISSEMINATION, DS_STATE_IN_PACKAGING_SERVICE,
                     DS_STATE_INITIALIZED, DS_STATE_INVALID_METADATA,
@@ -13,7 +14,11 @@ from .metax import (DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION,
                     DS_STATE_VALID_METADATA,
                     DS_STATE_VALIDATING_METADATA,
                     DS_STATE_VALIDATED_METADATA_UPDATED,
+                    Metax,
+                    MetaxError,
+                    ResourceNotAvailableError,
+                    FileNotAvailableError,
                     ContractNotAvailableError,
-                    DataciteGenerationError, DatasetNotAvailableError,
-                    DirectoryNotAvailableError, Metax,
-                    MetaxError, FileNotAvailableError)
+                    DataciteGenerationError,
+                    DatasetNotAvailableError,
+                    DirectoryNotAvailableError)
