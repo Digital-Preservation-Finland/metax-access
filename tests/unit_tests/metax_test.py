@@ -289,7 +289,7 @@ def test_get_xml(requests_mock):
         text='<root xmlns:mets="http://www.loc.gov/METS/"></root>'
     )
 
-    xml_dict = METAX_CLIENT.get_xml('files', "test_id")
+    xml_dict = METAX_CLIENT.get_xml("test_id")
     assert isinstance(xml_dict, dict)
 
     # The keys of returned dictionary should be xml namespace urls and
@@ -503,7 +503,7 @@ def test_get_xml_http_503(requests_mock):
     """
     requests_mock.get(METAX_REST_URL + '/files/foo/xml', status_code=503)
     with pytest.raises(requests.HTTPError) as error:
-        METAX_CLIENT.get_xml('files', 'foo')
+        METAX_CLIENT.get_xml('foo')
     assert error.value.response.status_code == 503
 
 

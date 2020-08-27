@@ -459,11 +459,10 @@ class Metax(object):
 
         return file_dict
 
-    def get_xml(self, entity_url, entity_id):
-        """Get xml data of dataset, contract or file with id from Metax.
+    def get_xml(self, identifier):
+        """Get technical metadata of file in xml format.
 
-        :param str entity_url: "datasets", "contracts" or "files"
-        :param str entity_id: id or identifier attribute of object
+        :param str identifier: id or identifier attribute of object
         :returns: dict with XML namespace strings as keys and
                   lxml.etree.ElementTree objects as values
         """
@@ -471,13 +470,10 @@ class Metax(object):
         xml_dict = {}
 
         # Get list of xml namespaces
-        ns_key_url = self.baseurl + entity_url + '/' + entity_id + '/xml'
+        ns_key_url = self.baseurl + 'files/' + identifier + '/xml'
         response = self.get(ns_key_url)
         if response.status_code == 404:
-            raise MetaxError(
-                "Could not retrieve list of additional metadata XML for "
-                "dataset %s: %s" % (entity_id, ns_key_url)
-            )
+            raise FileNotAvailableError
         response.raise_for_status()
         ns_key_list = response.json()
 
@@ -486,14 +482,10 @@ class Metax(object):
         for ns_key in ns_key_list:
             query = '?namespace=' + ns_key
             response = self.get(ns_key_url + query)
-            if not response.status_code == 200:
-                raise MetaxError(
-                    "Could not retrieve additional metadata XML for "
-                    "dataset %s: %s" % (entity_id, ns_key_url + query)
-                )
+            response.raise_for_status()
             # pylint: disable=no-member
-            xml_dict[ns_key] = lxml.etree.fromstring(response.content)\
-                .getroottree()
+            xml_dict[ns_key] \
+                = lxml.etree.fromstring(response.content).getroottree()
 
         return xml_dict
 
@@ -509,7 +501,7 @@ class Metax(object):
             xml_element.attrib[
                 '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation'
             ].split()[0]
-        xmls = self.get_xml('files', file_id)
+        xmls = self.get_xml(file_id)
         if namespace not in xmls:
             # Convert XML element to string
             # pylint: disable=no-member
@@ -521,13 +513,8 @@ class Metax(object):
 
             headers = {'Content-Type': 'application/xml'}
             response = self.post(url, data=data, headers=headers)
+            response.raise_for_status()
 
-            if response.status_code != 201:
-                raise requests.exceptions.HTTPError(
-                    "Expected 201 Created, got {} instead".format(
-                        response.status_code
-                    )
-                )
             return True
 
         return False
@@ -649,7 +636,7 @@ class Metax(object):
         return response.json()
 
     def get_file_datasets(self, file_id):
-        """Get a list of datasets associated with file_id.
+        """Get a list of research datasets associated with file_id.
 
         :param file_id: File identifier
         :returns: List of datasets associated with file_id
@@ -658,7 +645,7 @@ class Metax(object):
         response = self.post(url, json=[file_id])
 
         if response.status_code == 404:
-            raise MetaxError("Could not find file metadata")
+            raise FileNotAvailableError
         response.raise_for_status()
 
         return response.json()
