@@ -45,19 +45,10 @@ DS_STATE_ALL_STATES = (
 class MetaxError(Exception):
     """Generic invalid usage Exception."""
 
-    def __init__(self, message="Metax error", status_code=400, payload=None):
+    def __init__(self, message="Metax error"):
         """Init MetaxError."""
         super(MetaxError, self).__init__(message)
         self.message = message
-        self.status_code = status_code
-        self.payload = payload
-
-    def to_dict(self):
-        """Return dict with the error message."""
-        return_val = dict(self.payload or ())
-        return_val['error'] = self.message
-        return_val['code'] = self.status_code
-        return return_val
 
 
 class ResourceNotAvailableError(MetaxError):
@@ -65,7 +56,7 @@ class ResourceNotAvailableError(MetaxError):
 
     def __init__(self, message="Resource not found"):
         """Init FileNotAvailableError."""
-        super(ResourceNotAvailableError, self).__init__(message, 404)
+        super(ResourceNotAvailableError, self).__init__(message)
 
 
 class FileNotAvailableError(ResourceNotAvailableError):
@@ -113,10 +104,9 @@ class DirectoryNotAvailableError(ResourceNotAvailableError):
 class DataciteGenerationError(MetaxError):
     """Exception raised when Metax returned 400 for datacite."""
 
-    def __init__(self, message="Datacite generation failed in Metax",
-                 status_code=400):
+    def __init__(self, message="Datacite generation failed in Metax"):
         """Init DataciteGenerationError."""
-        super(DataciteGenerationError, self).__init__(message, status_code)
+        super(DataciteGenerationError, self).__init__(message)
 
 
 # pylint: disable=too-many-public-methods
@@ -607,11 +597,11 @@ class Metax(object):
         response = self.get(url)
 
         if response.status_code == 400:
-            detail = _get_detailed_error(
-                response,
-                default='Datacite generation failed in Metax'
+            detail = response.json()['detail']
+            raise DataciteGenerationError(
+                "Datacite generation failed: {}".format(detail)
             )
-            raise DataciteGenerationError(detail)
+
         if response.status_code == 404:
             raise DatasetNotAvailableError
         response.raise_for_status()
@@ -868,15 +858,6 @@ class Metax(object):
         response = requests.delete(url, **kwargs)
 
         return response
-
-
-def _get_detailed_error(response, default="Metax error"):
-    try:
-        response_json = response.json()
-        detail = response_json['detail']
-    except (ValueError, KeyError):
-        detail = default
-    return detail
 
 
 def _update_nested_dict(original, update):

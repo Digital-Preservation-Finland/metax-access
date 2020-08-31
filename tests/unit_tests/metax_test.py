@@ -408,9 +408,7 @@ def test_get_datacite_fails(requests_mock):
     # response body contains error information.
     response = \
         {
-            "detail": "Dataset does not have a publisher (field: "
-                      "research_dataset.publisher), which is a required value "
-                      "for datacite format",
+            "detail": "Foobar.",
             "error_identifier": "2019-03-28T12:39:01-f0a7e3ae"
         }
     requests_mock.get(
@@ -419,8 +417,10 @@ def test_get_datacite_fails(requests_mock):
         status_code=400
     )
 
-    with pytest.raises(DataciteGenerationError):
+    with pytest.raises(DataciteGenerationError) as exception:
         METAX_CLIENT.get_datacite("foo")
+
+    assert exception.value.message == "Datacite generation failed: Foobar."
 
 
 def test_set_preservation_state(requests_mock):
