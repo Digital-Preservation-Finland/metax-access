@@ -1,5 +1,6 @@
 """Metax interface class."""
 from __future__ import unicode_literals
+import logging
 
 import copy
 
@@ -174,10 +175,9 @@ class Metax(object):
                        "datasets", "?state=", states, "&limit=",
                        limit, "&offset=", offset, pas_filter_str,
                        org_filter_str, ordering_str])
-        response = self.get(url)
+        response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
             raise DatasetNotAvailableError
-        response.raise_for_status()
         return response.json()
 
     def query_datasets(self, param_dict):
@@ -189,7 +189,6 @@ class Metax(object):
         """
         url = "".join([self.baseurl, "datasets"])
         response = self.get(url, params=param_dict)
-        response.raise_for_status()
 
         return response.json()
 
@@ -209,10 +208,9 @@ class Metax(object):
         url = "".join([self.baseurl, 'contracts?limit=', limit,
                        '&offset=', offset,
                        org_filter_str])
-        response = self.get(url)
+        response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
             raise ContractNotAvailableError
-        response.raise_for_status()
 
         return response.json()
 
@@ -223,10 +221,9 @@ class Metax(object):
         :returns: The contract from Metax as json.
         """
         url = "".join([self.baseurl, "contracts/", pid])
-        response = self.get(url)
+        response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
             raise ContractNotAvailableError
-        response.raise_for_status()
 
         return response.json()
 
@@ -247,7 +244,6 @@ class Metax(object):
 
         url = "".join([self.baseurl, "contracts/", contract_id])
         response = self.patch(url, json=data)
-        response.raise_for_status()
 
         return response.json()
 
@@ -259,11 +255,10 @@ class Metax(object):
         """
         url = self.baseurl + 'datasets' + '/' + dataset_id
 
-        response = self.get(url)
+        response = self.get(url, allowed_status_codes=[404])
 
         if response.status_code == 404:
             raise DatasetNotAvailableError
-        response.raise_for_status()
 
         return response.json()
 
@@ -276,7 +271,6 @@ class Metax(object):
             self.rpcurl
         )
         response = self.get(rpc_url)
-        response.raise_for_status()
 
         template = response.json()
 
@@ -298,10 +292,9 @@ class Metax(object):
         :returns: The datacatalog as json.
         """
         url = "".join([self.baseurl, "datacatalogs/", catalog_id])
-        response = self.get(url)
+        response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
             raise DataCatalogNotAvailableError
-        response.raise_for_status()
 
         return response.json()
 
@@ -322,7 +315,6 @@ class Metax(object):
 
         url = "".join([self.baseurl, "datasets/", dataset_id])
         response = self.patch(url, json=data)
-        response.raise_for_status()
 
         return response.json()
 
@@ -346,10 +338,9 @@ class Metax(object):
 
         url = "".join([self.baseurl,
                        "datasets/", six.text_type(dataset_id), '/files'])
-        response = self.get(url)
+        response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
             raise DatasetNotAvailableError
-        response.raise_for_status()
 
         for fil in response.json():
             file_format = ''
@@ -385,7 +376,6 @@ class Metax(object):
             self.baseurl, "contracts/", six.text_type(pid), '/datasets'
         ])
         response = self.get(url)
-        response.raise_for_status()
 
         return response.json()
 
@@ -397,11 +387,10 @@ class Metax(object):
         """
         url = self.baseurl + 'files' + '/' + file_id
 
-        response = self.get(url)
+        response = self.get(url, allowed_status_codes=[404])
 
         if response.status_code == 404:
             raise FileNotAvailableError
-        response.raise_for_status()
 
         return response.json()
 
@@ -461,10 +450,9 @@ class Metax(object):
 
         # Get list of xml namespaces
         ns_key_url = self.baseurl + 'files/' + identifier + '/xml'
-        response = self.get(ns_key_url)
+        response = self.get(ns_key_url, allowed_status_codes=[404])
         if response.status_code == 404:
             raise FileNotAvailableError
-        response.raise_for_status()
         ns_key_list = response.json()
 
         # For each listed namespace, download the xml, create ElementTree, and
@@ -472,7 +460,6 @@ class Metax(object):
         for ns_key in ns_key_list:
             query = '?namespace=' + ns_key
             response = self.get(ns_key_url + query)
-            response.raise_for_status()
             # pylint: disable=no-member
             xml_dict[ns_key] \
                 = lxml.etree.fromstring(response.content).getroottree()
@@ -502,8 +489,7 @@ class Metax(object):
                                                    namespace)
 
             headers = {'Content-Type': 'application/xml'}
-            response = self.post(url, data=data, headers=headers)
-            response.raise_for_status()
+            self.post(url, data=data, headers=headers)
 
             return True
 
@@ -558,9 +544,7 @@ class Metax(object):
                 if value != dataset.get(key, None)}
 
         if data:
-            response = self.patch(url, json=data)
-            # Raise exception if request fails
-            response.raise_for_status()
+            self.patch(url, json=data)
 
     def patch_file(self, file_id, data):
         """Patch file metadata.
@@ -579,7 +563,6 @@ class Metax(object):
 
         url = "".join([self.baseurl, "files/", file_id])
         response = self.patch(url, json=data)
-        response.raise_for_status()
 
         return response.json()
 
@@ -594,7 +577,7 @@ class Metax(object):
         url = "%sdatasets/%s?dataset_format=datacite&dummy_doi=%s" % (
             self.baseurl, dataset_id, dummy_doi
         )
-        response = self.get(url)
+        response = self.get(url, allowed_status_codes=[400, 404])
 
         if response.status_code == 400:
             detail = response.json()['detail']
@@ -604,7 +587,6 @@ class Metax(object):
 
         if response.status_code == 404:
             raise DatasetNotAvailableError
-        response.raise_for_status()
 
         # pylint: disable=no-member
         return lxml.etree.fromstring(response.content).getroottree()
@@ -617,11 +599,10 @@ class Metax(object):
         """
         url = self.baseurl + 'datasets/' + dataset_id + '/files'
 
-        response = self.get(url)
+        response = self.get(url, allowed_status_codes=[404])
 
         if response.status_code == 404:
             raise DatasetNotAvailableError
-        response.raise_for_status()
 
         return response.json()
 
@@ -632,11 +613,10 @@ class Metax(object):
         :returns: List of datasets associated with file_id
         """
         url = self.baseurl + 'files/datasets'
-        response = self.post(url, json=[file_id])
+        response = self.post(url, allowed_status_codes=[404], json=[file_id])
 
         if response.status_code == 404:
             raise FileNotAvailableError
-        response.raise_for_status()
 
         return response.json()
 
@@ -648,7 +628,6 @@ class Metax(object):
         """
         url = self.baseurl + 'files/' + file_id
         response = self.delete(url)
-        response.raise_for_status()
 
         return response.json()
 
@@ -660,7 +639,6 @@ class Metax(object):
         """
         url = self.baseurl + 'files'
         response = self.delete(url, json=file_id_list)
-        response.raise_for_status()
 
         return response.json()
 
@@ -671,8 +649,7 @@ class Metax(object):
         :returns: ``None``
         """
         url = self.baseurl + 'datasets/' + dataset_id
-        response = self.delete(url)
-        response.raise_for_status()
+        self.delete(url)
 
     def delete_dataset_files(self, dataset_id):
         """Delete metadata of files of a dataset.
@@ -693,7 +670,6 @@ class Metax(object):
         """
         url = self.baseurl + 'files/'
         response = self.post(url, json=metadata)
-        response.raise_for_status()
 
         return response.json()
 
@@ -705,7 +681,6 @@ class Metax(object):
         """
         url = self.baseurl + 'datasets/'
         response = self.post(url, json=metadata)
-        response.raise_for_status()
 
         return response.json()
 
@@ -717,7 +692,6 @@ class Metax(object):
         """
         url = self.baseurl + 'contracts/'
         response = self.post(url, json=metadata)
-        response.raise_for_status()
 
         return response.json()
 
@@ -728,8 +702,7 @@ class Metax(object):
         :returns: ``None``
         """
         url = self.baseurl + 'contracts/' + contract_id
-        response = self.delete(url)
-        response.raise_for_status()
+        self.delete(url)
 
     def get_directory_files(self, directory_identifier):
         """Get files of the directory.
@@ -739,11 +712,10 @@ class Metax(object):
         """
         url = self.baseurl + 'directories/' + directory_identifier + '/files'
 
-        response = self.get(url)
+        response = self.get(url, allowed_status_codes=[404])
 
         if response.status_code == 404:
             raise DirectoryNotAvailableError
-        response.raise_for_status()
 
         return response.json()
 
@@ -755,23 +727,27 @@ class Metax(object):
         """
         url = self.baseurl + 'directories/' + directory_identifier
 
-        response = self.get(url)
+        response = self.get(url, allowed_status_codes=[404])
 
         if response.status_code == 404:
             raise DirectoryNotAvailableError
-        response.raise_for_status()
 
         return response.json()
 
-    def get(self, url, **kwargs):
+    def get(self, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP GET request.
 
         This function is a wrapper function for requests.get with automatic
-        authentication.
+        authentication. Raises HTTPError if request fails with status code
+        other than one of the allowed status codes.
 
         :param url: Request URL
+        :param allowed_status_codes: List of allowed HTTP error codes
         :returns: requests response
         """
+        if not allowed_status_codes:
+            allowed_status_codes = []
+
         if "verify" not in kwargs:
             kwargs["verify"] = self.verify
 
@@ -784,18 +760,29 @@ class Metax(object):
             kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
 
         response = requests.get(url, **kwargs)
+        if response.status_code not in allowed_status_codes:
+            message \
+                = 'HTTP request to {} failed. Response from server was: {}'\
+                .format(response.url, response.text)
+            logging.error(message)
+            response.raise_for_status()
 
         return response
 
-    def patch(self, url, **kwargs):
+    def patch(self, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP PATCH request.
 
         This function is a wrapper function for requests.patch with automatic
-        authentication.
+        authentication. Raises HTTPError if request fails with status code
+        other than one of the allowed status codes.
 
         :param url: Request URL
+        :param allowed_status_codes: List of allowed HTTP error codes
         :returns: requests response
         """
+        if not allowed_status_codes:
+            allowed_status_codes = []
+
         if "verify" not in kwargs:
             kwargs["verify"] = self.verify
 
@@ -808,18 +795,29 @@ class Metax(object):
             kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
 
         response = requests.patch(url, **kwargs)
+        if response.status_code not in allowed_status_codes:
+            message \
+                = 'HTTP request to {} failed. Response from server was: {}'\
+                .format(response.url, response.text)
+            logging.error(message)
+            response.raise_for_status()
 
         return response
 
-    def post(self, url, **kwargs):
+    def post(self, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP POST request.
 
         This function is a wrapper function for requests.post with automatic
-        authentication.
+        authentication. Raises HTTPError if request fails with status code
+        other than one of the allowed status codes.
 
         :param url: Request URL
+        :param allowed_status_codes: List of allowed HTTP error codes
         :returns: requests response
         """
+        if not allowed_status_codes:
+            allowed_status_codes = []
+
         if "verify" not in kwargs:
             kwargs["verify"] = self.verify
 
@@ -832,18 +830,29 @@ class Metax(object):
             kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
 
         response = requests.post(url, **kwargs)
+        if response.status_code not in allowed_status_codes:
+            message \
+                = 'HTTP request to {} failed. Response from server was: {}'\
+                .format(response.url, response.text)
+            logging.error(message)
+            response.raise_for_status()
 
         return response
 
-    def delete(self, url, **kwargs):
+    def delete(self, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP DELETE request.
 
         This function is a wrapper function for requests.delete with automatic
-        authentication.
+        authentication. Raises HTTPError if request fails with status code
+        other than one of the allowed status codes.
 
         :param url: Request URL
+        :param allowed_status_codes: List of allowed HTTP error codes
         :returns: requests response
         """
+        if not allowed_status_codes:
+            allowed_status_codes = []
+
         if "verify" not in kwargs:
             kwargs["verify"] = self.verify
 
@@ -856,6 +865,12 @@ class Metax(object):
             kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
 
         response = requests.delete(url, **kwargs)
+        if response.status_code not in allowed_status_codes:
+            message \
+                = 'HTTP request to {} failed. Response from server was: {}'\
+                .format(response.url, response.text)
+            logging.error(message)
+            response.raise_for_status()
 
         return response
 

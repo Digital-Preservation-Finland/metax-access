@@ -51,29 +51,6 @@ def test_get_datasets(requests_mock):
     assert len(datasets["results"]) == 2
 
 
-def test_get_datasets_http_503(requests_mock):
-    """Test ``get_datasets`` function.
-
-    ``get_datasets`` should throw a HTTPError when ``requests.get`` returns
-    http 503 error.
-    """
-    requests_mock.get(METAX_REST_URL + '/datasets', status_code=503)
-    with pytest.raises(requests.HTTPError) as error:
-        METAX_CLIENT.get_datasets()
-    assert error.value.response.status_code == 503
-
-
-def test_get_datasets_http_404(requests_mock):
-    """Test ``get_datasets`` function.
-
-    ``get_datasets`` should throw a DatasetNotAvailableError exception when
-    ``requests.get`` returns http 404 error.
-    """
-    requests_mock.get(METAX_REST_URL + '/datasets', status_code=404)
-    with pytest.raises(DatasetNotAvailableError):
-        METAX_CLIENT.get_datasets()
-
-
 def test_get_dataset(requests_mock):
     """Test ``get_dataset`` function.
 
@@ -104,29 +81,6 @@ def test_get_contracts(requests_mock):
     assert len(contracts['results']) == 2
 
 
-def test_get_contracts_http_503(requests_mock):
-    """Test ``get_contracts`` function.
-
-    ``get_contracts`` should throw a HTTPError when ``requests.get`` returns
-    http 503 error.
-    """
-    requests_mock.get(METAX_REST_URL+'/contracts', status_code=503)
-    with pytest.raises(requests.HTTPError) as error:
-        METAX_CLIENT.get_contracts()
-    assert error.value.response.status_code == 503
-
-
-def test_get_contracts_http_404(requests_mock):
-    """Test ``get_contracts`` function.
-
-    ``get_contracts`` should throw a ContractNotAvailableError exception when
-    ``requests.get`` returns http 503 error.
-    """
-    requests_mock.get(METAX_REST_URL+'/contracts', status_code=404)
-    with pytest.raises(ContractNotAvailableError):
-        METAX_CLIENT.get_contracts()
-
-
 def test_get_contract(requests_mock):
     """Test ``get_contract`` function.
 
@@ -139,29 +93,6 @@ def test_get_contract(requests_mock):
                       json={"foo": "bar"})
     contract = METAX_CLIENT.get_contract('test_id')
     assert contract['foo'] == "bar"
-
-
-def test_get_contract_http_503(requests_mock):
-    """Test ``get_contract`` function.
-
-    ``get_contract`` should throw a HTTPError when ``requests.get``
-    returns http 503 error.
-    """
-    requests_mock.get(METAX_REST_URL+'/contracts/foo', status_code=503)
-    with pytest.raises(requests.HTTPError) as error:
-        METAX_CLIENT.get_contract('foo')
-    assert error.value.response.status_code == 503
-
-
-def test_get_contract_http_404(requests_mock):
-    """Test ``get_contract`` function.
-
-    ``get_contract`` should throw a ContractNotAvailableError exception when
-    ``requests.get`` returns http 404 error.
-    """
-    requests_mock.get(METAX_REST_URL+'/contracts/foo', status_code=404)
-    with pytest.raises(ContractNotAvailableError):
-        METAX_CLIENT.get_contract('foo')
 
 
 def test_get_datacatalog(requests_mock):
@@ -177,29 +108,6 @@ def test_get_datacatalog(requests_mock):
 
     catalog = METAX_CLIENT.get_datacatalog('test_catalog')
     assert catalog['catalog_json']['identifier'] == 'foo'
-
-
-def test_get_catalog_http_503(requests_mock):
-    """Test ``get_datacatalog`` function.
-
-    ``get_datacatalog`` should throw a HTTPError when ``requests.get`` returns
-    http 503 error.
-    """
-    requests_mock.get(METAX_REST_URL+'/datacatalogs/foo', status_code=503)
-    with pytest.raises(requests.HTTPError) as error:
-        METAX_CLIENT.get_datacatalog('foo')
-    assert error.value.response.status_code == 503
-
-
-def test_get_catalog_http_404(requests_mock):
-    """Test ``get_datacatalog`` function.
-
-    ``get_datacatalog`` should throw a DataCatalogNotAvailableError
-    exception when ``requests.get`` returns http 404 error.
-    """
-    requests_mock.get(METAX_REST_URL+'/datacatalogs/foo', status_code=404)
-    with pytest.raises(DataCatalogNotAvailableError):
-        METAX_CLIENT.get_datacatalog('foo')
 
 
 def test_get_dataset_filetypes(requests_mock):
@@ -483,81 +391,6 @@ def test_patch_file(requests_mock):
     assert requests_mock.last_request.method == 'PATCH'
 
 
-def test_get_dataset_http_503(requests_mock):
-    """Test ``get_dataset`` function.
-
-    ``get_dataset`` should throw a HTTPError when ``requests.get`` returns http
-    503 error.
-    """
-    requests_mock.get(METAX_REST_URL + '/datasets/foo', status_code=503)
-    with pytest.raises(requests.HTTPError) as error:
-        METAX_CLIENT.get_dataset('foo')
-    assert error.value.response.status_code == 503
-
-
-def test_get_xml_http_503(requests_mock):
-    """Test ``get_xml`` function.
-
-    ``get_xml`` should throw a HTTPError when ``requests.get`` returns http 503
-    error.
-    """
-    requests_mock.get(METAX_REST_URL + '/files/foo/xml', status_code=503)
-    with pytest.raises(requests.HTTPError) as error:
-        METAX_CLIENT.get_xml('foo')
-    assert error.value.response.status_code == 503
-
-
-# pylint: disable=invalid-name
-def test_set_preservation_state_http_503(requests_mock):
-    """Test ``set_preservation_state`` function.
-
-    ``set_preservation_state`` should throw a HTTPError when requests.patch()
-    returns http 503 error.
-    """
-    requests_mock.get(METAX_REST_URL + '/datasets/foobar', json={})
-    requests_mock.patch(METAX_REST_URL + '/datasets/foobar', status_code=503)
-    with pytest.raises(requests.HTTPError) as error:
-        METAX_CLIENT.set_preservation_state('foobar', '10', 'foo', 'bar')
-    assert error.value.response.status_code == 503
-
-
-def test_get_datacite_http_503(requests_mock):
-    """Test that ``get_datacite`` function.
-
-    ``get_datacite`` should throw a HTTPError when ``requests.get`` returns
-    http 503 error.
-    """
-    requests_mock.get(
-        METAX_REST_URL + '/datasets/foo', status_code=503
-    )
-    with pytest.raises(requests.HTTPError) as error:
-        METAX_CLIENT.get_datacite("foo")
-    assert error.value.response.status_code == 503
-
-
-def test_get_dataset_files_http_503(requests_mock):
-    """Test that ``get_dataset_files`` function.
-
-    ``get_dataset_files`` should throw a HTTPError when ``requests.get``
-    returns http 503 error.
-    """
-    requests_mock.get(METAX_REST_URL+'/datasets/foo/files', status_code=503)
-    with pytest.raises(requests.HTTPError) as error:
-        METAX_CLIENT.get_dataset_files("foo")
-    assert error.value.response.status_code == 503
-
-
-def test_get_dataset_files_http_404(requests_mock):
-    """Test that ``get_dataset_files`` function.
-
-    ``get_dataset_files`` should throw a DatasetNotAvailableError
-    exception when ``requests.get`` returns http 404 error.
-    """
-    requests_mock.get(METAX_REST_URL+'/datasets/foo/files', status_code=404)
-    with pytest.raises(DatasetNotAvailableError):
-        METAX_CLIENT.get_dataset_files("foo")
-
-
 def test_delete_file(requests_mock):
     """Test ``delete_file`` function.
 
@@ -683,3 +516,91 @@ def test_get_files_dict(requests_mock):
     assert files["/path/file1"]['identifier'] == "file1_identifier"
     assert files["/path/file1"]['storage_identifier'] ==\
         "urn:nbn:fi:att:file-storage-pas"
+
+
+@pytest.mark.parametrize(
+    ('url', 'method', 'parameters', 'expected_error'),
+    (
+        ('/datasets', METAX_CLIENT.get_datasets, [],
+         DatasetNotAvailableError),
+        ('/contracts', METAX_CLIENT.get_contracts, [],
+         ContractNotAvailableError),
+        ('/contracts/foo', METAX_CLIENT.get_contract, ['foo'],
+         ContractNotAvailableError),
+        ('/datacatalogs/foo', METAX_CLIENT.get_datacatalog, ['foo'],
+         DataCatalogNotAvailableError),
+        ('/datasets/foo/files', METAX_CLIENT.get_dataset_files, ['foo'],
+         DatasetNotAvailableError),
+    )
+)
+def test_get_http_404(requests_mock, url, method, parameters, expected_error):
+    """Test a method when Metax responds with 404 "Not found" error.
+
+    The function should throw an exception.
+
+    :param request_mock: requests mocker
+    :param url: Metax url to be mocked
+    :param method: Method to be tested
+    :param parameters: Parameters for method call
+    :param expected_error: Exception expected to raise
+    """
+    requests_mock.get(METAX_REST_URL + url, status_code=404)
+    with pytest.raises(expected_error):
+        method(*parameters)
+
+
+@pytest.mark.parametrize(
+    ('url', 'method', 'parameters'),
+    (
+        ('/datasets?state=0,10,20,30,40,50,60,70,75,80,90,100,110,120,130,140'
+         '&limit=1000000&offset=0', METAX_CLIENT.get_datasets, []),
+        ('/contracts?limit=1000000&offset=0', METAX_CLIENT.get_contracts, []),
+        ('/contracts/foo', METAX_CLIENT.get_contract, ['foo']),
+        ('/datacatalogs/foo', METAX_CLIENT.get_datacatalog, ['foo']),
+        ('/datasets/foo', METAX_CLIENT.get_dataset, ['foo']),
+        ('/files/foo/xml', METAX_CLIENT.get_xml, ['foo']),
+        ('/datasets/foo?dataset_format=datacite&dummy_doi=false',
+         METAX_CLIENT.get_datacite, ['foo']),
+        ('/datasets/foo/files', METAX_CLIENT.get_dataset_files, ['foo']),
+    )
+)
+def test_get_http_503(requests_mock, caplog, url, method, parameters):
+    """Test a method when Metax responds with 503 "Server error".
+
+    The function should throw a HTTPError, and the content of response to
+    failed request should be logged.
+
+    :param request_mock: requests mocker
+    :param caplog: log capturer
+    :param url: Metax url to be mocked
+    :param method: Method to be tested
+    :param parameters: Parameters for method call
+    """
+    requests_mock.get(METAX_REST_URL + url,
+                      status_code=503,
+                      reason='Metax error',
+                      text='Metax failed to process request')
+    with pytest.raises(requests.HTTPError) as error:
+        method(*parameters)
+    assert error.value.response.status_code == 503
+
+    # Check logs
+    logged_messages = [record.message for record in caplog.records]
+    expected_message = (
+        'HTTP request to {} failed. Response from server was: Metax failed '
+        'to process request'.format(METAX_REST_URL + url)
+    )
+    assert expected_message in logged_messages
+
+
+def test_set_preservation_state_http_503(requests_mock):
+    """Test ``set_preservation_state`` function.
+
+    ``set_preservation_state`` should throw a HTTPError when requests.patch()
+    returns http 503 error.
+    """
+    requests_mock.get(METAX_REST_URL + '/datasets/foobar', json={})
+    requests_mock.patch(METAX_REST_URL + '/datasets/foobar', status_code=503)
+    with pytest.raises(requests.HTTPError) as error:
+        METAX_CLIENT.set_preservation_state('foobar', '10', 'foo', 'bar')
+    assert error.value.response.status_code == 503
