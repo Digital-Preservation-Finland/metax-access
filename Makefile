@@ -13,6 +13,17 @@ install:
 	# Use Python setuptools
 	python ./setup.py install -O1 --prefix="${PREFIX}" --root="${DESTDIR}" --record=INSTALLED_FILES
 
+install3:
+	# Cleanup temporary files
+	rm -f INSTALLED_FILES
+
+	# Copy config file to /etc
+	mkdir -p "${ETC}"
+	cp include/etc/metax.cfg ${ETC}/
+
+	# Use Python setuptools
+	python3 ./setup.py install -O1 --prefix="${PREFIX}" --root="${DESTDIR}" --record=INSTALLED_FILES
+
 github:
 	python3 -mvenv venv; \
 	    source venv/bin/activate; \
@@ -44,6 +55,11 @@ clean-rpm:
 rpm: clean
 	create-archive.sh
 	preprocess-spec-m4-macros.sh include/rhel7
+	build-rpm.sh
+
+rpm3: clean
+	create-archive.sh
+	preprocess-spec-m4-macros.sh include/rhel8
 	build-rpm.sh
 
 .PHONY: doc
