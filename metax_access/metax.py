@@ -760,12 +760,15 @@ class Metax(object):
             kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
 
         response = requests.get(url, **kwargs)
-        if response.status_code not in allowed_status_codes:
-            message \
-                = 'HTTP request to {} failed. Response from server was: {}'\
-                .format(response.url, response.text)
-            logging.error(message)
+        try:
             response.raise_for_status()
+        except requests.HTTPError as error:
+            if error.response.status_code not in allowed_status_codes:
+                logging.error(
+                    'HTTP request to %s failed. Response from server was: %s',
+                    response.url, response.text
+                )
+                raise
 
         return response
 
@@ -795,12 +798,15 @@ class Metax(object):
             kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
 
         response = requests.patch(url, **kwargs)
-        if response.status_code not in allowed_status_codes:
-            message \
-                = 'HTTP request to {} failed. Response from server was: {}'\
-                .format(response.url, response.text)
-            logging.error(message)
+        try:
             response.raise_for_status()
+        except requests.HTTPError as error:
+            if error.response.status_code not in allowed_status_codes:
+                logging.error(
+                    'HTTP request to %s failed. Response from server was: %s',
+                    response.url, response.text
+                )
+                raise
 
         return response
 
@@ -830,12 +836,15 @@ class Metax(object):
             kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
 
         response = requests.post(url, **kwargs)
-        if response.status_code not in allowed_status_codes:
-            message \
-                = 'HTTP request to {} failed. Response from server was: {}'\
-                .format(response.url, response.text)
-            logging.error(message)
+        try:
             response.raise_for_status()
+        except requests.HTTPError as error:
+            if error.response.status_code not in allowed_status_codes:
+                logging.error(
+                    'HTTP request to %s failed. Response from server was: %s',
+                    response.url, response.text
+                )
+                raise
 
         return response
 
@@ -865,12 +874,15 @@ class Metax(object):
             kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
 
         response = requests.delete(url, **kwargs)
-        if response.status_code not in allowed_status_codes:
-            message \
-                = 'HTTP request to {} failed. Response from server was: {}'\
-                .format(response.url, response.text)
-            logging.error(message)
+        try:
             response.raise_for_status()
+        except requests.HTTPError as error:
+            if error.response.status_code not in allowed_status_codes:
+                logging.error(
+                    'HTTP request to %s failed. Response from server was: %s',
+                    response.url, response.text
+                )
+                raise
 
         return response
 

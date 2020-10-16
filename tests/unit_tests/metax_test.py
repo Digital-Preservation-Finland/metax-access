@@ -35,7 +35,7 @@ def test_init():
     assert str(exception.value) == "Metax user or access token is required."
 
 
-def test_get_datasets(requests_mock):
+def test_get_datasets(requests_mock, caplog):
     """Test ``get_datasets`` function.
 
     Mocks Metax to return simple JSON as HTTP response and checks that the
@@ -49,6 +49,10 @@ def test_get_datasets(requests_mock):
     )
     datasets = METAX_CLIENT.get_datasets('datasets')
     assert len(datasets["results"]) == 2
+
+    # No errors should be logged
+    logged_errors = [r for r in caplog.records if r.levelname == 'ERROR']
+    assert not logged_errors
 
 
 def test_get_dataset(requests_mock):
