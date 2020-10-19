@@ -734,10 +734,10 @@ class Metax(object):
 
         return response.json()
 
-    def get(self, url, allowed_status_codes=None, **kwargs):
-        """Send authenticated HTTP GET request.
+    def request(self, method, url, allowed_status_codes=None, **kwargs):
+        """Send authenticated HTTP request.
 
-        This function is a wrapper function for requests.get with automatic
+        This function is a wrapper function for requests.requets with automatic
         authentication. Raises HTTPError if request fails with status code
         other than one of the allowed status codes.
 
@@ -759,7 +759,7 @@ class Metax(object):
         else:
             kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
 
-        response = requests.get(url, **kwargs)
+        response = requests.request(method, url, **kwargs)
         try:
             response.raise_for_status()
         except requests.HTTPError as error:
@@ -771,6 +771,19 @@ class Metax(object):
                 raise
 
         return response
+
+    def get(self, url, allowed_status_codes=None, **kwargs):
+        """Send authenticated HTTP GET request.
+
+        This function is a wrapper function for requests.get with automatic
+        authentication. Raises HTTPError if request fails with status code
+        other than one of the allowed status codes.
+
+        :param url: Request URL
+        :param allowed_status_codes: List of allowed HTTP error codes
+        :returns: requests response
+        """
+        return self.request('GET', url, allowed_status_codes, **kwargs)
 
     def patch(self, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP PATCH request.
@@ -783,32 +796,7 @@ class Metax(object):
         :param allowed_status_codes: List of allowed HTTP error codes
         :returns: requests response
         """
-        if not allowed_status_codes:
-            allowed_status_codes = []
-
-        if "verify" not in kwargs:
-            kwargs["verify"] = self.verify
-
-        if self.token:
-            if "headers" in kwargs:
-                kwargs["headers"]["Authorization"] = "Bearer %s" % self.token
-            else:
-                kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
-        else:
-            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
-
-        response = requests.patch(url, **kwargs)
-        try:
-            response.raise_for_status()
-        except requests.HTTPError as error:
-            if error.response.status_code not in allowed_status_codes:
-                logging.error(
-                    'HTTP request to %s failed. Response from server was: %s',
-                    response.url, response.text
-                )
-                raise
-
-        return response
+        return self.request('PATCH', url, allowed_status_codes, **kwargs)
 
     def post(self, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP POST request.
@@ -821,32 +809,7 @@ class Metax(object):
         :param allowed_status_codes: List of allowed HTTP error codes
         :returns: requests response
         """
-        if not allowed_status_codes:
-            allowed_status_codes = []
-
-        if "verify" not in kwargs:
-            kwargs["verify"] = self.verify
-
-        if self.token:
-            if "headers" in kwargs:
-                kwargs["headers"]["Authorization"] = "Bearer %s" % self.token
-            else:
-                kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
-        else:
-            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
-
-        response = requests.post(url, **kwargs)
-        try:
-            response.raise_for_status()
-        except requests.HTTPError as error:
-            if error.response.status_code not in allowed_status_codes:
-                logging.error(
-                    'HTTP request to %s failed. Response from server was: %s',
-                    response.url, response.text
-                )
-                raise
-
-        return response
+        return self.request('POST', url, allowed_status_codes, **kwargs)
 
     def delete(self, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP DELETE request.
@@ -859,32 +822,7 @@ class Metax(object):
         :param allowed_status_codes: List of allowed HTTP error codes
         :returns: requests response
         """
-        if not allowed_status_codes:
-            allowed_status_codes = []
-
-        if "verify" not in kwargs:
-            kwargs["verify"] = self.verify
-
-        if self.token:
-            if "headers" in kwargs:
-                kwargs["headers"]["Authorization"] = "Bearer %s" % self.token
-            else:
-                kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
-        else:
-            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
-
-        response = requests.delete(url, **kwargs)
-        try:
-            response.raise_for_status()
-        except requests.HTTPError as error:
-            if error.response.status_code not in allowed_status_codes:
-                logging.error(
-                    'HTTP request to %s failed. Response from server was: %s',
-                    response.url, response.text
-                )
-                raise
-
-        return response
+        return self.request('DELETE', url, allowed_status_codes, **kwargs)
 
 
 def _update_nested_dict(original, update):
