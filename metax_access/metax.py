@@ -620,6 +620,18 @@ class Metax(object):
 
         return response.json()
 
+    def get_file2dataset_dict(self, file_ids):
+        """Get a dict of {file_identifier: [dataset_identifier...] mappings
+
+        :param file_ids: List of file IDs
+        :returns: Dictionary with the format
+                  {file_identifier: [dataset_identifier1, ...]}
+        """
+        url = "{}files/datasets?keys=files".format(self.baseurl)
+        response = self.post(url, json=file_ids)
+
+        return response.json()
+
     def delete_file(self, file_id):
         """Delete metadata of a file.
 

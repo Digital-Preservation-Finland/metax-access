@@ -522,6 +522,24 @@ def test_get_files_dict(requests_mock):
         "urn:nbn:fi:att:file-storage-pas"
 
 
+def test_get_file2dataset_dict(requests_mock):
+    """Test Metax.get_file2dataset_dict
+
+    Dictionary is returned for files that contain datasets. Files without
+    datasets are not included in the response.
+    """
+    requests_mock.post(
+        "{}/files/datasets".format(METAX_REST_URL),
+        json={"161bc25962da8fed6d2f59922fb642": ["urn:dataset:aaffaaff"]},
+        # Ensure the request body has the requested file IDs
+        additional_matcher=lambda req: json.loads(req.body) == [10, 20]
+    )
+    result = METAX_CLIENT.get_file2dataset_dict([10, 20])
+
+    # The response uses hex-formatted identifiers instead of integers
+    assert result["161bc25962da8fed6d2f59922fb642"] == ["urn:dataset:aaffaaff"]
+
+
 @pytest.mark.parametrize(
     ('url', 'method', 'parameters', 'expected_error'),
     (
