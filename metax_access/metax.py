@@ -1,14 +1,14 @@
 """Metax interface class."""
 from __future__ import unicode_literals
-import logging
 
 import copy
+import logging
 
 import six
-import requests
-from requests.auth import HTTPBasicAuth
 
 import lxml.etree
+import requests
+from requests.auth import HTTPBasicAuth
 
 DS_STATE_INITIALIZED = 0
 DS_STATE_PROPOSED_FOR_DIGITAL_PRESERVATION = 10
@@ -162,20 +162,20 @@ class Metax(object):
                 six.text_type(state) for state in DS_STATE_ALL_STATES
             )
 
-        pas_filter_str = ''
+        params = {}
         if pas_filter is not None:
-            pas_filter_str += '&pas_filter=' + pas_filter
-        org_filter_str = ''
+            params["pas_filter"] = pas_filter
         if org_filter is not None:
-            org_filter_str += '&metadata_owner_org=' + org_filter
-        ordering_str = ''
+            params["metadata_owner_org"] = org_filter
         if ordering is not None:
-            ordering_str += '&ordering=' + ordering
-        url = "".join([self.baseurl,
-                       "datasets", "?state=", states, "&limit=",
-                       limit, "&offset=", offset, pas_filter_str,
-                       org_filter_str, ordering_str])
-        response = self.get(url, allowed_status_codes=[404])
+            params["ordering"] = ordering
+
+        params["state"] = states
+        params["limit"] = limit
+        params["offset"] = offset
+
+        url = "{}datasets".format(self.baseurl)
+        response = self.get(url, allowed_status_codes=[404], params=params)
         if response.status_code == 404:
             raise DatasetNotAvailableError
         return response.json()
@@ -202,13 +202,15 @@ class Metax(object):
                                ['organization_identifier'] attribute value
         :returns: contracts from Metax as json.
         """
-        org_filter_str = ''
+        params = {}
         if org_filter is not None:
-            org_filter_str += '&organization=' + org_filter
-        url = "".join([self.baseurl, 'contracts?limit=', limit,
-                       '&offset=', offset,
-                       org_filter_str])
-        response = self.get(url, allowed_status_codes=[404])
+            params["organization"] = org_filter
+
+        params["limit"] = limit
+        params["offset"] = offset
+
+        url = "{}contracts".format(self.baseurl)
+        response = self.get(url, allowed_status_codes=[404], params=params)
         if response.status_code == 404:
             raise ContractNotAvailableError
 
@@ -253,7 +255,7 @@ class Metax(object):
         :param str dataset_id: id or identifier attribute of dataset
         :returns: dataset as json
         """
-        url = self.baseurl + 'datasets' + '/' + dataset_id
+        url = self.baseurl + 'datasets/' + dataset_id
 
         response = self.get(url, allowed_status_codes=[404])
 
@@ -353,8 +355,11 @@ class Metax(object):
             if 'encoding' in fil['file_characteristics']:
                 encoding = fil['file_characteristics']['encoding']
             if file_format:
-                temp_types.add(file_format + '||' + format_version +
-                               '||' + encoding)
+                temp_types.add(
+                    "{}||{}||{}".format(
+                        file_format, format_version, encoding
+                    )
+                )
         for temp_type in temp_types:
             attrs = six.text_type(temp_type).split('||')
             mime_types.append({'file_format': attrs[0],
@@ -385,7 +390,7 @@ class Metax(object):
         :param str file_id: id or identifier attribute of file
         :returns: file metadata as json
         """
-        url = self.baseurl + 'files' + '/' + file_id
+        url = self.baseurl + 'files/' + file_id
 
         response = self.get(url, allowed_status_codes=[404])
 
@@ -458,8 +463,7 @@ class Metax(object):
         # For each listed namespace, download the xml, create ElementTree, and
         # add it to result dict
         for ns_key in ns_key_list:
-            query = '?namespace=' + ns_key
-            response = self.get(ns_key_url + query)
+            response = self.get(ns_key_url, params={"namespace": ns_key})
             # pylint: disable=no-member
             xml_dict[ns_key] \
                 = lxml.etree.fromstring(response.content).getroottree()
@@ -484,12 +488,13 @@ class Metax(object):
             # pylint: disable=no-member
             data = lxml.etree.tostring(xml_element, pretty_print=True)
             # POST to Metax
-            url = '%sfiles/%s/xml?namespace=%s' % (self.baseurl,
-                                                   file_id,
-                                                   namespace)
+            url = '{}files/{}/xml'.format(self.baseurl, file_id)
+            params = {
+                "namespace": namespace
+            }
 
             headers = {'Content-Type': 'application/xml'}
-            self.post(url, data=data, headers=headers)
+            self.post(url, data=data, headers=headers, params=params)
 
             return True
 
@@ -574,10 +579,14 @@ class Metax(object):
                           a dummy DOI if the actual DOI is not yet generated
         :returns: Datacite XML (lxml.etree.ElementTree object)
         """
-        url = "%sdatasets/%s?dataset_format=datacite&dummy_doi=%s" % (
-            self.baseurl, dataset_id, dummy_doi
+        url = "{}datasets/{}".format(self.baseurl, dataset_id)
+        params = {
+            "dataset_format": "datacite",
+            "dummy_doi": dummy_doi
+        }
+        response = self.get(
+            url, allowed_status_codes=[400, 404], params=params
         )
-        response = self.get(url, allowed_status_codes=[400, 404])
 
         if response.status_code == 400:
             detail = response.json()['detail']

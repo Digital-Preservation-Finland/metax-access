@@ -9,6 +9,8 @@ import lxml.etree
 import pytest
 import requests
 
+from six.moves.urllib.parse import quote
+
 from metax_access.metax import (
     Metax,
     DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
@@ -574,8 +576,9 @@ def test_get_http_404(requests_mock, url, method, parameters, expected_error):
 @pytest.mark.parametrize(
     ('url', 'method', 'parameters'),
     (
-        ('/datasets?state=0,10,20,30,40,50,60,70,75,80,90,100,110,120,130,140'
-         '&limit=1000000&offset=0', METAX_CLIENT.get_datasets, []),
+        ('/datasets?state={}&limit=1000000&offset=0'.format(
+            quote("0,10,20,30,40,50,60,70,75,80,90,100,110,120,130,140")
+         ), METAX_CLIENT.get_datasets, []),
         ('/contracts?limit=1000000&offset=0', METAX_CLIENT.get_contracts, []),
         ('/contracts/foo', METAX_CLIENT.get_contract, ['foo']),
         ('/datacatalogs/foo', METAX_CLIENT.get_datacatalog, ['foo']),
