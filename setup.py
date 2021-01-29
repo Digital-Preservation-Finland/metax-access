@@ -15,7 +15,8 @@ def main():
         install_requires=[
             "requests",
             "lxml",
-            "argcomplete"
+            "argcomplete",
+            "six"
         ],
         entry_points={
             'console_scripts': [
