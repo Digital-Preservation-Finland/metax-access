@@ -7,6 +7,7 @@ import argparse
 import configparser
 import io
 import json
+import logging
 import os
 
 import argcomplete
@@ -18,19 +19,6 @@ import metax_access
 DEFAULT_CONFIG_FILES = ['/etc/metax.cfg',
                         '~/.local/etc/metax.cfg',
                         '~/.metax.cfg']
-
-
-def _get_metax_error(error):
-    """Return Metax error message."""
-    try:
-        response = error.response.json()
-    except ValueError:
-        response = {
-            "code": error.response.status_code,
-            "message": "Metax did not return a json response"
-        }
-
-    return response
 
 
 def post(metax_client, args):
@@ -54,11 +42,6 @@ def post(metax_client, args):
     except metax_access.ResourceAlreadyExistsError as exception:
         response = exception.message
 
-    except HTTPError as error:
-        if error.response.status_code > 499:
-            raise
-        response = _get_metax_error(error)
-
     _pprint(response, args.output)
 
 
@@ -71,12 +54,7 @@ def get(metax_client, args):
     """
     if args.resource == 'template':
         if args.identifier == 'dataset':
-            try:
-                response = metax_client.get_dataset_template()
-            except HTTPError as error:
-                if error.response.status_code > 499:
-                    raise
-                response = _get_metax_error(error)
+            response = metax_client.get_dataset_template()
         else:
             raise ValueError("Only supported template is: 'dataset'")
 
@@ -88,10 +66,6 @@ def get(metax_client, args):
         }
         try:
             response = funcs[args.resource](args.identifier)
-        except HTTPError as error:
-            if error.response.status_code > 499:
-                raise
-            response = _get_metax_error(error)
         except metax_access.ResourceNotAvailableError:
             response = {"code": 404, "message": "Not found"}
 
@@ -110,12 +84,7 @@ def delete(metax_client, args):
         "file": metax_client.delete_file,
         "contract": metax_client.delete_contract
     }
-    try:
-        funcs[args.resource](args.identifier)
-    except HTTPError as error:
-        if error.response.status_code > 499:
-            raise
-        _pprint(_get_metax_error(error))
+    funcs[args.resource](args.identifier)
 
 
 def patch(metax_client, args):
@@ -135,10 +104,6 @@ def patch(metax_client, args):
     }
     try:
         response = funcs[args.resource](args.identifier, data)
-    except HTTPError as error:
-        if error.response.status_code > 499:
-            raise
-        response = _get_metax_error(error)
     except metax_access.ResourceNotAvailableError:
         response = {"code": 404, "message": "Not found"}
 
@@ -264,8 +229,8 @@ def main(arguments=None):
             if os.path.isfile(file_):
                 config = file_
 
-    # Read config file and use options as defaults when parsing command line
-    # arguments
+    # Read config file and use options as defaults when parsing command
+    # line arguments
     if config:
         configuration = configparser.ConfigParser()
         configuration.read(config)
@@ -286,7 +251,20 @@ def main(arguments=None):
     metax_client = metax_access.Metax(args.host, **credentials)
 
     # Run command
-    args.func(metax_client, args)
+    try:
+        args.func(metax_client, args)
+    except HTTPError as exception:
+        if exception.response.status_code > 499:
+            raise
+
+        logging.error("Metax responded with HTTPError %s: %s.",
+                      exception.response.status_code,
+                      exception.response.reason)
+
+        try:
+            _pprint(exception.response.json())
+        except ValueError:
+            print(exception.response.data)
 
 
 if __name__ == "__main__":
