@@ -17,7 +17,8 @@ from metax_access.metax import (
     DatasetNotAvailableError,
     ContractNotAvailableError,
     DataCatalogNotAvailableError,
-    DataciteGenerationError
+    DataciteGenerationError,
+    ResourceAlreadyExistsError
 )
 
 METAX_URL = 'https://foobar'
@@ -438,6 +439,46 @@ def test_post_file(requests_mock):
     assert requests_mock.last_request.method == "POST"
     assert requests_mock.last_request.hostname == 'foobar'
     assert requests_mock.last_request.path == '/rest/v1/files/'
+
+
+@pytest.mark.parametrize(
+    ('response', 'expected_exception'),
+    [
+        # Trying to post file that already exists
+        (
+            {"file_path": ["a file with path /foo already exists in"
+                           " project bar"]},
+            ResourceAlreadyExistsError("File /foo already exists in"
+                                       " project bar")
+        ),
+        # Unknown error
+        (
+            {"file_path": ["Some other error in file path"]},
+            requests.HTTPError('400 Client Error: Bad Request for url: '
+                               'https://foobar/rest/v1/files/')
+        )
+    ]
+)
+def test_post_file_bad_request(requests_mock, response, expected_exception):
+    """Test post file failures.
+
+    If Metax responds with HTTP 400 "Bad request" error, an exception
+    should be raised.
+
+    :param response: Mocked response from Metax
+    :param expected_exception: expected exception
+    """
+    requests_mock.post(METAX_URL + '/rest/v1/files/',
+                       status_code=400,
+                       json=response,
+                       reason='Bad Request')
+
+    with pytest.raises(expected_exception.__class__) as exc_info:
+        METAX_CLIENT.post_file({'identifier': '1',
+                                'file_path': '/foo',
+                                'project_identifier': 'bar'})
+
+    assert str(exc_info.value) == str(expected_exception)
 
 
 def test_post_dataset(requests_mock):

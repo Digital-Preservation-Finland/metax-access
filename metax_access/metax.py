@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import copy
 import logging
+import re
 
 import six
 
@@ -56,8 +57,16 @@ class ResourceNotAvailableError(MetaxError):
     """Exception raised when resource is not found from metax."""
 
     def __init__(self, message="Resource not found"):
-        """Init FileNotAvailableError."""
+        """Init ResourceNotAvailableError."""
         super(ResourceNotAvailableError, self).__init__(message)
+
+
+class ResourceAlreadyExistsError(MetaxError):
+    """Exception raised when resource to be created already exists."""
+
+    def __init__(self, message="Resource already exists."):
+        """Init ResourceAlreadyExistsError."""
+        super(ResourceAlreadyExistsError, self).__init__(message)
 
 
 class FileNotAvailableError(ResourceNotAvailableError):
@@ -690,7 +699,27 @@ class Metax(object):
         :returns: JSON response from Metax
         """
         url = self.baseurl + 'files/'
-        response = self.post(url, json=metadata)
+        response = self.post(url,
+                             json=metadata,
+                             allowed_status_codes=[400, 404])
+
+        if response.status_code == 404:
+            raise FileNotAvailableError
+
+        if response.status_code == 400:
+            already_exists_pattern \
+                = 'a file with path .* already exists in project .*'
+            if any(re.search(already_exists_pattern, string)
+                   for string in response.json().get('file_path', [])):
+                raise ResourceAlreadyExistsError(
+                    'File {} already exists in project {}'.format(
+                        metadata['file_path'],
+                        metadata['project_identifier']
+                    )
+                )
+
+            # Raise HTTPError for unknown "bad request error"
+            response.raise_for_status()
 
         return response.json()
 

@@ -17,6 +17,7 @@ from .metax import (DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION,  # noqa: F401
                     Metax,
                     MetaxError,
                     ResourceNotAvailableError,
+                    ResourceAlreadyExistsError,
                     FileNotAvailableError,
                     ContractNotAvailableError,
                     DataciteGenerationError,

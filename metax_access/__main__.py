@@ -51,6 +51,9 @@ def post(metax_client, args):
     }
     try:
         response = funcs[args.resource](data)
+    except metax_access.ResourceAlreadyExistsError as exception:
+        response = exception.message
+
     except HTTPError as error:
         if error.response.status_code > 499:
             raise
