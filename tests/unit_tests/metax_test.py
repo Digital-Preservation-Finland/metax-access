@@ -448,8 +448,8 @@ def test_post_file(requests_mock):
         (
             {"file_path": ["a file with path /foo already exists in"
                            " project bar"]},
-            ResourceAlreadyExistsError("File /foo already exists in"
-                                       " project bar")
+            ResourceAlreadyExistsError("File /foo already exists in project "
+                                       "bar")
         ),
         # Unknown error
         (
@@ -473,12 +473,11 @@ def test_post_file_bad_request(requests_mock, response, expected_exception):
                        json=response,
                        reason='Bad Request')
 
-    with pytest.raises(expected_exception.__class__) as exc_info:
+    with pytest.raises(expected_exception.__class__,
+                       match=str(expected_exception)):
         METAX_CLIENT.post_file({'identifier': '1',
                                 'file_path': '/foo',
                                 'project_identifier': 'bar'})
-
-    assert str(exc_info.value) == str(expected_exception)
 
 
 def test_post_dataset(requests_mock):
