@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 
 import json
+from contextlib import ExitStack as does_not_raise
 
 import lxml.etree
 import pytest
@@ -448,8 +449,7 @@ def test_post_file(requests_mock):
         (
             {"file_path": ["a file with path /foo already exists in"
                            " project bar"]},
-            ResourceAlreadyExistsError("File /foo already exists in project "
-                                       "bar")
+            ResourceAlreadyExistsError("Resource already exists")
         ),
         # Unknown error
         (
@@ -478,6 +478,124 @@ def test_post_file_bad_request(requests_mock, response, expected_exception):
         METAX_CLIENT.post_file({'identifier': '1',
                                 'file_path': '/foo',
                                 'project_identifier': 'bar'})
+
+
+@pytest.mark.parametrize(
+    ('status_code', 'reason', 'response', 'expectation'),
+    [
+        # Success
+        (
+            200,
+            None,
+            {
+                "success": [
+                    {"object": {"file_path": "/foo1"}},
+                    {"object": {"file_path": "/foo2"}},
+                    {"object": {"file_path": "/foo3"}},
+                ],
+                "failed": []
+            },
+            does_not_raise()
+        ),
+        # Some files already exist
+        (
+            400,
+            'Bad Request',
+            {
+                "success": [
+                    {"object": {"file_path": "/foo1"}},
+                ],
+                "failed": [
+
+                    {"object": {"file_path": "/foo2"},
+                     "errors": {"file_path": ["a file with path /foo2.png "
+                                              "already exists in project "
+                                              "testproject"]}},
+                    {"object": {"file_path": "/foo3"},
+                     "errors": {"file_path": ["a file with path /foo3.png "
+                                              "already exists in project "
+                                              "testproject"]}},
+                ]
+            },
+            pytest.raises(
+                ResourceAlreadyExistsError,
+                match="Resource already exists"
+            )
+        ),
+        # Other errors occur
+        (
+            400,
+            'Bad Request',
+            {
+                "success": [
+                    {"object": {"file_path": "/foo1"}},
+                ],
+                "failed": [
+
+                    {"object": {"file_path": "/foo2"},
+                     "errors": {"file_path": ["Unknown error"]}},
+                    {"object": {"file_path": "/foo3"},
+                     "errors": {"file_path": ["Unknown error"]}},
+                ]
+            },
+            pytest.raises(requests.HTTPError,
+                          match='400 Client Error: Bad Request for url: '
+                          'https://foobar/rest/v1/files/')
+        ),
+        # Some files already exist, also other errors occur
+        (
+            400,
+            'Bad Request',
+            {
+                "success": [
+                    {"object": {"file_path": "/foo1"}},
+                ],
+                "failed": [
+
+                    {"object": {"file_path": "/foo2"},
+                     "errors": {"file_path": ["a file with path /foo2.png "
+                                              "already exists in project "
+                                              "testproject"]}},
+                    {"object": {"file_path": "/foo3"},
+                     "errors": {"file_path": ["Unknown error"]}},
+                ]
+            },
+            pytest.raises(requests.HTTPError,
+                          match='400 Client Error: Bad Request for url: '
+                          'https://foobar/rest/v1/files/')
+        ),
+    ]
+)
+def test_post_multiple_files(requests_mock, status_code, reason, response,
+                             expectation):
+    """Test posting multiple files to Metax.
+
+    If Metax responds with HTTP 400 "Bad request" error, an exception
+    should be raised.
+
+    :param request_mock: Request mocker
+    :param status_code: Status code of mocked Metax response
+    :param reason: Reason of mocked Metax response
+    :param response: JSON content of Mocked Metax response
+    :param expectation: expected context
+    """
+    requests_mock.post(METAX_URL + '/rest/v1/files/',
+                       status_code=status_code,
+                       json=response,
+                       reason=reason)
+
+    with expectation:
+        METAX_CLIENT.post_file([
+            {'identifier': '1',
+             'file_path': '/foo1',
+             'project_identifier': 'testproject'},
+            {'identifier': '2',
+             'file_path': '/foo2',
+             'project_identifier': 'testproject'},
+            {'identifier': '3',
+             'file_path': '/foo3',
+             'project_identifier': 'testproject'},
+        ])
 
 
 def test_post_dataset(requests_mock):

@@ -64,7 +64,7 @@ class ResourceNotAvailableError(MetaxError):
 class ResourceAlreadyExistsError(MetaxError):
     """Exception raised when resource to be created already exists."""
 
-    def __init__(self, message="Resource already exists."):
+    def __init__(self, message="Resource already exists.", response=None):
         """Init ResourceAlreadyExistsError."""
         super(ResourceAlreadyExistsError, self).__init__(message)
 
@@ -707,15 +707,27 @@ class Metax(object):
             raise FileNotAvailableError
 
         if response.status_code == 400:
-            already_exists_pattern \
-                = 'a file with path .* already exists in project .*'
-            if any(re.search(already_exists_pattern, string)
-                   for string in response.json().get('file_path', [])):
+
+            # If all errors are caused by files that already exist,
+            # raise ResourceAlreadyExistsError. Otherwise, raise
+            # HTTPError.
+            try:
+                file_error_dicts = [file_['errors']
+                                    for file_ in response.json()["failed"]]
+            except KeyError:
+                # Most likely only one file was posted, so Metax
+                # returned just one error instead of list of errors
+                file_error_dicts = [response.json()]
+
+            all_errors = []
+            for file_error_dict in file_error_dicts:
+                for key_error_list in file_error_dict.values():
+                    all_errors.extend(key_error_list)
+
+            pattern = 'a file with path .* already exists in project .*'
+            if all(re.search(pattern, string) for string in all_errors):
                 raise ResourceAlreadyExistsError(
-                    'File {} already exists in project {}'.format(
-                        metadata['file_path'],
-                        metadata['project_identifier']
-                    )
+                    response=response.json()
                 )
 
             # Raise HTTPError for unknown "bad request error"
