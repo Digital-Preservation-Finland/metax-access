@@ -4,7 +4,13 @@
 from __future__ import unicode_literals
 
 import json
-from contextlib import ExitStack as does_not_raise
+# TODO: nullcontext can be replaced with ExitStack from standard
+# contextlib in Python 3.3+
+try:
+    from contextlib import ExitStack as does_not_raise
+except ImportError:
+    # Python2
+    from contextlib2 import ExitStack as does_not_raise
 
 import lxml.etree
 import pytest

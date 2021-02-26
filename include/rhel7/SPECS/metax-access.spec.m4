@@ -27,6 +27,7 @@ Requires:       python2-argcomplete
 Requires:       python-six
 # python-configparser is required for python2 compatibility
 Requires:       python-configparser
+BuildRequires:  python-contextlib2
 BuildRequires:  python-setuptools
 BuildRequires:  pytest
 BuildRequires:  python-sphinx
