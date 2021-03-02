@@ -451,10 +451,17 @@ def test_post_file(requests_mock):
 @pytest.mark.parametrize(
     ('response', 'expected_exception'),
     [
-        # Trying to post file that already exists
+        # Trying to post file, path already exists
         (
             {"file_path": ["a file with path /foo already exists in"
                            " project bar"]},
+            ResourceAlreadyExistsError("Resource already exists")
+        ),
+        # Trying to post file, path and identifier already exist
+        (
+            {"file_path": ["a file with path /foo already exists in"
+                           " project bar"],
+             "identifier": ["a file with given identifier already exists"]},
             ResourceAlreadyExistsError("Resource already exists")
         ),
         # Unknown error

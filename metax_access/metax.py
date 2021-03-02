@@ -724,8 +724,15 @@ class Metax(object):
                 for key_error_list in file_error_dict.values():
                     all_errors.extend(key_error_list)
 
-            pattern = 'a file with path .* already exists in project .*'
-            if all(re.search(pattern, string) for string in all_errors):
+            path_exists_pattern \
+                = 'a file with path .* already exists in project .*'
+            identifier_exists_pattern \
+                = 'a file with given identifier already exists'
+            if all(
+                    re.search(path_exists_pattern, string)
+                    or re.search(identifier_exists_pattern, string)
+                    for string in all_errors
+            ):
                 raise ResourceAlreadyExistsError(
                     response=response.json()
                 )
