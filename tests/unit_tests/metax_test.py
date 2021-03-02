@@ -469,7 +469,47 @@ def test_post_file(requests_mock):
             {"file_path": ["Some other error in file path"]},
             requests.HTTPError('400 Client Error: Bad Request for url: '
                                'https://foobar/rest/v1/files/')
-        )
+        ),
+        # Multiple files that already exist
+        (
+            {
+                'failed': [
+                    {
+                        'errors': {
+                            "file_path": ["a file with path /foo1 already "
+                                          "exists in project bar"]
+                        }
+                    },
+                    {
+                        'errors': {
+                            "file_path": ["a file with path /foo2 already "
+                                          "exists in project bar"]
+                        }
+                    }
+                ]
+            },
+            ResourceAlreadyExistsError("Resource already exists")
+        ),
+        # Multiple files, one already exists, one has other error
+        (
+            {
+                'failed': [
+                    {
+                        'errors': {
+                            "file_path": ["a file with path /foo1 already "
+                                          "exists in project bar"]
+                        }
+                    },
+                    {
+                        'errors': {
+                            "file_path": ["Other error"]
+                        }
+                    }
+                ]
+            },
+            requests.HTTPError('400 Client Error: Bad Request for url: '
+                               'https://foobar/rest/v1/files/')
+        ),
     ]
 )
 def test_post_file_bad_request(requests_mock, response, expected_exception):
