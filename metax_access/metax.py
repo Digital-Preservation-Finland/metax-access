@@ -64,7 +64,7 @@ class ResourceNotAvailableError(MetaxError):
 class ResourceAlreadyExistsError(MetaxError):
     """Exception raised when resource to be created already exists."""
 
-    def __init__(self, message="Resource already exists.", response=None):
+    def __init__(self, message="Resource already exists."):
         """Init ResourceAlreadyExistsError."""
         super(ResourceAlreadyExistsError, self).__init__(message)
 
@@ -733,9 +733,7 @@ class Metax(object):
                     or re.search(identifier_exists_pattern, string)
                     for string in all_errors
             ):
-                raise ResourceAlreadyExistsError(
-                    response=response.json()
-                )
+                raise ResourceAlreadyExistsError
 
             # Raise HTTPError for unknown "bad request error"
             response.raise_for_status()
