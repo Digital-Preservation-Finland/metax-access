@@ -23,6 +23,7 @@ from metax_access.metax import (
     DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
     DatasetNotAvailableError,
     ContractNotAvailableError,
+    DirectoryNotAvailableError,
     DataCatalogNotAvailableError,
     DataciteGenerationError,
     ResourceAlreadyExistsError
@@ -733,6 +734,84 @@ def test_get_files_dict(requests_mock):
     assert files["/path/file1"]['identifier'] == "file1_identifier"
     assert files["/path/file1"]['storage_identifier'] ==\
         "urn:nbn:fi:att:file-storage-pas"
+
+
+def test_get_directory(requests_mock):
+    """Test get_directory function.
+
+    :param requets_mock: HTTP request mocker
+    """
+    metadata = {'identifier': 'foo'}
+    requests_mock.get(METAX_REST_URL + "/directories/foo",
+                      json=metadata)
+    assert METAX_CLIENT.get_directory('foo') == metadata
+
+
+def test_get_directory_files(requests_mock):
+    """Test get_directory_files function.
+
+    :param requets_mock: HTTP request mocker
+    """
+    metadata = {'identifier': 'foo'}
+    requests_mock.get(METAX_REST_URL + "/directories/foo/files",
+                      json=metadata)
+    assert METAX_CLIENT.get_directory_files('foo') == metadata
+
+
+def test_get_project_directory(requests_mock):
+    """Test get_project_directory function.
+
+    :param requets_mock: HTTP request mocker
+    """
+    metadata = {
+        'directories': [{'identifier': 'bar'}],
+        'identifier': 'foo'
+    }
+    requests_mock.get(METAX_REST_URL + "/directories/files", json=metadata)
+    assert METAX_CLIENT.get_project_directory('foo', '/testdir') \
+        == {'identifier': 'foo'}
+    assert requests_mock.last_request.qs['project'] == ['foo']
+    assert requests_mock.last_request.qs['path'] == ['/testdir']
+    assert requests_mock.last_request.qs['directories_only'] == ['true']
+
+
+@pytest.mark.parametrize(
+    ['method', 'parameters', 'url'],
+    [
+        (
+            METAX_CLIENT.get_directory,
+            ['foo'],
+            '/directories/foo'
+        ),
+        (
+            METAX_CLIENT.get_directory_files,
+            ['foo'],
+            '/directories/foo/files'
+        ),
+        (
+            METAX_CLIENT.get_project_directory,
+            ['foo', 'bar'],
+            '/directories/files'
+        ),
+    ]
+)
+def test_directory_not_found(requests_mock, method, parameters, url):
+    """Test error handling for missing directories.
+
+    Sensible exception should be raised when trying to fetch metadata of
+    directory that does not exist.
+
+    :param requets_mock: HTTP request mocker
+    :param method: Method to be tested
+    :param parameters: parameters for tested method
+    :param url: Metax url to be mocked
+    """
+
+    requests_mock.get(METAX_REST_URL + url, status_code=404)
+
+    with pytest.raises(DirectoryNotAvailableError,
+                       match='Directory not found'):
+        method(*parameters)
 
 
 def test_get_file2dataset_dict(requests_mock):

@@ -790,7 +790,7 @@ class Metax(object):
         """Get directory.
 
         :param str directory_identifier: identifier attribute of directory
-        :returns: directory
+        :returns: directory metadata
         """
         url = self.baseurl + 'directories/' + directory_identifier
 
@@ -800,6 +800,28 @@ class Metax(object):
             raise DirectoryNotAvailableError
 
         return response.json()
+
+    def get_project_directory(self, project, path):
+        """Get directory of project by path.
+
+        :param str project: project identifier of the directory
+        :param str project: path of the directory
+        :returns: directory metadata
+        """
+        url = self.baseurl + 'directories/files'
+        response = self.get(url, allowed_status_codes=[404],
+                            params={'path': path,
+                                    'project': project,
+                                    'depth': 1,
+                                    'directories_only': 'true',
+                                    'include_parent': 'true'})
+
+        if response.status_code == 404:
+            raise DirectoryNotAvailableError
+
+        metadata = response.json()
+        del(metadata['directories'])
+        return metadata
 
     def request(self, method, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP request.
