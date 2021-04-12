@@ -47,10 +47,11 @@ DS_STATE_ALL_STATES = (
 class MetaxError(Exception):
     """Generic invalid usage Exception."""
 
-    def __init__(self, message="Metax error"):
+    def __init__(self, message="Metax error", response=None):
         """Init MetaxError."""
         super(MetaxError, self).__init__(message)
         self.message = message
+        self.response = response
 
 
 class ResourceNotAvailableError(MetaxError):
@@ -64,9 +65,14 @@ class ResourceNotAvailableError(MetaxError):
 class ResourceAlreadyExistsError(MetaxError):
     """Exception raised when resource to be created already exists."""
 
-    def __init__(self, message="Resource already exists."):
-        """Init ResourceAlreadyExistsError."""
-        super(ResourceAlreadyExistsError, self).__init__(message)
+    def __init__(self, message="Resource already exists.", response=None):
+        """Init ResourceAlreadyExistsError.
+
+        :param message: error message
+        :param dict errors: Key-value pairs that caused the exception
+        """
+        super(ResourceAlreadyExistsError, self).__init__(message,
+                                                         response=response)
 
 
 class FileNotAvailableError(ResourceNotAvailableError):
@@ -708,22 +714,22 @@ class Metax(object):
 
         if response.status_code == 400:
 
-            # If all errors are caused by files that already exist,
-            # raise ResourceAlreadyExistsError. Otherwise, raise
-            # HTTPError.
+            # Read the response and parse list of failed files
             try:
-                file_error_dicts = [file_['errors']
-                                    for file_ in response.json()["failed"]]
+                failed_files = response.json()['failed']
             except KeyError:
                 # Most likely only one file was posted, so Metax
-                # returned just one error instead of list of errors
-                file_error_dicts = [response.json()]
+                # response is formatted differently: just one error
+                # instead of list of errors
+                failed_files = [{'object': metadata,
+                                 'errors': response.json()}]
 
+            # If all errors are caused by files that already exist,
+            # raise ResourceAlreadyExistsError.
             all_errors = []
-            for file_error_dict in file_error_dicts:
-                for key_error_list in file_error_dict.values():
-                    all_errors.extend(key_error_list)
-
+            for file_ in failed_files:
+                for error_message in file_['errors'].values():
+                    all_errors.extend(error_message)
             path_exists_pattern \
                 = 'a file with path .* already exists in project .*'
             identifier_exists_pattern \
@@ -733,7 +739,10 @@ class Metax(object):
                     or re.search(identifier_exists_pattern, string)
                     for string in all_errors
             ):
-                raise ResourceAlreadyExistsError
+                raise ResourceAlreadyExistsError(
+                    'Some of the files already exist.',
+                    response=response
+                )
 
             # Raise HTTPError for unknown "bad request error"
             response.raise_for_status()

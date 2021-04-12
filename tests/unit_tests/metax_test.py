@@ -456,14 +456,14 @@ def test_post_file(requests_mock):
         (
             {"file_path": ["a file with path /foo already exists in"
                            " project bar"]},
-            ResourceAlreadyExistsError("Resource already exists")
+            ResourceAlreadyExistsError("Some of the files already exist.")
         ),
         # Trying to post file, path and identifier already exist
         (
             {"file_path": ["a file with path /foo already exists in"
                            " project bar"],
              "identifier": ["a file with given identifier already exists"]},
-            ResourceAlreadyExistsError("Resource already exists")
+            ResourceAlreadyExistsError("Some of the files already exist.")
         ),
         # Unknown error
         (
@@ -476,12 +476,20 @@ def test_post_file(requests_mock):
             {
                 'failed': [
                     {
+                        'object': {
+                            'identifier': 'foo1',
+                            'file_path': '/foo1'
+                        },
                         'errors': {
                             "file_path": ["a file with path /foo1 already "
                                           "exists in project bar"]
                         }
                     },
                     {
+                        'object': {
+                            'identifier': 'foo2',
+                            'file_path': '/foo2'
+                        },
                         'errors': {
                             "file_path": ["a file with path /foo2 already "
                                           "exists in project bar"]
@@ -489,7 +497,7 @@ def test_post_file(requests_mock):
                     }
                 ]
             },
-            ResourceAlreadyExistsError("Resource already exists")
+            ResourceAlreadyExistsError("Some of the files already exist.")
         ),
         # Multiple files, one already exists, one has other error
         (
@@ -561,11 +569,11 @@ def test_post_file_bad_request(requests_mock, response, expected_exception):
                 ],
                 "failed": [
 
-                    {"object": {"file_path": "/foo2"},
+                    {"object": {'identifier': 'foo2', "file_path": "/foo2"},
                      "errors": {"file_path": ["a file with path /foo2.png "
                                               "already exists in project "
                                               "testproject"]}},
-                    {"object": {"file_path": "/foo3"},
+                    {"object": {'identifier': 'foo3', "file_path": "/foo3"},
                      "errors": {"file_path": ["a file with path /foo3.png "
                                               "already exists in project "
                                               "testproject"]}},
@@ -573,7 +581,7 @@ def test_post_file_bad_request(requests_mock, response, expected_exception):
             },
             pytest.raises(
                 ResourceAlreadyExistsError,
-                match="Resource already exists"
+                match="Some of the files already exist."
             )
         ),
         # Other errors occur
@@ -625,7 +633,8 @@ def test_post_multiple_files(requests_mock, status_code, reason, response,
     """Test posting multiple files to Metax.
 
     If Metax responds with HTTP 400 "Bad request" error, an exception
-    should be raised.
+    should be raised. The exception should always contain the response
+    from Metax.
 
     :param request_mock: Request mocker
     :param status_code: Status code of mocked Metax response
@@ -638,7 +647,7 @@ def test_post_multiple_files(requests_mock, status_code, reason, response,
                        json=response,
                        reason=reason)
 
-    with expectation:
+    with expectation as exception_info:
         METAX_CLIENT.post_file([
             {'identifier': '1',
              'file_path': '/foo1',
@@ -650,6 +659,9 @@ def test_post_multiple_files(requests_mock, status_code, reason, response,
              'file_path': '/foo3',
              'project_identifier': 'testproject'},
         ])
+
+    if not isinstance(exception_info, does_not_raise):
+        assert exception_info.value.response.json() == response
 
 
 def test_post_dataset(requests_mock):
