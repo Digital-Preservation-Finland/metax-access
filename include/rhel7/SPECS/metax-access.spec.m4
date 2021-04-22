@@ -30,6 +30,8 @@ Requires:       python-configparser
 BuildRequires:  python-setuptools
 BuildRequires:  pytest
 BuildRequires:  python-sphinx
+BuildRequires:  python2-pytest-catchlog
+BuildRequires:  python2-requests-mock
 
 %description
 Metax access library

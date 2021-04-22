@@ -27,6 +27,8 @@ BuildRequires:  python3-mock
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-pytest
 BuildRequires:  python3-sphinx
+BuildRequires:  python3-pytest-catchlog
+BuildRequires:  python3-requests-mock
 
 %description
 Metax access library

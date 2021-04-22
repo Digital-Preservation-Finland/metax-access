@@ -26,6 +26,8 @@ Requires:       python36-argcomplete
 BuildRequires:  python3-setuptools
 BuildRequires:  python36-pytest
 BuildRequires:  python3-sphinx
+BuildRequires:  python36-pytest-catchlog
+BuildRequires:  python3-requests-mock
 
 %description
 Metax access library

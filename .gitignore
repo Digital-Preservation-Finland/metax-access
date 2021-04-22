@@ -9,3 +9,4 @@ doc/source/modules/
 doc/modules/
 .tox
 junit.xml
+.cache/
