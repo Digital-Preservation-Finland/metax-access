@@ -1,6 +1,7 @@
 DESTDIR ?= /
-ETC=${DESTDIR}/etc
+ETC = ${DESTDIR}/etc
 PREFIX ?= /usr
+PYTHON ?= python3
 
 install:
 	# Cleanup temporary files
@@ -35,10 +36,12 @@ github:
 	    fi
 
 test:
-	py.test -svvvv --junitprefix=dpres-siptools-research --junitxml=junit.xml tests/unit_tests
+	${PYTHON} -m pytest -svvvv \
+	    --junitprefix=dpres-siptools-research --junitxml=junit.xml \
+	    tests/unit_tests
 
 coverage:
-	py.test tests --cov=metax_access --cov-report=html
+	${PYTHON} -m pytest tests --cov=metax_access --cov-report=html
 	coverage report -m
 	coverage html
 	coverage xml
