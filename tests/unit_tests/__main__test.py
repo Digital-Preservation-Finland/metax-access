@@ -32,7 +32,7 @@ def test_main(arguments, function):
     # first parameter of called function should be Metax object
     metax_client = expected_function.call_args[0][0]
     assert isinstance(metax_client, metax_access.Metax)
-    assert metax_client.baseurl == 'foo/rest/v1/'
+    assert metax_client.baseurl == 'foo/rest/v1'
     assert metax_client.token == 'bar'
 
     # second parameter of called function should contain commandline args

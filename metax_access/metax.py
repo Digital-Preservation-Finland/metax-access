@@ -143,8 +143,8 @@ class Metax(object):
         self.username = user
         self.password = password
         self.token = token
-        self.baseurl = url + '/rest/v1/'
-        self.rpcurl = url + '/rpc'
+        self.baseurl = '{}/rest/v1'.format(url)
+        self.rpcurl = '{}/rpc'.format(url)
         self.verify = verify
 
     # pylint: disable=too-many-arguments
@@ -189,7 +189,7 @@ class Metax(object):
         params["limit"] = limit
         params["offset"] = offset
 
-        url = "{}datasets".format(self.baseurl)
+        url = "{}/datasets".format(self.baseurl)
         response = self.get(url, allowed_status_codes=[404], params=params)
         if response.status_code == 404:
             raise DatasetNotAvailableError
@@ -202,7 +202,7 @@ class Metax(object):
             to be used as query parameters
         :returns: datasets from Metax as json.
         """
-        url = "".join([self.baseurl, "datasets"])
+        url = "{}/datasets".format(self.baseurl)
         response = self.get(url, params=param_dict)
 
         return response.json()
@@ -224,7 +224,7 @@ class Metax(object):
         params["limit"] = limit
         params["offset"] = offset
 
-        url = "{}contracts".format(self.baseurl)
+        url = "{}/contracts".format(self.baseurl)
         response = self.get(url, allowed_status_codes=[404], params=params)
         if response.status_code == 404:
             raise ContractNotAvailableError
@@ -237,7 +237,7 @@ class Metax(object):
         :param str pid: id or ientifier attribute of contract
         :returns: The contract from Metax as json.
         """
-        url = "".join([self.baseurl, "contracts/", pid])
+        url = "{}/contracts/{}".format(self.baseurl, pid)
         response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
             raise ContractNotAvailableError
@@ -259,7 +259,7 @@ class Metax(object):
             if isinstance(data[key], dict) and key in original_data:
                 data[key] = _update_nested_dict(original_data[key], data[key])
 
-        url = "".join([self.baseurl, "contracts/", contract_id])
+        url = "{}/contracts/{}".format(self.baseurl, contract_id)
         response = self.patch(url, json=data)
 
         return response.json()
@@ -270,7 +270,7 @@ class Metax(object):
         :param str dataset_id: id or identifier attribute of dataset
         :returns: dataset as json
         """
-        url = self.baseurl + 'datasets/' + dataset_id
+        url = '{}/datasets/{}'.format(self.baseurl, dataset_id)
 
         response = self.get(url, allowed_status_codes=[404])
 
@@ -284,9 +284,10 @@ class Metax(object):
 
         :returns: Template as json
         """
-        rpc_url = "%s/datasets/get_minimal_dataset_template?type=enduser" % (
-            self.rpcurl
-        )
+        rpc_url \
+            = "{}/datasets/get_minimal_dataset_template?type=enduser".format(
+                self.rpcurl
+            )
         response = self.get(rpc_url)
 
         template = response.json()
@@ -308,7 +309,7 @@ class Metax(object):
         :param str catalog_id: id or identifier attribute of the datacatalog
         :returns: The datacatalog as json.
         """
-        url = "".join([self.baseurl, "datacatalogs/", catalog_id])
+        url = "{}/datacatalogs/{}".format(self.baseurl, catalog_id)
         response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
             raise DataCatalogNotAvailableError
@@ -330,7 +331,7 @@ class Metax(object):
             if isinstance(data[key], dict) and key in original_data:
                 data[key] = _update_nested_dict(original_data[key], data[key])
 
-        url = "".join([self.baseurl, "datasets/", dataset_id])
+        url = "{}/datasets/{}".format(self.baseurl, dataset_id)
         response = self.patch(url, json=data)
 
         return response.json()
@@ -353,8 +354,8 @@ class Metax(object):
         temp_types = set()
         mime_types = []
 
-        url = "".join([self.baseurl,
-                       "datasets/", six.text_type(dataset_id), '/files'])
+        url = "{}/datasets/{}/files".format(self.baseurl,
+                                            six.text_type(dataset_id))
         response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
             raise DatasetNotAvailableError
@@ -392,9 +393,8 @@ class Metax(object):
         :param str pid: id or identifier attribute of contract
         :returns: The datasets from Metax as json.
         """
-        url = "".join([
-            self.baseurl, "contracts/", six.text_type(pid), '/datasets'
-        ])
+        url = "{}/contracts/{}/datasets".format(self.baseurl,
+                                                six.text_type(pid))
         response = self.get(url)
 
         return response.json()
@@ -405,7 +405,7 @@ class Metax(object):
         :param str file_id: id or identifier attribute of file
         :returns: file metadata as json
         """
-        url = self.baseurl + 'files/' + file_id
+        url = '{}/files/{}'.format(self.baseurl, file_id)
 
         response = self.get(url, allowed_status_codes=[404])
 
@@ -421,7 +421,9 @@ class Metax(object):
         :returns: list of files
         """
         files = []
-        url = self.baseurl + 'files?limit=10000&project_identifier=' + project
+        url = '{}/files?limit=10000&project_identifier={}'.format(
+            self.baseurl, project
+        )
 
         # GET 10000 files every iteration until all files are read
         while url is not None:
@@ -469,7 +471,7 @@ class Metax(object):
         xml_dict = {}
 
         # Get list of xml namespaces
-        ns_key_url = self.baseurl + 'files/' + identifier + '/xml'
+        ns_key_url = '{}/files/{}/xml'.format(self.baseurl, identifier)
         response = self.get(ns_key_url, allowed_status_codes=[404])
         if response.status_code == 404:
             raise FileNotAvailableError
@@ -503,7 +505,7 @@ class Metax(object):
             # pylint: disable=no-member
             data = lxml.etree.tostring(xml_element, pretty_print=True)
             # POST to Metax
-            url = '{}files/{}/xml'.format(self.baseurl, file_id)
+            url = '{}/files/{}/xml'.format(self.baseurl, file_id)
             params = {
                 "namespace": namespace
             }
@@ -547,7 +549,7 @@ class Metax(object):
         :param str system_description: The value for `preservation_description`
         :returns: ``None``
         """
-        url = self.baseurl + 'datasets/' + dataset_id
+        url = '{}/datasets/{}'.format(self.baseurl, dataset_id)
         dataset = self.get_dataset(dataset_id)
         data = {
             'preservation_state': state,
@@ -581,7 +583,7 @@ class Metax(object):
             if isinstance(data[key], dict) and key in original_data:
                 data[key] = _update_nested_dict(original_data[key], data[key])
 
-        url = "".join([self.baseurl, "files/", file_id])
+        url = "{}/files/{}".format(self.baseurl, file_id)
         response = self.patch(url, json=data)
 
         return response.json()
@@ -594,7 +596,7 @@ class Metax(object):
                           a dummy DOI if the actual DOI is not yet generated
         :returns: Datacite XML (lxml.etree.ElementTree object)
         """
-        url = "{}datasets/{}".format(self.baseurl, dataset_id)
+        url = "{}/datasets/{}".format(self.baseurl, dataset_id)
         params = {
             "dataset_format": "datacite",
             "dummy_doi": dummy_doi
@@ -621,7 +623,7 @@ class Metax(object):
         :param str dataset_id: id or identifier attribute of dataset
         :returns: metadata of dataset files as json
         """
-        url = self.baseurl + 'datasets/' + dataset_id + '/files'
+        url = '{}/datasets/{}/files'.format(self.baseurl, dataset_id)
 
         response = self.get(url, allowed_status_codes=[404])
 
@@ -636,7 +638,7 @@ class Metax(object):
         :param file_id: File identifier
         :returns: List of datasets associated with file_id
         """
-        url = self.baseurl + 'files/datasets'
+        url = '{}/files/datasets'.format(self.baseurl)
         response = self.post(url, allowed_status_codes=[404], json=[file_id])
 
         if response.status_code == 404:
@@ -651,7 +653,7 @@ class Metax(object):
         :returns: Dictionary with the format
                   {file_identifier: [dataset_identifier1, ...]}
         """
-        url = "{}files/datasets?keys=files".format(self.baseurl)
+        url = "{}/files/datasets?keys=files".format(self.baseurl)
         response = self.post(url, json=file_ids)
 
         return response.json()
@@ -662,7 +664,7 @@ class Metax(object):
         :param file_id: file identifier
         :returns: JSON response from Metax
         """
-        url = self.baseurl + 'files/' + file_id
+        url = '{}/files/{}'.format(self.baseurl, file_id)
         response = self.delete(url)
 
         return response.json()
@@ -673,7 +675,7 @@ class Metax(object):
         :param file_id_list: List of ids to delete from Metax
         :returns: JSON returned by Metax
         """
-        url = self.baseurl + 'files'
+        url = '{}/files'.format(self.baseurl)
         response = self.delete(url, json=file_id_list)
 
         return response.json()
@@ -684,7 +686,7 @@ class Metax(object):
         :param dataset_id: dataset identifier
         :returns: ``None``
         """
-        url = self.baseurl + 'datasets/' + dataset_id
+        url = '{}/datasets/{}'.format(self.baseurl, dataset_id)
         self.delete(url)
 
     def delete_dataset_files(self, dataset_id):
@@ -704,7 +706,7 @@ class Metax(object):
         :param metadata: file metadata dictionary
         :returns: JSON response from Metax
         """
-        url = self.baseurl + 'files/'
+        url = '{}/files/'.format(self.baseurl)
         response = self.post(url,
                              json=metadata,
                              allowed_status_codes=[400, 404])
@@ -755,7 +757,7 @@ class Metax(object):
         :param metadata: dataset metadata dictionary
         :returns: JSON response from Metax
         """
-        url = self.baseurl + 'datasets/'
+        url = '{}/datasets/'.format(self.baseurl)
         response = self.post(url, json=metadata)
 
         return response.json()
@@ -766,7 +768,7 @@ class Metax(object):
         :param metadata: contract metadata dictionary
         :returns: JSON response from Metax
         """
-        url = self.baseurl + 'contracts/'
+        url = '{}/contracts/'.format(self.baseurl)
         response = self.post(url, json=metadata)
 
         return response.json()
@@ -777,7 +779,7 @@ class Metax(object):
         :param dataset_id: contract identifier
         :returns: ``None``
         """
-        url = self.baseurl + 'contracts/' + contract_id
+        url = '{}/contracts/{}'.format(self.baseurl, contract_id)
         self.delete(url)
 
     def get_directory_files(self, directory_identifier):
@@ -786,7 +788,8 @@ class Metax(object):
         :param str directory_identifier: identifier attribute of directory
         :returns: directory files as json
         """
-        url = self.baseurl + 'directories/' + directory_identifier + '/files'
+        url = '{}/directories/{}/files'.format(self.baseurl,
+                                               directory_identifier)
 
         response = self.get(url, allowed_status_codes=[404])
 
@@ -801,7 +804,7 @@ class Metax(object):
         :param str directory_identifier: identifier attribute of directory
         :returns: directory metadata
         """
-        url = self.baseurl + 'directories/' + directory_identifier
+        url = '{}/directories/{}'.format(self.baseurl, directory_identifier)
 
         response = self.get(url, allowed_status_codes=[404])
 
@@ -817,7 +820,7 @@ class Metax(object):
         :param str project: path of the directory
         :returns: directory metadata
         """
-        url = self.baseurl + 'directories/files'
+        url = '{}/directories/files'.format(self.baseurl)
         response = self.get(url, allowed_status_codes=[404],
                             params={'path': path,
                                     'project': project,
@@ -851,9 +854,11 @@ class Metax(object):
 
         if self.token:
             if "headers" in kwargs:
-                kwargs["headers"]["Authorization"] = "Bearer %s" % self.token
+                kwargs["headers"]["Authorization"] \
+                    = "Bearer {}".format(self.token)
             else:
-                kwargs["headers"] = {"Authorization": "Bearer %s" % self.token}
+                kwargs["headers"] \
+                    = {"Authorization": "Bearer {}".format(self.token)}
         else:
             kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
 
