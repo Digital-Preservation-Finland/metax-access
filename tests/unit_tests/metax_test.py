@@ -876,13 +876,13 @@ def test_get_http_404(requests_mock, url, method, parameters, expected_error):
 @pytest.mark.parametrize(
     ('url', 'method', 'parameters'),
     (
-        ('/datasets?preservation_state={}&limit=1000000&offset=0'.format(
+        ('/datasets?include_user_metadata=true&preservation_state={}&limit=1000000&offset=0'.format(
             quote("0,10,20,30,40,50,60,70,75,80,90,100,110,120,130,140")
          ), METAX_CLIENT.get_datasets, []),
         ('/contracts?limit=1000000&offset=0', METAX_CLIENT.get_contracts, []),
         ('/contracts/foo', METAX_CLIENT.get_contract, ['foo']),
         ('/datacatalogs/foo', METAX_CLIENT.get_datacatalog, ['foo']),
-        ('/datasets/foo', METAX_CLIENT.get_dataset, ['foo']),
+        ('/datasets/foo?include_user_metadata=true', METAX_CLIENT.get_dataset, ['foo']),
         ('/files/foo/xml', METAX_CLIENT.get_xml, ['foo']),
         ('/datasets/foo?dataset_format=datacite&dummy_doi=false',
          METAX_CLIENT.get_datacite, ['foo']),

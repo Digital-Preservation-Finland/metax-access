@@ -153,7 +153,8 @@ class Metax(object):
                      offset="0",
                      pas_filter=None,
                      org_filter=None,
-                     ordering=None):
+                     ordering=None,
+                     include_user_metadata=True):
         """Get the metadata of datasets from Metax.
 
         :param str states: string containing dataset preservation state values
@@ -170,6 +171,8 @@ class Metax(object):
                                value
         :param str ordering: metax dataset attribute for sorting datasets
                              e.g "preservation_state"
+        :param bool include_user_metadata: Metax parameter for including
+                                           metadata for files
         :returns: datasets from Metax as json.
         """
         if states is None:
@@ -184,6 +187,8 @@ class Metax(object):
             params["metadata_owner_org"] = org_filter
         if ordering is not None:
             params["ordering"] = ordering
+        if include_user_metadata:
+            params["include_user_metadata"] = "true"
 
         params["preservation_state"] = states
         params["limit"] = limit
@@ -264,15 +269,22 @@ class Metax(object):
 
         return response.json()
 
-    def get_dataset(self, dataset_id):
+    def get_dataset(self, dataset_id, include_user_metadata=True):
         """Get dataset metadata from Metax.
 
         :param str dataset_id: id or identifier attribute of dataset
+        :param bool include_user_metadata: Metax parameter for including
+                                           metadata for files
         :returns: dataset as json
         """
         url = '{}/datasets/{}'.format(self.baseurl, dataset_id)
+        include_user_metadata = "true" if include_user_metadata else "false"
 
-        response = self.get(url, allowed_status_codes=[404])
+        response = self.get(
+            url,
+            allowed_status_codes=[404],
+            params={"include_user_metadata": include_user_metadata}
+        )
 
         if response.status_code == 404:
             raise DatasetNotAvailableError
