@@ -143,7 +143,7 @@ class Metax(object):
         self.username = user
         self.password = password
         self.token = token
-        self.baseurl = '{}/rest/v1'.format(url)
+        self.baseurl = '{}/rest/v2'.format(url)
         self.rpcurl = '{}/rpc'.format(url)
         self.verify = verify
 

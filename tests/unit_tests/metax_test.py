@@ -28,7 +28,7 @@ from metax_access.metax import (
 )
 
 METAX_URL = 'https://foobar'
-METAX_REST_URL = METAX_URL+'/rest/v1'
+METAX_REST_URL = METAX_URL+'/rest/v2'
 METAX_USER = 'tpas'
 METAX_PASSWORD = 'password'
 METAX_CLIENT = Metax(METAX_URL, METAX_USER, METAX_PASSWORD, verify=False)
@@ -416,7 +416,7 @@ def test_delete_file(requests_mock):
 
     assert requests_mock.last_request.method == "DELETE"
     assert requests_mock.last_request.hostname == 'foobar'
-    assert requests_mock.last_request.path == '/rest/v1/files/file1'
+    assert requests_mock.last_request.path == '/rest/v2/files/file1'
 
 
 def test_delete_dataset(requests_mock):
@@ -430,7 +430,7 @@ def test_delete_dataset(requests_mock):
 
     assert requests_mock.last_request.method == "DELETE"
     assert requests_mock.last_request.hostname == 'foobar'
-    assert requests_mock.last_request.path == '/rest/v1/datasets/dataset1'
+    assert requests_mock.last_request.path == '/rest/v2/datasets/dataset1'
 
 
 def test_post_file(requests_mock):
@@ -438,13 +438,13 @@ def test_post_file(requests_mock):
 
     Test that HTTP POST request is sent to correct url.
     """
-    requests_mock.post(METAX_URL + '/rest/v1/files/', json={'identifier': '1'})
+    requests_mock.post(METAX_URL + '/rest/v2/files/', json={'identifier': '1'})
 
     METAX_CLIENT.post_file({'identifier': '1'})
 
     assert requests_mock.last_request.method == "POST"
     assert requests_mock.last_request.hostname == 'foobar'
-    assert requests_mock.last_request.path == '/rest/v1/files/'
+    assert requests_mock.last_request.path == '/rest/v2/files/'
 
 
 @pytest.mark.parametrize(
@@ -668,14 +668,14 @@ def test_post_dataset(requests_mock):
     Test that HTTP POST request is sent to correct url.
     """
     requests_mock.post(
-        METAX_URL + '/rest/v1/datasets/', json={'identifier': '1'}
+        METAX_URL + '/rest/v2/datasets/', json={'identifier': '1'}
     )
 
     METAX_CLIENT.post_dataset({'identifier': '1'})
 
     assert requests_mock.last_request.method == "POST"
     assert requests_mock.last_request.hostname == 'foobar'
-    assert requests_mock.last_request.path == '/rest/v1/datasets/'
+    assert requests_mock.last_request.path == '/rest/v2/datasets/'
 
 
 def test_query_datasets(requests_mock):
