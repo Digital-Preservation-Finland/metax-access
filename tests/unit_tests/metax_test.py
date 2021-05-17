@@ -4,8 +4,6 @@
 from __future__ import unicode_literals
 
 import json
-# TODO: nullcontext can be replaced with ExitStack from standard
-# contextlib in Python 3.3+
 try:
     from contextlib import ExitStack as does_not_raise
 except ImportError:
