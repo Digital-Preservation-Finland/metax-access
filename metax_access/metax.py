@@ -832,7 +832,7 @@ class Metax(object):
             raise DirectoryNotAvailableError
 
         metadata = response.json()
-        del(metadata['directories'])
+        del metadata['directories']
         return metadata
 
     def request(self, method, url, allowed_status_codes=None, **kwargs):
