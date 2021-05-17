@@ -185,7 +185,7 @@ class Metax(object):
         if ordering is not None:
             params["ordering"] = ordering
 
-        params["state"] = states
+        params["preservation_state"] = states
         params["limit"] = limit
         params["offset"] = offset
 

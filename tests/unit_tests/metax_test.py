@@ -876,7 +876,7 @@ def test_get_http_404(requests_mock, url, method, parameters, expected_error):
 @pytest.mark.parametrize(
     ('url', 'method', 'parameters'),
     (
-        ('/datasets?state={}&limit=1000000&offset=0'.format(
+        ('/datasets?preservation_state={}&limit=1000000&offset=0'.format(
             quote("0,10,20,30,40,50,60,70,75,80,90,100,110,120,130,140")
          ), METAX_CLIENT.get_datasets, []),
         ('/contracts?limit=1000000&offset=0', METAX_CLIENT.get_contracts, []),
