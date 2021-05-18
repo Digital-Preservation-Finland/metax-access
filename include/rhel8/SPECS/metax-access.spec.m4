@@ -22,7 +22,6 @@ Requires:       python3
 Requires:       python3-lxml
 Requires:       python3-requests
 Requires:       python3-argcomplete
-Requires:       python3-six
 BuildRequires:  python3-mock
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-pytest
@@ -43,7 +42,7 @@ Metax access library
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make install3 PREFIX="%{_prefix}" DESTDIR="%{buildroot}"
+make install PREFIX="%{_prefix}" DESTDIR="%{buildroot}"
 
 %post
 

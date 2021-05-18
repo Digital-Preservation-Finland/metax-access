@@ -1,8 +1,5 @@
 # PYTHON_ARGCOMPLETE_OK
 """Commandline interface to Metax."""
-from __future__ import unicode_literals
-from __future__ import print_function
-
 import argparse
 import configparser
 import io
@@ -12,7 +9,6 @@ import os
 
 import argcomplete
 from requests.exceptions import HTTPError
-import six
 
 import metax_access
 
@@ -122,7 +118,7 @@ def _pprint(dictionary, fpath=None):
         print(output)
     else:
         with io.open(fpath, "wt") as _file:
-            _file.write(six.text_type(output))
+            _file.write(output)
 
 
 def main(arguments=None):

@@ -42,7 +42,7 @@ Metax access library
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make install3 PREFIX="%{_prefix}" DESTDIR="%{buildroot}"
+make install PREFIX="%{_prefix}" DESTDIR="%{buildroot}"
 
 # Rename executable to prevent naming collision with Python 2 RPM
 sed -i 's/\/bin\/metax_access$/\/bin\/metax_access-3/g' INSTALLED_FILES

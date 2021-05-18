@@ -12,17 +12,6 @@ install:
 	cp include/etc/metax.cfg ${ETC}/
 
 	# Use Python setuptools
-	python ./setup.py install -O1 --prefix="${PREFIX}" --root="${DESTDIR}" --record=INSTALLED_FILES
-
-install3:
-	# Cleanup temporary files
-	rm -f INSTALLED_FILES
-
-	# Copy config file to /etc
-	mkdir -p "${ETC}"
-	cp include/etc/metax.cfg ${ETC}/
-
-	# Use Python setuptools
 	python3 ./setup.py install -O1 --prefix="${PREFIX}" --root="${DESTDIR}" --record=INSTALLED_FILES
 
 github:

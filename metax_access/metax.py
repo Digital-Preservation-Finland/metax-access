@@ -1,11 +1,7 @@
 """Metax interface class."""
-from __future__ import unicode_literals
-
 import copy
 import logging
 import re
-
-import six
 
 import lxml.etree
 import requests
@@ -177,7 +173,7 @@ class Metax(object):
         """
         if states is None:
             states = ','.join(
-                six.text_type(state) for state in DS_STATE_ALL_STATES
+                str(state) for state in DS_STATE_ALL_STATES
             )
 
         params = {}
@@ -366,8 +362,7 @@ class Metax(object):
         temp_types = set()
         mime_types = []
 
-        url = "{}/datasets/{}/files".format(self.baseurl,
-                                            six.text_type(dataset_id))
+        url = "{}/datasets/{}/files".format(self.baseurl, dataset_id)
         response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
             raise DatasetNotAvailableError
@@ -389,7 +384,7 @@ class Metax(object):
                     )
                 )
         for temp_type in temp_types:
-            attrs = six.text_type(temp_type).split('||')
+            attrs = temp_type.split('||')
             mime_types.append({'file_format': attrs[0],
                                'format_version': attrs[1],
                                'encoding': attrs[2]})
@@ -405,8 +400,7 @@ class Metax(object):
         :param str pid: id or identifier attribute of contract
         :returns: The datasets from Metax as json.
         """
-        url = "{}/contracts/{}/datasets".format(self.baseurl,
-                                                six.text_type(pid))
+        url = "{}/contracts/{}/datasets".format(self.baseurl, pid)
         response = self.get(url)
 
         return response.json()

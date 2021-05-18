@@ -1,8 +1,6 @@
 # coding=utf-8
 # pylint: disable=no-member
 """Tests for ``metax_access.metax`` module."""
-from __future__ import unicode_literals
-
 import json
 try:
     from contextlib import ExitStack as does_not_raise
@@ -14,7 +12,7 @@ import lxml.etree
 import pytest
 import requests
 
-from six.moves.urllib.parse import quote
+from urllib.parse import quote
 
 from metax_access.metax import (
     Metax,

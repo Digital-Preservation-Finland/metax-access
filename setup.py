@@ -10,13 +10,13 @@ def main():
         name='metax-access',
         packages=find_packages(exclude=['tests', 'tests.*']),
         include_package_data=True,
+        python_requires='>=3.6',
         version=get_version(),
         data_files=[('etc', ['include/etc/metax.cfg'])],
         install_requires=[
             "requests",
             "lxml",
             "argcomplete",
-            "six"
         ],
         entry_points={
             'console_scripts': [
