@@ -465,7 +465,7 @@ def test_post_file(requests_mock):
         (
             {"file_path": ["Some other error in file path"]},
             requests.HTTPError('400 Client Error: Bad Request for url: '
-                               'https://foobar/rest/v1/files/')
+                               'https://foobar/rest/v2/files/')
         ),
         # Multiple files that already exist
         (
@@ -513,7 +513,7 @@ def test_post_file(requests_mock):
                 ]
             },
             requests.HTTPError('400 Client Error: Bad Request for url: '
-                               'https://foobar/rest/v1/files/')
+                               'https://foobar/rest/v2/files/')
         ),
     ]
 )
@@ -526,7 +526,7 @@ def test_post_file_bad_request(requests_mock, response, expected_exception):
     :param response: Mocked response from Metax
     :param expected_exception: expected exception
     """
-    requests_mock.post(METAX_URL + '/rest/v1/files/',
+    requests_mock.post(METAX_URL + '/rest/v2/files/',
                        status_code=400,
                        json=response,
                        reason='Bad Request')
@@ -598,7 +598,7 @@ def test_post_file_bad_request(requests_mock, response, expected_exception):
             },
             pytest.raises(requests.HTTPError,
                           match='400 Client Error: Bad Request for url: '
-                          'https://foobar/rest/v1/files/')
+                          'https://foobar/rest/v2/files/')
         ),
         # Some files already exist, also other errors occur
         (
@@ -620,7 +620,7 @@ def test_post_file_bad_request(requests_mock, response, expected_exception):
             },
             pytest.raises(requests.HTTPError,
                           match='400 Client Error: Bad Request for url: '
-                          'https://foobar/rest/v1/files/')
+                          'https://foobar/rest/v2/files/')
         ),
     ]
 )
@@ -638,7 +638,7 @@ def test_post_multiple_files(requests_mock, status_code, reason, response,
     :param response: JSON content of Mocked Metax response
     :param expectation: expected context
     """
-    requests_mock.post(METAX_URL + '/rest/v1/files/',
+    requests_mock.post(METAX_URL + '/rest/v2/files/',
                        status_code=status_code,
                        json=response,
                        reason=reason)
