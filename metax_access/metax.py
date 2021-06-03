@@ -274,12 +274,14 @@ class Metax(object):
         :returns: dataset as json
         """
         url = '{}/datasets/{}'.format(self.baseurl, dataset_id)
-        include_user_metadata = "true" if include_user_metadata else "false"
 
         response = self.get(
             url,
             allowed_status_codes=[404],
-            params={"include_user_metadata": include_user_metadata}
+            params={
+                "include_user_metadata":
+                    "true" if include_user_metadata else "false"
+            }
         )
 
         if response.status_code == 404:
