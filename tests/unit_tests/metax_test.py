@@ -829,7 +829,7 @@ def test_get_file2dataset_dict(requests_mock):
     datasets are not included in the response.
     """
     requests_mock.post(
-        "{}/files/datasets".format(METAX_REST_URL),
+        f"{METAX_REST_URL}/files/datasets",
         json={"161bc25962da8fed6d2f59922fb642": ["urn:dataset:aaffaaff"]},
         # Ensure the request body has the requested file IDs
         additional_matcher=lambda req: json.loads(req.body) == [10, 20]
@@ -874,9 +874,13 @@ def test_get_http_404(requests_mock, url, method, parameters, expected_error):
 @pytest.mark.parametrize(
     ('url', 'method', 'parameters'),
     (
-        ('/datasets?include_user_metadata=true&preservation_state={}&limit=1000000&offset=0'.format(
-            quote("0,10,20,30,40,50,60,70,75,80,90,100,110,120,130,140")
-         ), METAX_CLIENT.get_datasets, []),
+        (
+            f'/datasets?include_user_metadata=true&preservation_state='
+            f'{quote("0,10,20,30,40,50,60,70,75,80,90,100,110,120,130,140")}'
+            f'&limit=1000000&offset=0',
+            METAX_CLIENT.get_datasets,
+            []
+        ),
         ('/contracts?limit=1000000&offset=0', METAX_CLIENT.get_contracts, []),
         ('/contracts/foo', METAX_CLIENT.get_contract, ['foo']),
         ('/datacatalogs/foo', METAX_CLIENT.get_datacatalog, ['foo']),
@@ -910,8 +914,8 @@ def test_get_http_503(requests_mock, caplog, url, method, parameters):
     # Check logs
     logged_messages = [record.message for record in caplog.records]
     expected_message = (
-        'HTTP request to {} failed. Response from server was: Metax failed '
-        'to process request'.format(METAX_REST_URL + url)
+        f'HTTP request to {METAX_REST_URL}{url} failed. Response from '
+        'server was: Metax failed to process request'
     )
     assert expected_message in logged_messages
 

@@ -218,7 +218,7 @@ def main(arguments=None):
         config = os.path.expanduser(config)
         if not os.path.isfile(config):
             # Explicitly set config file does not exist
-            parser.error('Configuration file {} not found.'.format(config))
+            parser.error(f'Configuration file {config} not found.')
     else:
         for file_ in DEFAULT_CONFIG_FILES:
             file_ = os.path.expanduser(file_)
