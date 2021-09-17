@@ -7,12 +7,11 @@ try:
 except ImportError:
     # Python2
     from contextlib2 import ExitStack as does_not_raise
+from urllib.parse import quote
 
 import lxml.etree
 import pytest
 import requests
-
-from urllib.parse import quote
 
 from metax_access.metax import (
     Metax,
@@ -27,6 +26,7 @@ from metax_access.metax import (
 
 METAX_URL = 'https://foobar'
 METAX_REST_URL = METAX_URL+'/rest/v2'
+METAX_RPC_URL = METAX_URL+'/rpc/v2'
 METAX_USER = 'tpas'
 METAX_PASSWORD = 'password'
 METAX_CLIENT = Metax(METAX_URL, METAX_USER, METAX_PASSWORD, verify=False)
@@ -931,3 +931,12 @@ def test_set_preservation_state_http_503(requests_mock):
     with pytest.raises(requests.HTTPError) as error:
         METAX_CLIENT.set_preservation_state('foobar', '10', 'foo', 'bar')
     assert error.value.response.status_code == 503
+
+
+def test_get_dataset_template(requests_mock):
+    """Test get_dataset_template function."""
+    requests_mock.get(
+        METAX_RPC_URL + '/datasets/get_minimal_dataset_template',
+        json={'foo': 'bar'}
+    )
+    assert METAX_CLIENT.get_dataset_template() == {'foo': 'bar'}

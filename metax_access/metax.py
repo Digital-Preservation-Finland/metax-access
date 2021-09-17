@@ -140,7 +140,7 @@ class Metax(object):
         self.password = password
         self.token = token
         self.baseurl = f'{url}/rest/v2'
-        self.rpcurl = f'{url}/rpc'
+        self.rpcurl = f'{url}/rpc/v2'
         self.verify = verify
 
     # pylint: disable=too-many-arguments
@@ -294,20 +294,11 @@ class Metax(object):
 
         :returns: Template as json
         """
-        rpc_url = \
-            f"{self.rpcurl}/datasets/get_minimal_dataset_template?type=enduser"
-
-        response = self.get(rpc_url)
+        response = self.get(
+            f"{self.rpcurl}/datasets/get_minimal_dataset_template"
+            "?type=enduser_pas"
+        )
         template = response.json()
-
-        # Add "issued" field if it is not provided by Metax
-        if "issued" not in template["research_dataset"]:
-            template["research_dataset"]["issued"] = "2019-01-01"
-
-        # Add "publisher" field if it is not provided by Metax
-        if "publisher" not in template["research_dataset"]:
-            creator = template["research_dataset"]["creator"][0]
-            template['research_dataset']['publisher'] = creator
 
         return template
 
