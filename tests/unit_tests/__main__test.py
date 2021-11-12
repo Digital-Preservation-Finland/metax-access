@@ -91,6 +91,34 @@ def test_directory_command(requests_mock, capsys, cli_args, expected_output):
     assert output == expected_output
 
 
+def test_file_datasets_command(requests_mock, capsys):
+    """Test file-datasets command.
+
+    The command should send a POST request to Metax and print the
+    content of response. The request content should be a list that
+    contains the file identifier given as argument.
+
+    :param requests_mock: HTTP request mocker
+    :param capsys: output capturer
+    """
+    mocked_metax = requests_mock.post(
+        'https://metax-test.csc.fi/rest/v2/files/datasets',
+        json={'foo': 'bar'}
+    )
+
+    # Run command
+    metax_access.__main__.main(['file-datasets', 'baz'])
+
+    # Check that senf HTTP request has expected content
+    request_history = mocked_metax.request_history
+    assert len(request_history) == 1
+    assert request_history[0].json() == ['baz']
+
+    # Check the output
+    output = json.loads(capsys.readouterr().out)
+    assert output == {'foo': 'bar'}
+
+
 @pytest.mark.parametrize(
     ('arguments', 'error_message'),
     [

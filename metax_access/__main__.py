@@ -125,6 +125,15 @@ def directory(metax_client, args):
     return directory_metadata
 
 
+def file_datasets(metax_client, args):
+    """Get datasets associated with file.
+
+    :param metax_client: Metax client
+    :param args: Arguments
+    """
+    return metax_client.get_file_datasets(args.identifier)
+
+
 def print_response(dictionary, fpath=None):
     """Pretty print dictionary to stdout.
 
@@ -245,6 +254,14 @@ def main(arguments=None):
                                   action='store_true',
                                   help="List files in directory")
     directory_parser.set_defaults(func=directory)
+
+    # file-directories command parser
+    file_datasets_parser = subparsers.add_parser(
+        'file-datasets',
+        help='Print datasets associated with file.'
+    )
+    file_datasets_parser.add_argument('identifier', help="File identifier")
+    file_datasets_parser.set_defaults(func=file_datasets)
 
     # Bash tab completion
     argcomplete.autocomplete(parser)
