@@ -4,7 +4,7 @@ import json
 import mock
 import pytest
 
-import metax_access
+import metax_access.__main__
 
 
 @pytest.mark.parametrize(
@@ -22,6 +22,7 @@ def test_main(arguments, function):
     :param function: name of function excepted to be called
     """
     with mock.patch(function) as expected_function:
+        expected_function.return_value = dict()
         metax_access.__main__.main(
             ['--host', 'foo', '--token', 'bar']+arguments
         )
@@ -43,6 +44,54 @@ def test_main(arguments, function):
 
 
 @pytest.mark.parametrize(
+    ('cli_args', 'expected_output'),
+    [
+        (
+            ['directory', '--identifier', 'foo'],
+            {'identifier': 'foo'}
+        ),
+        (
+            ['directory', '--path', 'bar', '--project', 'baz'],
+            {'identifier': 'foo2'}
+        ),
+        (
+            ['directory', '--identifier', 'foo', '--files'],
+            {'foo': 'bar'}
+        )
+    ]
+)
+def test_directory_command(requests_mock, capsys, cli_args, expected_output):
+    """Test directory command.
+
+    :param requests_mock: HTTP request mocker
+    :param capsys: output capturer
+    :param cli_args: list of commandline arguments
+    :param expected_output: expected output as dictionary
+    """
+    # Mock metax
+    requests_mock.get(
+        'https://metax-test.csc.fi/rest/v2/directories/foo',
+        json={'identifier': 'foo'}
+    )
+    requests_mock.get(
+        'https://metax-test.csc.fi/rest/v2/directories/files?path=bar'
+        '&project=baz&depth=1&directories_only=true&include_parent=true',
+        json={'directories': None, 'identifier': 'foo2'}
+    )
+    requests_mock.get(
+        'https://metax-test.csc.fi/rest/v2/directories/foo/files',
+        json={'foo': 'bar'}
+    )
+
+    # Run command
+    metax_access.__main__.main(cli_args)
+
+    # Check output
+    output = json.loads(capsys.readouterr().out)
+    assert output == expected_output
+
+
+@pytest.mark.parametrize(
     ('arguments', 'error_message'),
     [
         (['post', 'dataset', 'foo'],
@@ -51,6 +100,8 @@ def test_main(arguments, function):
          'Username and password or access token must be provided.'),
         (['--config', '/dev/null', 'post', 'dataset', 'foo'],
          'Configuration file /dev/null not found.'),
+        (['--host', 'foo', '--token', 'bar', 'directory', '--path', 'baz'],
+         '--project argument is required for searching directory by path.')
     ]
 )
 def test_invalid_arguments(arguments, error_message, monkeypatch, capsys):

@@ -38,7 +38,7 @@ def post(metax_client, args):
     except metax_access.ResourceAlreadyExistsError as exception:
         response = exception.message
 
-    _pprint(response, args.output)
+    return response
 
 
 def get(metax_client, args):
@@ -65,7 +65,7 @@ def get(metax_client, args):
         except metax_access.ResourceNotAvailableError:
             response = {"code": 404, "message": "Not found"}
 
-    _pprint(response, args.output)
+    return response
 
 
 def delete(metax_client, args):
@@ -103,10 +103,29 @@ def patch(metax_client, args):
     except metax_access.ResourceNotAvailableError:
         response = {"code": 404, "message": "Not found"}
 
-    _pprint(response, args.output)
+    return response
 
 
-def _pprint(dictionary, fpath=None):
+def directory(metax_client, args):
+    """Get directory metadata.
+
+    :param metax_client: Metax client
+    :param args: Arguments
+    """
+    if args.identifier:
+        directory_metadata = metax_client.get_directory(args.identifier)
+    elif args.path:
+        directory_metadata \
+            = metax_client.get_project_directory(args.project, args.path)
+
+    if args.files:
+        return metax_client.get_directory_files(
+            directory_metadata["identifier"]
+        )
+    return directory_metadata
+
+
+def print_response(dictionary, fpath=None):
     """Pretty print dictionary to stdout.
 
     :param dictionary: dictionary
@@ -209,6 +228,24 @@ def main(arguments=None):
                               metavar='output',
                               help="Path to the file where output is written")
 
+    # Directory command parser
+    directory_parser = subparsers.add_parser(
+        'directory',
+        help='Print directory. Directory can be chosen using the directory '
+        'identifier or path.'
+    )
+    directory_identifier_arguments \
+        = directory_parser.add_mutually_exclusive_group(required=True)
+    directory_identifier_arguments.add_argument('--identifier',
+                                                help="Directory identifier")
+    directory_identifier_arguments.add_argument('--path',
+                                                help="Directory path")
+    directory_parser.add_argument('--project', help="Project identifier")
+    directory_parser.add_argument('--files',
+                                  action='store_true',
+                                  help="List files in directory")
+    directory_parser.set_defaults(func=directory)
+
     # Bash tab completion
     argcomplete.autocomplete(parser)
 
@@ -234,6 +271,9 @@ def main(arguments=None):
 
     # Parse arguments
     args = parser.parse_args(arguments)
+    if "path" in args and args.path and not args.project:
+        parser.error("--project argument is required for searching "
+                     "directory by path.")
 
     # Init metax client
     if not args.host:
@@ -248,7 +288,7 @@ def main(arguments=None):
 
     # Run command
     try:
-        args.func(metax_client, args)
+        response = args.func(metax_client, args)
     except HTTPError as exception:
         if exception.response.status_code > 499:
             raise
@@ -258,9 +298,13 @@ def main(arguments=None):
                       exception.response.reason)
 
         try:
-            _pprint(exception.response.json())
+            print_response(exception.response.json())
         except ValueError:
             print(exception.response.data)
+
+    if response:
+        output = args.output if "output" in args else None
+        print_response(response, output)
 
 
 if __name__ == "__main__":
