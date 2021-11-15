@@ -1,9 +1,10 @@
-"""Tests for `metax_acces.__main__` module"""
+"""Tests for `metax_acces.__main__` module."""
+import json
+
+import mock
+import pytest
 
 import metax_access
-import pytest
-import mock
-import json
 
 
 @pytest.mark.parametrize(
@@ -15,11 +16,10 @@ import json
     ]
 )
 def test_main(arguments, function):
-    """Test that main function calls correct function for each subcommand
+    """Test that main function calls correct function.
 
     :param arguments: list of command line arguments
     :param function: name of function excepted to be called
-
     """
     with mock.patch(function) as expected_function:
         metax_access.__main__.main(
@@ -35,7 +35,7 @@ def test_main(arguments, function):
     assert metax_client.baseurl == 'foo/rest/v2'
     assert metax_client.token == 'bar'
 
-    # second parameter of called function should contain commandline args
+    # second parameter of called function should contain cli args
     args = expected_function.call_args[0][1]
     assert args.resource == 'dataset'
     assert args.host == 'foo'
@@ -54,7 +54,7 @@ def test_main(arguments, function):
     ]
 )
 def test_invalid_arguments(arguments, error_message, monkeypatch, capsys):
-    """Test main function with invalid arguments
+    """Test main function with invalid arguments.
 
     :param arguments: list of command line arguments
     :param error_message: expected error message
@@ -78,10 +78,12 @@ def test_invalid_arguments(arguments, error_message, monkeypatch, capsys):
     assert stderr.endswith(error_message + "\n")
 
 
-# TODO: Replace tmpdir fixture with tmp_path fixture when pytest>=3.9.1 is
-# available on Centos
+# TODO: Replace tmpdir fixture with tmp_path fixture when pytest>=3.9.1
+# is available on Centos
 def test_output(tmpdir, monkeypatch):
-    """Test that output is written to file when --output parameter is used.
+    """Test --output parameter.
+
+    Output should be  written to file when --output parameter is used.
 
     :param tmpdir: Temporary directory for test data
     :param monkeypatch: monkeypatch fixture
