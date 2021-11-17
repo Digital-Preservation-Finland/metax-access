@@ -21,8 +21,7 @@ BuildArch:      noarch
 Requires:       python3
 Requires:       python36-lxml
 Requires:       python36-requests
-Requires:       python36-mock
-Requires:       python36-argcomplete
+Requires:       python36-click
 BuildRequires:  python3-setuptools
 BuildRequires:  python36-pytest
 BuildRequires:  python3-sphinx

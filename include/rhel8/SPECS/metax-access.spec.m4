@@ -21,12 +21,10 @@ BuildArch:      noarch
 Requires:       python3
 Requires:       python3-lxml
 Requires:       python3-requests
-Requires:       python3-argcomplete
-BuildRequires:  python3-mock
+Requires:       python3-click
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-pytest
 BuildRequires:  python3-sphinx
-BuildRequires:  python3-pytest-catchlog
 BuildRequires:  python3-requests-mock
 
 %description

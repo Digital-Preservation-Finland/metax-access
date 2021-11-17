@@ -126,10 +126,11 @@ class Metax(object):
     """Get metadata from metax as dict object."""
 
     # pylint: disable=too-many-arguments
-    def __init__(self, url, user=None, password=None, token=None, verify=True):
+    def __init__(self, host, user=None, password=None, token=None,
+                 verify=True):
         """Initialize Metax object.
 
-        :param url: Metax url
+        :param host: Metax host
         :param user: Metax user
         :param password: Metax user password
         :param token: Metax access token
@@ -139,8 +140,8 @@ class Metax(object):
         self.username = user
         self.password = password
         self.token = token
-        self.baseurl = f'{url}/rest/v2'
-        self.rpcurl = f'{url}/rpc/v2'
+        self.baseurl = f'{host}/rest/v2'
+        self.rpcurl = f'{host}/rpc/v2'
         self.verify = verify
 
     # pylint: disable=too-many-arguments

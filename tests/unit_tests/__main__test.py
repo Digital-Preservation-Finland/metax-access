@@ -1,46 +1,82 @@
 """Tests for `metax_acces.__main__` module."""
 import json
 
-import mock
 import pytest
+from click.testing import CliRunner
 
 import metax_access.__main__
 
 
 @pytest.mark.parametrize(
-    ('arguments', 'function'),
+    ('arguments', 'expected_requests'),
     [
-        (['post', 'dataset', 'foo'], 'metax_access.__main__.post'),
-        (['patch', 'dataset', 'foo', 'bar'], 'metax_access.__main__.patch'),
-        (['delete', 'dataset', 'foo'], 'metax_access.__main__.delete')
-    ]
-)
-def test_main(arguments, function):
-    """Test that main function calls correct function.
-
-    :param arguments: list of command line arguments
-    :param function: name of function excepted to be called
-    """
-    with mock.patch(function) as expected_function:
-        expected_function.return_value = dict()
-        metax_access.__main__.main(
-            ['--host', 'foo', '--token', 'bar']+arguments
+        (
+            ['post', 'dataset', 'test_file.json'],
+            [
+                {
+                    'method': 'POST',
+                    'url': 'https://metax-test.csc.fi/rest/v2/datasets/'
+                }
+            ],
+        ),
+        (
+            ['patch', 'dataset', 'foo', 'test_file.json'],
+            [
+                {
+                    'method': 'GET',
+                    'url': 'https://metax-test.csc.fi/rest/v2/datasets/foo'
+                    '?include_user_metadata=true'
+                },
+                {
+                    'method': 'PATCH',
+                    'url': 'https://metax-test.csc.fi/rest/v2/datasets/foo'
+                }
+            ]
+         ),
+        (
+            ['delete', 'dataset', 'foo'],
+            [
+                {
+                    'method': 'DELETE',
+                    'url': 'https://metax-test.csc.fi/rest/v2/datasets/foo'
+                }
+            ]
         )
 
-    # Expected function should be called once
-    assert expected_function.called_once()
+    ]
+)
+def test_main(requests_mock, tmpdir, arguments, expected_requests):
+    """Test that cli sends HTTP requests to correct url.
 
-    # first parameter of called function should be Metax object
-    metax_client = expected_function.call_args[0][0]
-    assert isinstance(metax_client, metax_access.Metax)
-    assert metax_client.baseurl == 'foo/rest/v2'
-    assert metax_client.token == 'bar'
+    :param requests_mock: HTTP request mocker
+    :param tmpdir: Temporary directory for metadata files
+    :param arguments: list of command line arguments
+    :param expected_requests: list of HTTP requests expected to be sent
+                              to Metax. A request is dictionary that
+                              contains two values: "method" and "url".
+    """
+    # Mock Metax
+    mocked_metax_responses = [
+        requests_mock.register_uri(
+            request['method'], request['url'], json={'foo2': 'bar2'}
+        ) for request in expected_requests
+    ]
 
-    # second parameter of called function should contain cli args
-    args = expected_function.call_args[0][1]
-    assert args.resource == 'dataset'
-    assert args.host == 'foo'
-    assert args.token == 'bar'
+    # Create a test_file
+    test_file = tmpdir / 'test_file.json'
+    test_file.write('{"foo1": "bar1"}')
+
+    # Run CLI in directory that contains test_file.json
+    runner = CliRunner()
+    with tmpdir.as_cwd():
+        result = runner.invoke(metax_access.__main__.cli,
+                               arguments,
+                               catch_exceptions=False)
+    assert result.exit_code == 0
+
+    # Each expected request should be sent once
+    for response in mocked_metax_responses:
+        assert response.called_once
 
 
 @pytest.mark.parametrize(
@@ -60,11 +96,10 @@ def test_main(arguments, function):
         )
     ]
 )
-def test_directory_command(requests_mock, capsys, cli_args, expected_output):
+def test_directory_command(requests_mock, cli_args, expected_output):
     """Test directory command.
 
     :param requests_mock: HTTP request mocker
-    :param capsys: output capturer
     :param cli_args: list of commandline arguments
     :param expected_output: expected output as dictionary
     """
@@ -83,15 +118,13 @@ def test_directory_command(requests_mock, capsys, cli_args, expected_output):
         json={'foo': 'bar'}
     )
 
-    # Run command
-    metax_access.__main__.main(cli_args)
-
-    # Check output
-    output = json.loads(capsys.readouterr().out)
-    assert output == expected_output
+    # Run command and check that it produces expceted output
+    runner = CliRunner()
+    result = runner.invoke(metax_access.__main__.cli, cli_args)
+    assert json.loads(result.output) == expected_output
 
 
-def test_file_datasets_command(requests_mock, capsys):
+def test_file_datasets_command(requests_mock):
     """Test file-datasets command.
 
     The command should send a POST request to Metax and print the
@@ -99,24 +132,21 @@ def test_file_datasets_command(requests_mock, capsys):
     contains the file identifier given as argument.
 
     :param requests_mock: HTTP request mocker
-    :param capsys: output capturer
     """
     mocked_metax = requests_mock.post(
         'https://metax-test.csc.fi/rest/v2/files/datasets',
         json={'foo': 'bar'}
     )
 
-    # Run command
-    metax_access.__main__.main(['file-datasets', 'baz'])
+    # Run command. Command should output JSON from Metax response.
+    runner = CliRunner()
+    result = runner.invoke(metax_access.__main__.cli, ['file-datasets', 'baz'])
+    assert json.loads(result.output) == {'foo': 'bar'}
 
-    # Check that senf HTTP request has expected content
+    # Check that sent HTTP request has expected content
     request_history = mocked_metax.request_history
     assert len(request_history) == 1
     assert request_history[0].json() == ['baz']
-
-    # Check the output
-    output = json.loads(capsys.readouterr().out)
-    assert output == {'foo': 'bar'}
 
 
 @pytest.mark.parametrize(
@@ -132,29 +162,25 @@ def test_file_datasets_command(requests_mock, capsys):
          '--project argument is required for searching directory by path.')
     ]
 )
-def test_invalid_arguments(arguments, error_message, monkeypatch, capsys):
+def test_invalid_arguments(arguments, error_message, monkeypatch):
     """Test main function with invalid arguments.
 
     :param arguments: list of command line arguments
     :param error_message: expected error message
     :param monkeypatch: monkeypatch fixture
-    :param capsys: capsys fixture
     """
     # Disable default config files
     monkeypatch.setattr('metax_access.__main__.DEFAULT_CONFIG_FILES', [])
 
-    # Script should exit with code 2
-    with pytest.raises(SystemExit) as exception:
-        metax_access.__main__.main(arguments)
-    assert exception.value.code == 2
+    # Run command
+    runner = CliRunner()
+    result = runner.invoke(metax_access.__main__.cli, arguments)
 
-    # Error message should be printed to stderr
-    #
-    # TODO: In pytest>=3.5, stderr is simply:
-    #    capsys.readouterr().err
-    # Change this when newer version of pytest is available on Centos
-    _, stderr = capsys.readouterr()
-    assert stderr.endswith(error_message + "\n")
+    # Script should exit with code 2
+    assert result.exit_code == 2
+
+    # Error message should be printed to stdout
+    assert result.stdout.endswith(error_message + '\n')
 
 
 # TODO: Replace tmpdir fixture with tmp_path fixture when pytest>=3.9.1
@@ -177,7 +203,11 @@ def test_output(tmpdir, monkeypatch):
                  '--token', 'bar',
                  'get', 'dataset', '1',
                  '--output', str(output_file)]
-    metax_access.__main__.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(metax_access.__main__.cli, arguments)
+
+    # Nothing should be printed to stdout
+    assert result.output == ''
 
     # Check that JSON output was written to file
     assert json.loads(output_file.read())['foo'] == 'bar'
