@@ -10,6 +10,7 @@ from requests.exceptions import HTTPError
 
 import metax_access
 
+
 DEFAULT_CONFIG_FILES = ['/etc/metax.cfg',
                         '~/.local/etc/metax.cfg',
                         '~/.metax.cfg']
@@ -30,18 +31,17 @@ def print_response(dictionary, fpath=None):
             _file.write(output)
 
 
-@click.group()
+@click.group(context_settings={"help_option_names": ['-h', '--help']})
 @click.option(
     '-c', '--config',
-    metavar='config',
     default=None,
     help=("Configuration file. If not set, default config file: "
           "~/.metax.cfg, ~/.local/etc/metax.cfg, or /etc/metax.cfg is used.")
 )
-@click.option('--host', metavar='host', help="Metax hostname")
-@click.option('-u', '--user', metavar='user', help="Metax username")
-@click.option('-p', '--password', metavar='password', help="Metax password")
-@click.option('-t', '--token', metavar='token', help="Bearer token")
+@click.option('--host', help="Metax hostname.")
+@click.option('-u', '--user', help="Metax username.")
+@click.option('-p', '--password', help="Metax password.")
+@click.option('-t', '--token', help="Bearer token.")
 @click.pass_context
 def cli(ctx, config, **kwargs):
     """Manage metadata in Metax."""
@@ -80,18 +80,16 @@ def cli(ctx, config, **kwargs):
 
 
 @cli.command()
-@click.argument('resource',
-                type=click.Choice(['file', 'dataset', 'contract']))
-@click.argument('filepath',
-                type=click.Path(exists=True, readable=True))
+@click.argument('resource', type=click.Choice(['file', 'dataset', 'contract']))
+@click.argument('filepath', type=click.Path(exists=True, readable=True))
 @click.option('-o', '--output',
-              metavar='output',
-              help="Path to the file where output is written")
+              help="Path to the file where output is written.")
 @click.pass_obj
 def post(metax_client, resource, filepath, output):
-    """Post resource metadata from FILEPATH.
+    """Post resource metadata to Metax.
 
-    Resource can be file, dataset or contract.
+    Resource can be file, dataset or contract. The metadata is read from
+    FILEPATH.
     """
     # Read metadata file
     with io.open(filepath, "rt") as open_file:
@@ -115,14 +113,14 @@ def post(metax_client, resource, filepath, output):
                 type=click.Choice(['file', 'dataset', 'contract', 'template']))
 @click.argument('identifier')
 @click.option('-o', '--output',
-              metavar='output',
-              help="Path to the file where output is written")
+              help="Path to the file where output is written.")
 @click.pass_obj
 def get(metax_client, resource, identifier, output):
-    """Print resource identified by IDENTIFIER.
+    """Print resource metadata.
 
-    The resource can be file, dataset or contract metadata, or template
-    for dataset metadata.
+    The resource type can be file, dataset or contract metadata, or
+    template for dataset metadata. The resource is identified by
+    IDENTIFIER.
     """
     if resource == 'template':
         if identifier == 'dataset':
@@ -145,14 +143,14 @@ def get(metax_client, resource, identifier, output):
 
 
 @cli.command()
-@click.argument('resource',
-                type=click.Choice(['file', 'dataset', 'contract']))
+@click.argument('resource', type=click.Choice(['file', 'dataset', 'contract']))
 @click.argument('identifier')
 @click.pass_obj
 def delete(metax_client, resource, identifier):
-    """Delete resource identified by IDENTIER.
+    """Delete resource metadata.
 
-    Resource can be file, dataset or contract metadata.
+    Resource can be file, dataset or contract metadata. The resource is
+    identified by IDENTIFIER.
     """
     funcs = {
         "dataset": metax_client.delete_dataset,
@@ -163,18 +161,18 @@ def delete(metax_client, resource, identifier):
 
 
 @cli.command()
-@click.argument('resource',
-                type=click.Choice(['dataset', 'file', 'contract']))
+@click.argument('resource', type=click.Choice(['dataset', 'file', 'contract']))
 @click.argument('identifier')
 @click.argument('filepath', type=click.Path(exists=True, readable=True))
 @click.option('-o', '--output',
-              metavar='output',
-              help="Path to the file where output is written")
+              help="Path to the file where output is written.")
 @click.pass_obj
 def patch(metax_client, resource, identifier, filepath, output):
-    """Patch resource IDENTIFIER with metadata from FILEPATH.
+    """Patch resource metadata.
 
-    Resource can be file, dataset or contract metadata.
+    The metadata patch is read from FILEPATH. Resource can be file,
+    dataset or contract metadata. The resource is identified by
+    IDENTIFIER.
     """
     with io.open(filepath, "rt") as open_file:
         data = json.load(open_file)
@@ -193,16 +191,16 @@ def patch(metax_client, resource, identifier, filepath, output):
 
 
 @cli.command()
-@click.option('--identifier', help="Directory identifier")
-@click.option('--path', help="Directory path")
-@click.option('--project', help="Project identifier")
+@click.option('--identifier', help="Directory identifier.")
+@click.option('--path', help="Directory path.")
+@click.option('--project', help="Project identifier.")
 @click.option('--files',
               is_flag=True,
               default=False,
-              help="List files in directory")
+              help="List files in directory.")
 @click.pass_obj
 def directory(metax_client, identifier, path, project, files):
-    """Print directory.
+    """Print directory metadata or content.
 
     Directory can be chosen using the directory identifier or path.
     """
