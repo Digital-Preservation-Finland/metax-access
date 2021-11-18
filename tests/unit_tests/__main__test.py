@@ -1,10 +1,25 @@
 """Tests for `metax_acces.__main__` module."""
 import json
+import shutil
 
 import pytest
 from click.testing import CliRunner
 
 import metax_access.__main__
+
+
+@pytest.fixture(autouse=True)
+def mock_default_config(tmpdir, monkeypatch):
+    """Use temporary configuration file by default.
+
+    Copy include/etc/metax.cfg to a temporary directory, and mock CLI to
+    use that file as a default configuration file.
+    """
+    tmp_configuration_file = tmpdir / 'metax.cfg'
+    shutil.copy('include/etc/metax.cfg', tmp_configuration_file)
+
+    monkeypatch.setattr('metax_access.__main__.DEFAULT_CONFIG_FILES',
+                        [tmp_configuration_file])
 
 
 @pytest.mark.parametrize(
@@ -15,7 +30,7 @@ import metax_access.__main__
             [
                 {
                     'method': 'POST',
-                    'url': 'https://metax-test.csc.fi/rest/v2/datasets/'
+                    'url': 'https://metax.localhost/rest/v2/datasets/'
                 }
             ],
         ),
@@ -24,12 +39,12 @@ import metax_access.__main__
             [
                 {
                     'method': 'GET',
-                    'url': 'https://metax-test.csc.fi/rest/v2/datasets/foo'
+                    'url': 'https://metax.localhost/rest/v2/datasets/foo'
                     '?include_user_metadata=true'
                 },
                 {
                     'method': 'PATCH',
-                    'url': 'https://metax-test.csc.fi/rest/v2/datasets/foo'
+                    'url': 'https://metax.localhost/rest/v2/datasets/foo'
                 }
             ]
          ),
@@ -38,7 +53,7 @@ import metax_access.__main__
             [
                 {
                     'method': 'DELETE',
-                    'url': 'https://metax-test.csc.fi/rest/v2/datasets/foo'
+                    'url': 'https://metax.localhost/rest/v2/datasets/foo'
                 }
             ]
         )
@@ -105,22 +120,24 @@ def test_directory_command(requests_mock, cli_args, expected_output):
     """
     # Mock metax
     requests_mock.get(
-        'https://metax-test.csc.fi/rest/v2/directories/foo',
+        'https://metax.localhost/rest/v2/directories/foo',
         json={'identifier': 'foo'}
     )
     requests_mock.get(
-        'https://metax-test.csc.fi/rest/v2/directories/files?path=bar'
+        'https://metax.localhost/rest/v2/directories/files?path=bar'
         '&project=baz&depth=1&directories_only=true&include_parent=true',
         json={'directories': None, 'identifier': 'foo2'}
     )
     requests_mock.get(
-        'https://metax-test.csc.fi/rest/v2/directories/foo/files',
+        'https://metax.localhost/rest/v2/directories/foo/files',
         json={'foo': 'bar'}
     )
 
     # Run command and check that it produces expceted output
     runner = CliRunner()
-    result = runner.invoke(metax_access.__main__.cli, cli_args)
+    result = runner.invoke(metax_access.__main__.cli,
+                           cli_args,
+                           catch_exceptions=False)
     assert json.loads(result.output) == expected_output
 
 
@@ -134,13 +151,15 @@ def test_file_datasets_command(requests_mock):
     :param requests_mock: HTTP request mocker
     """
     mocked_metax = requests_mock.post(
-        'https://metax-test.csc.fi/rest/v2/files/datasets',
+        'https://metax.localhost/rest/v2/files/datasets',
         json={'foo': 'bar'}
     )
 
     # Run command. Command should output JSON from Metax response.
     runner = CliRunner()
-    result = runner.invoke(metax_access.__main__.cli, ['file-datasets', 'baz'])
+    result = runner.invoke(metax_access.__main__.cli,
+                           ['file-datasets', 'baz'],
+                           catch_exceptions=False)
     assert json.loads(result.output) == {'foo': 'bar'}
 
     # Check that sent HTTP request has expected content
