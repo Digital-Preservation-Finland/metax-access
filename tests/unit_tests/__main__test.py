@@ -199,7 +199,7 @@ def test_invalid_arguments(arguments, error_message, monkeypatch):
     assert result.exit_code == 2
 
     # Error message should be printed to stdout
-    assert result.stdout.endswith(error_message + '\n')
+    assert result.output.endswith(error_message + '\n')
 
 
 # TODO: Replace tmpdir fixture with tmp_path fixture when pytest>=3.9.1

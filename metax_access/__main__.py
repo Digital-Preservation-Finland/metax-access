@@ -226,7 +226,7 @@ def directory(metax_client, identifier, path, project, files):
         print_response(directory_metadata)
 
 
-@cli.command()
+@cli.command('file-datasets')
 @click.argument('identifier')
 @click.pass_obj
 def file_datasets(metax_client, identifier):
