@@ -140,8 +140,8 @@ class Metax(object):
         self.username = user
         self.password = password
         self.token = token
-        self.baseurl = f'{host}/rest/v2'
-        self.rpcurl = f'{host}/rpc/v2'
+        self.baseurl = f'https://{host}/rest/v2'
+        self.rpcurl = f'https://{host}/rpc/v2'
         self.verify = verify
 
     # pylint: disable=too-many-arguments

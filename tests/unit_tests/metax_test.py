@@ -24,12 +24,12 @@ from metax_access.metax import (
     ResourceAlreadyExistsError
 )
 
-METAX_URL = 'https://foobar'
-METAX_REST_URL = METAX_URL+'/rest/v2'
-METAX_RPC_URL = METAX_URL+'/rpc/v2'
+METAX_HOST = 'foobar'
+METAX_REST_URL = f'https://{METAX_HOST}/rest/v2'
+METAX_RPC_URL = f'https://{METAX_HOST}/rpc/v2'
 METAX_USER = 'tpas'
 METAX_PASSWORD = 'password'
-METAX_CLIENT = Metax(METAX_URL, METAX_USER, METAX_PASSWORD, verify=False)
+METAX_CLIENT = Metax(METAX_HOST, METAX_USER, METAX_PASSWORD, verify=False)
 
 
 def test_init():
@@ -38,7 +38,7 @@ def test_init():
     Init function should raise exception if required parameters are not given.
     """
     with pytest.raises(ValueError) as exception:
-        Metax(METAX_URL)
+        Metax(METAX_HOST)
     assert str(exception.value) == "Metax user or access token is required."
 
 
@@ -436,7 +436,7 @@ def test_post_file(requests_mock):
 
     Test that HTTP POST request is sent to correct url.
     """
-    requests_mock.post(METAX_URL + '/rest/v2/files/', json={'identifier': '1'})
+    requests_mock.post(METAX_REST_URL + '/files/', json={'identifier': '1'})
 
     METAX_CLIENT.post_file({'identifier': '1'})
 
@@ -526,7 +526,7 @@ def test_post_file_bad_request(requests_mock, response, expected_exception):
     :param response: Mocked response from Metax
     :param expected_exception: expected exception
     """
-    requests_mock.post(METAX_URL + '/rest/v2/files/',
+    requests_mock.post(METAX_REST_URL + '/files/',
                        status_code=400,
                        json=response,
                        reason='Bad Request')
@@ -638,7 +638,7 @@ def test_post_multiple_files(requests_mock, status_code, reason, response,
     :param response: JSON content of Mocked Metax response
     :param expectation: expected context
     """
-    requests_mock.post(METAX_URL + '/rest/v2/files/',
+    requests_mock.post(METAX_REST_URL + '/files/',
                        status_code=status_code,
                        json=response,
                        reason=reason)
@@ -665,9 +665,7 @@ def test_post_dataset(requests_mock):
 
     Test that HTTP POST request is sent to correct url.
     """
-    requests_mock.post(
-        METAX_URL + '/rest/v2/datasets/', json={'identifier': '1'}
-    )
+    requests_mock.post(METAX_REST_URL + '/datasets/', json={'identifier': '1'})
 
     METAX_CLIENT.post_dataset({'identifier': '1'})
 
