@@ -12,12 +12,12 @@ Usage
 -----
 A simple commandline interface can be used for posting, retrieving, or deleting metadata. For example to view metadata of dataset::
 
-   metax_access --host metax-test.csc.fi -u tpas -p password get dataset 1
+   metax_access --url metax-test.csc.fi -u tpas -p password get dataset 1
 
 Alternatively ``host``, ``user``, and ``password`` may be to configuration file ``~/.metax.cfg``::
 
    [metax]
-   host=metax-test.csc.fi
+   url=https://metax-test.csc.fi
    user=tpas
    password=password
 

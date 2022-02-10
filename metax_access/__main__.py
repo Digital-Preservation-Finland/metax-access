@@ -38,7 +38,7 @@ def print_response(dictionary, fpath=None):
     help=("Configuration file. If not set, default config file: "
           "~/.metax.cfg, ~/.local/etc/metax.cfg, or /etc/metax.cfg is used.")
 )
-@click.option('--host', help="Metax hostname.")
+@click.option('--url', help="Metax url.")
 @click.option('-u', '--user', help="Metax username.")
 @click.option('-p', '--password', help="Metax password.")
 @click.option('-t', '--token', help="Bearer token.")
@@ -70,12 +70,18 @@ def cli(ctx, config, **kwargs):
             metax_config[key] = value
 
     # Init metax client
-    if not metax_config.get('host'):
-        raise click.UsageError("Metax hostname must be provided.")
+    if not metax_config.get('url'):
+        try:
+            # Accept also 'host' parameter for backward compatibility
+            metax_config['url'] = metax_config['host']
+        except KeyError:
+            raise click.UsageError("Metax URL must be provided.")
     if not metax_config.get('token') and not metax_config.get('user'):
         raise click.UsageError(
             'Username and password or access token must be provided.'
         )
+    if metax_config.get('host'):
+        del metax_config['host']
     ctx.obj = metax_access.Metax(**metax_config)
 
 

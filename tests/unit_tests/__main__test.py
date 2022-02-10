@@ -172,12 +172,12 @@ def test_file_datasets_command(requests_mock):
     ('arguments', 'error_message'),
     [
         (['post', 'dataset', 'foo'],
-         'Metax hostname must be provided.'),
-        (['--host', 'bar', 'post', 'dataset', 'foo'],
+         'Metax URL must be provided.'),
+        (['--url', 'bar', 'post', 'dataset', 'foo'],
          'Username and password or access token must be provided.'),
         (['--config', '/dev/null', 'post', 'dataset', 'foo'],
          'Configuration file /dev/null not found.'),
-        (['--host', 'foo', '--token', 'bar', 'directory', '--path', 'baz'],
+        (['--url', 'foo', '--token', 'bar', 'directory', '--path', 'baz'],
          '--project argument is required for searching directory by path.')
     ]
 )
@@ -218,7 +218,7 @@ def test_output(tmpdir, monkeypatch):
 
     # Use main function to get test data to output file
     output_file = tmpdir / 'output_file'
-    arguments = ['--host', 'foo',
+    arguments = ['--url', 'https://foo',
                  '--token', 'bar',
                  'get', 'dataset', '1',
                  '--output', str(output_file)]

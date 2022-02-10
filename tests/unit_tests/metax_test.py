@@ -24,12 +24,12 @@ from metax_access.metax import (
     ResourceAlreadyExistsError
 )
 
-METAX_HOST = 'foobar'
-METAX_REST_URL = f'https://{METAX_HOST}/rest/v2'
-METAX_RPC_URL = f'https://{METAX_HOST}/rpc/v2'
+METAX_URL = 'https://foobar'
+METAX_REST_URL = f'{METAX_URL}/rest/v2'
+METAX_RPC_URL = f'{METAX_URL}/rpc/v2'
 METAX_USER = 'tpas'
 METAX_PASSWORD = 'password'
-METAX_CLIENT = Metax(METAX_HOST, METAX_USER, METAX_PASSWORD, verify=False)
+METAX_CLIENT = Metax(METAX_URL, METAX_USER, METAX_PASSWORD, verify=False)
 
 
 def test_init():
@@ -38,7 +38,7 @@ def test_init():
     Init function should raise exception if required parameters are not given.
     """
     with pytest.raises(ValueError) as exception:
-        Metax(METAX_HOST)
+        Metax(METAX_URL)
     assert str(exception.value) == "Metax user or access token is required."
 
 
