@@ -1,6 +1,5 @@
 """Commandline interface to Metax."""
 import configparser
-import io
 import json
 import logging
 import os
@@ -25,10 +24,10 @@ def print_response(dictionary, fpath=None):
     """
     output = json.dumps(dictionary, indent=4, ensure_ascii=False)
     if not fpath:
-        print(output)
+        click.echo(output)
     else:
-        with io.open(fpath, "wt") as _file:
-            _file.write(output)
+        with open(fpath, 'wt') as file:
+            click.echo(output, file=file)
 
 
 @click.group(context_settings={"help_option_names": ['-h', '--help']})
@@ -98,7 +97,7 @@ def post(metax_client, resource, filepath, output):
     FILEPATH.
     """
     # Read metadata file
-    with io.open(filepath, "rt") as open_file:
+    with open(filepath, "rt") as open_file:
         data = json.load(open_file)
 
     funcs = {
@@ -180,7 +179,7 @@ def patch(metax_client, resource, identifier, filepath, output):
     dataset or contract metadata. The resource is identified by
     IDENTIFIER.
     """
-    with io.open(filepath, "rt") as open_file:
+    with open(filepath, "rt") as open_file:
         data = json.load(open_file)
 
     funcs = {
@@ -193,7 +192,7 @@ def patch(metax_client, resource, identifier, filepath, output):
     except metax_access.ResourceNotAvailableError:
         response = {"code": 404, "message": "Not found"}
 
-    print(response, output)
+    print_response(response, output)
 
 
 @cli.command()
@@ -255,4 +254,4 @@ if __name__ == "__main__":
         try:
             print_response(exception.response.json())
         except ValueError:
-            print(exception.response.data)
+            click.echo(exception.response.data)
