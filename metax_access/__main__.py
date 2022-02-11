@@ -202,12 +202,13 @@ def patch(metax_client, resource, identifier, filepath, output):
 @click.option('--files',
               is_flag=True,
               default=False,
-              help="List files in directory.")
+              help="List content of directory instead of directory metadata.")
 @click.pass_obj
 def directory(metax_client, identifier, path, project, files):
     """Print directory metadata or content.
 
     Directory can be chosen using the directory identifier or path.
+    If path is used, project must defined to identify the directory.
     """
     if identifier and path:
         raise click.UsageError('--identifier and --path can not be used '
@@ -215,6 +216,8 @@ def directory(metax_client, identifier, path, project, files):
     if path and not project:
         raise click.UsageError("--project argument is required for searching "
                                "directory by path.")
+    if not identifier and not path:
+        raise click.UsageError('--identifier or --path is required')
     if identifier:
         directory_metadata = metax_client.get_directory(identifier)
     elif path:
