@@ -3,9 +3,6 @@ import json
 import shutil
 
 import pytest
-from click.testing import CliRunner
-
-import metax_access.__main__
 
 
 @pytest.fixture(autouse=True)
@@ -60,7 +57,7 @@ def mock_default_config(tmpdir, monkeypatch):
 
     ]
 )
-def test_main(requests_mock, tmpdir, arguments, expected_requests):
+def test_main(requests_mock, tmpdir, arguments, expected_requests, cli_invoke):
     """Test that cli sends HTTP requests to correct url.
 
     :param requests_mock: HTTP request mocker
@@ -82,11 +79,8 @@ def test_main(requests_mock, tmpdir, arguments, expected_requests):
     test_file.write('{"foo1": "bar1"}')
 
     # Run CLI in directory that contains test_file.json
-    runner = CliRunner()
     with tmpdir.as_cwd():
-        result = runner.invoke(metax_access.__main__.cli,
-                               arguments,
-                               catch_exceptions=False)
+        result = cli_invoke(arguments)
     assert result.exit_code == 0
 
     # Each expected request should be sent once
@@ -111,7 +105,8 @@ def test_main(requests_mock, tmpdir, arguments, expected_requests):
         )
     ]
 )
-def test_directory_command(requests_mock, cli_args, expected_output):
+def test_directory_command(requests_mock, cli_args, expected_output,
+                           cli_invoke):
     """Test directory command.
 
     :param requests_mock: HTTP request mocker
@@ -134,14 +129,11 @@ def test_directory_command(requests_mock, cli_args, expected_output):
     )
 
     # Run command and check that it produces expceted output
-    runner = CliRunner()
-    result = runner.invoke(metax_access.__main__.cli,
-                           cli_args,
-                           catch_exceptions=False)
+    result = cli_invoke(cli_args)
     assert json.loads(result.output) == expected_output
 
 
-def test_file_datasets_command(requests_mock):
+def test_file_datasets_command(requests_mock, cli_invoke):
     """Test file-datasets command.
 
     The command should send a POST request to Metax and print the
@@ -156,10 +148,7 @@ def test_file_datasets_command(requests_mock):
     )
 
     # Run command. Command should output JSON from Metax response.
-    runner = CliRunner()
-    result = runner.invoke(metax_access.__main__.cli,
-                           ['file-datasets', 'baz'],
-                           catch_exceptions=False)
+    result = cli_invoke(['file-datasets', 'baz'])
     assert json.loads(result.output) == {'foo': 'bar'}
 
     # Check that sent HTTP request has expected content
@@ -181,7 +170,7 @@ def test_file_datasets_command(requests_mock):
          '--project argument is required for searching directory by path.')
     ]
 )
-def test_invalid_arguments(arguments, error_message, monkeypatch):
+def test_invalid_arguments(arguments, error_message, monkeypatch, cli_invoke):
     """Test main function with invalid arguments.
 
     :param arguments: list of command line arguments
@@ -192,8 +181,7 @@ def test_invalid_arguments(arguments, error_message, monkeypatch):
     monkeypatch.setattr('metax_access.__main__.DEFAULT_CONFIG_FILES', [])
 
     # Run command
-    runner = CliRunner()
-    result = runner.invoke(metax_access.__main__.cli, arguments)
+    result = cli_invoke(arguments)
 
     # Script should exit with code 2
     assert result.exit_code == 2
@@ -204,7 +192,7 @@ def test_invalid_arguments(arguments, error_message, monkeypatch):
 
 # TODO: Replace tmpdir fixture with tmp_path fixture when pytest>=3.9.1
 # is available on Centos
-def test_output(tmpdir, monkeypatch):
+def test_output(tmpdir, monkeypatch, cli_invoke):
     """Test --output parameter.
 
     Output should be  written to file when --output parameter is used.
@@ -222,8 +210,7 @@ def test_output(tmpdir, monkeypatch):
                  '--token', 'bar',
                  'get', 'dataset', '1',
                  '--output', str(output_file)]
-    runner = CliRunner()
-    result = runner.invoke(metax_access.__main__.cli, arguments)
+    result = cli_invoke(arguments)
 
     # Nothing should be printed to stdout
     assert result.output == ''
