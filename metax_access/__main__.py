@@ -11,7 +11,7 @@ import metax_access
 
 
 DEFAULT_CONFIG_FILES = ['/etc/metax.cfg',
-                        '~/.local/etc/metax.cfg',
+                        f'{click.get_app_dir("metax-access")}/metax.cfg',
                         '~/.metax.cfg']
 
 
@@ -35,7 +35,8 @@ def print_response(dictionary, fpath=None):
     '-c', '--config',
     default=None,
     help=("Configuration file. If not set, default config file: "
-          "~/.metax.cfg, ~/.local/etc/metax.cfg, or /etc/metax.cfg is used.")
+          "~/.metax.cfg, $XDG_CONFIG_HOME/metax-access/metax.cfg, or "
+          "/etc/metax.cfg is used.")
 )
 @click.option('--url', help="Metax url.")
 @click.option('-u', '--user', help="Metax username.")
