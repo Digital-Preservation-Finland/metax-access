@@ -29,12 +29,6 @@ test:
 	    --junitprefix=dpres-siptools-research --junitxml=junit.xml \
 	    tests/unit_tests
 
-coverage:
-	${PYTHON} -m pytest tests --cov=metax_access --cov-report=html
-	coverage report -m
-	coverage html
-	coverage xml
-
 clean: clean-rpm
 	find . -iname '*.pyc' -type f -delete
 	find . -iname '__pycache__' -exec rm -rf '{}' \; | true
