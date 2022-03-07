@@ -24,11 +24,6 @@ github:
 	    	cp include/etc/metax.cfg ~/.metax.cfg; \
 	    fi
 
-test:
-	${PYTHON} -m pytest -svvvv \
-	    --junitprefix=dpres-siptools-research --junitxml=junit.xml \
-	    tests/unit_tests
-
 clean: clean-rpm
 	find . -iname '*.pyc' -type f -delete
 	find . -iname '__pycache__' -exec rm -rf '{}' \; | true
