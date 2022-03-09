@@ -30,14 +30,12 @@ For more information see::
 
    metax_access -h
 
-
-
 Testing
 -------
 
 Create and activate virtualenv::
 
-   virtualenv venv
+   python3 -m venv venv
    source venv/bin/activate
 
 Upgrade pip::
@@ -50,8 +48,7 @@ Install required python packages for testing::
 
 Run tests::
 
-   make test
-
+   python3 -m pytest tests/
 
 Building
 --------
