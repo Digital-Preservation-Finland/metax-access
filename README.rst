@@ -50,12 +50,6 @@ Run tests::
 
    python3 -m pytest tests/
 
-Building
---------
-Build RPM::
-
-   make rpm
-
 Generating documentation
 ------------------------
 
