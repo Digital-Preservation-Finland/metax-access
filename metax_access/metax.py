@@ -2,14 +2,10 @@
 import copy
 import logging
 import re
-from collections import defaultdict
-from pathlib import PurePath
 
 import lxml.etree
 import requests
 from requests.auth import HTTPBasicAuth
-
-from metax_access.utils import remove_redundant_dirs
 
 DS_STATE_INITIALIZED = 0
 DS_STATE_PROPOSED_FOR_DIGITAL_PRESERVATION = 10
@@ -621,30 +617,10 @@ class Metax:
 
         :returns: total count of files
         """
-        def _is_relative_to(a, b):
-            """
-            Is the path A relative to B
-            """
-            try:
-                PurePath(a).relative_to(b)
-                return True
-            except ValueError:
-                return False
-
-        url = f"{self.baseurl}/datasets/{dataset_id}"
+        url = f"{self.baseurl}/datasets/{dataset_id}/files"
 
         response = self.get(
-            url,
-            params={
-                "include_user_metadata": "true",
-                # This adds 'file_count' for directories
-                "file_details": "true",
-                # Remove irrelevant fields
-                "file_fields": "file_path,project_identifier",
-                "directory_fields": (
-                    "file_count,directory_path,project_identifier"
-                )
-            },
+            url, params={"file_fields": "id"},
             allowed_status_codes=[404]
         )
 
@@ -652,77 +628,7 @@ class Metax:
             raise DatasetNotAvailableError
 
         result = response.json()
-
-        directories = result["research_dataset"].get("directories", [])
-        files = result["research_dataset"].get("files", [])
-
-        counted_files = defaultdict(list)
-        project_path_counts = defaultdict(dict)
-
-        # First, count the files.
-        # If we later find the containing directory, we want the new file
-        # count to overwrite the one we create now to avoid counting
-        # files more than once.
-        for file in files:
-            details = file["details"]
-            project_id = details["project_identifier"]
-            dir_path = str(PurePath(details["file_path"]).parent)
-
-            counted_files[project_id].append(dir_path)
-
-        # Second, count how many files per (project_id, dir_path) pair.
-        # If we found a file in the same directory in the previous file entry
-        # iteration, it will be overwritten here to prevent a file from being
-        # counted twice.
-        for directory in directories:
-            details = directory["details"]
-            project_id = details["project_identifier"]
-            dir_path = details["directory_path"]
-            project_path_counts[project_id][dir_path] = details["file_count"]
-
-        total_file_count = 0
-
-        # Third, eliminate redundant paths inside each project and count the
-        # directories.
-        # For example, if we have two directories with file counts
-        #
-        # ("test_project", "/foo/bar"): 2
-        # ("test_project", "/foo"): 3
-        #
-        # we only want to count "/foo" to avoid counting files more than
-        # once
-        for project_id in project_path_counts:
-            paths_to_count = set(
-                remove_redundant_dirs(
-                    list(project_path_counts[project_id].keys())
-                )
-            )
-
-            for path in project_path_counts[project_id]:
-                if path not in paths_to_count:
-                    continue
-
-                total_file_count += project_path_counts[project_id][path]
-
-        # Finally, count the files but only if they weren't covered by one
-        # of the directories already.
-        for project_id in counted_files:
-            for file_path in counted_files[project_id]:
-                # Is this file already covered by one of the directories?
-                directory_paths = list(project_path_counts[project_id].keys())
-
-                # TODO: This loop is a bit ugly and introduces O(n^2)
-                # complexity. Is there a better way to do this?
-                already_counted = False
-                for dir_path in directory_paths:
-                    if _is_relative_to(file_path, dir_path):
-                        already_counted = True
-                        break
-
-                if not already_counted:
-                    total_file_count += 1
-
-        return total_file_count
+        return len(result)
 
     def get_dataset_files(self, dataset_id):
         """Get files metadata of dataset Metax.

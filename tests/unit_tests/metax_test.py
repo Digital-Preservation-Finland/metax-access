@@ -155,80 +155,43 @@ def test_get_dataset_filetypes(requests_mock):
 
 
 def test_get_dataset_file_count(requests_mock):
-    """
-    Test retrieving the total file count for a dataset
-    """
+    """Test retrieving the total file count for a dataset"""
     def _request_has_correct_params(req):
-        return (
-            req.qs["include_user_metadata"] == ["true"]
-            and req.qs["file_details"] == ["true"]
-            and req.qs["file_fields"]
-            == ["file_path,project_identifier"]
-            and req.qs["directory_fields"]
-            == ["file_count,directory_path,project_identifier"]
-        )
+        return req.qs["file_fields"] == ["id"]
 
     requests_mock.get(
-        f"{METAX_REST_URL}/datasets/fake-dataset",
+        f"{METAX_REST_URL}/datasets/fake-dataset/files",
         additional_matcher=_request_has_correct_params,
-        json={
-            "identifier": "fake-dataset",
-            "research_dataset": {
-                "directories": [
-                    {
-                        # This won't be counted because of the parent
-                        # directory
-                        "details": {
-                            "directory_path": "/foo/bar",
-                            "file_count": 2,
-                            "project_identifier": "test_project"
-                        }
-                    },
-                    {
-                        "details": {
-                            "directory_path": "/foo",
-                            "file_count": 3,
-                            "project_identifier": "test_project"
-                        }
-                    },
-                    {
-                        "details": {
-                            "directory_path": "/bar/bare/bear/beer",
-                            "file_count": 5,
-                            "project_identifier": "another_project"
-                        }
-                    }
-                ],
-                "files": [
-                    {
-                        "details": {
-                            "file_path": "/bar/bare/test.txt",
-                            "project_identifier": "another_project"
-                        }
-                    },
-                    {
-                        "details": {
-                            # This won't be counted because it's already
-                            # part of the directory '/bar/bare/bear/beer'
-                            "file_path": "/bar/bare/bear/beer/test.txt",
-                            "project_identifier": "another_project"
-                        }
-                    },
-                    {
-                        "details": {
-                            # This *is* counted because it's
-                            # part of another project
-                            "file_path": "/bar/bare/bear/beer/test2.txt",
-                            "project_identifier": "yet_another_project"
-                        }
-                    }
-                ]
+        json=[
+            {
+                "id": 1
+            },
+            {
+                "id": 3
+            },
+            {
+                "id": 10
             }
-        }
+        ]
     )
 
     file_count = METAX_CLIENT.get_dataset_file_count("fake-dataset")
-    assert file_count == 10
+    assert file_count == 3
+
+
+def test_get_dataset_file_count_not_found(requests_mock):
+    """
+    Test retrieving the total file count for a dataset and ensure that
+    DatasetNotAvailableError is raised if the dataset does not exist.
+    """
+    requests_mock.get(
+        f"{METAX_REST_URL}/datasets/does-not-exist/files",
+        additional_matcher=lambda req: req.qs["file_fields"] == ["id"],
+        status_code=404
+    )
+
+    with pytest.raises(DatasetNotAvailableError):
+        METAX_CLIENT.get_dataset_file_count("does-not-exist")
 
 
 def test_patch_dataset(requests_mock):
