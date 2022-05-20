@@ -45,7 +45,7 @@ class MetaxError(Exception):
 
     def __init__(self, message="Metax error", response=None):
         """Init MetaxError."""
-        super(MetaxError, self).__init__(message)
+        super().__init__(message)
         self.message = message
         self.response = response
 
@@ -55,7 +55,7 @@ class ResourceNotAvailableError(MetaxError):
 
     def __init__(self, message="Resource not found"):
         """Init ResourceNotAvailableError."""
-        super(ResourceNotAvailableError, self).__init__(message)
+        super().__init__(message)
 
 
 class ResourceAlreadyExistsError(MetaxError):
@@ -67,8 +67,7 @@ class ResourceAlreadyExistsError(MetaxError):
         :param message: error message
         :param dict errors: Key-value pairs that caused the exception
         """
-        super(ResourceAlreadyExistsError, self).__init__(message,
-                                                         response=response)
+        super().__init__(message, response=response)
 
 
 class FileNotAvailableError(ResourceNotAvailableError):
@@ -76,7 +75,7 @@ class FileNotAvailableError(ResourceNotAvailableError):
 
     def __init__(self):
         """Init FileNotAvailableError."""
-        super(FileNotAvailableError, self).__init__("File not found")
+        super().__init__("File not found")
 
 
 class DatasetNotAvailableError(ResourceNotAvailableError):
@@ -84,7 +83,7 @@ class DatasetNotAvailableError(ResourceNotAvailableError):
 
     def __init__(self):
         """Init DatasetNotAvailableError."""
-        super(DatasetNotAvailableError, self).__init__("Dataset not found")
+        super().__init__("Dataset not found")
 
 
 class ContractNotAvailableError(ResourceNotAvailableError):
@@ -92,7 +91,7 @@ class ContractNotAvailableError(ResourceNotAvailableError):
 
     def __init__(self):
         """Init ContractNotAvailableError."""
-        super(ContractNotAvailableError, self).__init__("Contract not found")
+        super().__init__("Contract not found")
 
 
 class DataCatalogNotAvailableError(ResourceNotAvailableError):
@@ -100,9 +99,7 @@ class DataCatalogNotAvailableError(ResourceNotAvailableError):
 
     def __init__(self):
         """Init DataCatalogNotAvailableError."""
-        super(DataCatalogNotAvailableError, self).__init__(
-            "Datacatalog not found"
-        )
+        super().__init__("Datacatalog not found")
 
 
 class DirectoryNotAvailableError(ResourceNotAvailableError):
@@ -110,7 +107,7 @@ class DirectoryNotAvailableError(ResourceNotAvailableError):
 
     def __init__(self):
         """Init DirectoryNotAvailableError."""
-        super(DirectoryNotAvailableError, self).__init__('Directory not found')
+        super().__init__('Directory not found')
 
 
 class DataciteGenerationError(MetaxError):
@@ -118,11 +115,11 @@ class DataciteGenerationError(MetaxError):
 
     def __init__(self, message="Datacite generation failed in Metax"):
         """Init DataciteGenerationError."""
-        super(DataciteGenerationError, self).__init__(message)
+        super().__init__(message)
 
 
 # pylint: disable=too-many-public-methods
-class Metax(object):
+class Metax:
     """Get metadata from metax as dict object."""
 
     # pylint: disable=too-many-arguments

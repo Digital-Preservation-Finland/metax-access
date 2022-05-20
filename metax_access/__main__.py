@@ -98,7 +98,7 @@ def post(metax_client, resource, filepath, output):
     FILEPATH.
     """
     # Read metadata file
-    with open(filepath, "rt") as open_file:
+    with open(filepath) as open_file:
         data = json.load(open_file)
 
     funcs = {
@@ -180,7 +180,7 @@ def patch(metax_client, resource, identifier, filepath, output):
     dataset or contract metadata. The resource is identified by
     IDENTIFIER.
     """
-    with open(filepath, "rt") as open_file:
+    with open(filepath) as open_file:
         data = json.load(open_file)
 
     funcs = {

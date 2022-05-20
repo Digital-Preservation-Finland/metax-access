@@ -1,4 +1,3 @@
-# coding=utf-8
 # pylint: disable=no-member
 """Tests for ``metax_access.metax`` module."""
 import json
