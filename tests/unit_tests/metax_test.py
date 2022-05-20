@@ -1,11 +1,7 @@
 # pylint: disable=no-member
 """Tests for ``metax_access.metax`` module."""
 import json
-try:
-    from contextlib import ExitStack as does_not_raise
-except ImportError:
-    # Python2
-    from contextlib2 import ExitStack as does_not_raise
+from contextlib import ExitStack as does_not_raise
 from urllib.parse import quote
 
 import lxml.etree

@@ -5,7 +5,6 @@ pytest-cov
 mock
 Sphinx==1.7.9
 requests_mock
-contextlib2; python_version <= '3.3'
 
 # Install requirements
 lxml
