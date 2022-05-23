@@ -1,4 +1,3 @@
-#
 # metax_access documentation build configuration file, created by
 # sphinx-quickstart on Mon Oct 30 13:59:40 2017.
 #
