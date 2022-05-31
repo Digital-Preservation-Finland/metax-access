@@ -4,9 +4,26 @@ Library for accessing Metax.
 
 Installation
 ------------
-Clone this repository and install with pip::
 
-   pip install ./metax-access/
+Installation and usage requires 3.6 or newer.
+The software is tested with Python 3.6 on Centos 7.x release.
+
+Create a virtual environment::
+
+   python3 -m venv venv
+
+Run the following to activate the virtual environment::
+
+   source venv/bin/activate
+
+Install the required software with commands::
+
+   pip install --upgrade pip
+   pip install -r requirements_dev.txt
+   pip install .
+
+To deactivate the virtual environment, run ``deactivate``. To reactivate it, run the ``source`` command above.
+
 
 Usage
 -----
@@ -33,20 +50,7 @@ For more information see::
 Testing
 -------
 
-Create and activate virtualenv::
-
-   python3 -m venv venv
-   source venv/bin/activate
-
-Upgrade pip::
-
-   pip install --upgrade pip
-
-Install required python packages for testing::
-
-   pip install -r requirements_dev.txt
-
-Run tests::
+Run tests with::
 
    python3 -m pytest tests/
 
