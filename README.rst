@@ -18,7 +18,7 @@ Run the following to activate the virtual environment::
 
 Install the required software with commands::
 
-   pip install --upgrade pip
+   pip install --upgrade pip setuptools
    pip install -r requirements_dev.txt
    pip install .
 
