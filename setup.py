@@ -1,8 +1,6 @@
 """Install metax-access package."""
 from setuptools import setup, find_packages
 
-from version import get_version
-
 
 def main():
     """Install metax-access."""
@@ -11,7 +9,8 @@ def main():
         packages=find_packages(exclude=['tests', 'tests.*']),
         include_package_data=True,
         python_requires='>=3.6',
-        version=get_version(),
+        setup_requires=['setuptools_scm'],
+        use_scm_version=True,
         data_files=[('etc', ['include/etc/metax.cfg'])],
         install_requires=[
             "requests",
