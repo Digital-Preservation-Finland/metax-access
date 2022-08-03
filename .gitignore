@@ -10,3 +10,4 @@ doc/modules/
 .tox
 junit.xml
 .cache/
+.eggs/

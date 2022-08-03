@@ -137,6 +137,7 @@ class Metax:
         self.username = user
         self.password = password
         self.token = token
+        self.url = url
         self.baseurl = f'{url}/rest/v2'
         self.rpcurl = f'{url}/rpc/v2'
         self.verify = verify
@@ -204,6 +205,32 @@ class Metax:
         url = f"{self.baseurl}/datasets"
         response = self.get(url, params=param_dict)
 
+        return response.json()
+
+    def get_datasets_by_ids(
+            self, dataset_ids, limit=1000000, offset=0, fields=None):
+        """Get datasets with given IDs.
+
+        :param list dataset_ids: Dataset identifiers
+        :param limit: Max number of datasets to return
+        :param offset: Offset for paging
+        :param list fields: Optional list of fields to retrieve for each
+                            dataset. If not set, all fields are retrieved.
+        :returns: List of found datasets
+        """
+        # Contrary to all other API commands, the "list datasets with IDs"
+        # endpoint is found under "<metax>/rest/datasets/list"
+        # (ie. no API version in the path)
+        url = f"{self.url}/rest/datasets/list"
+
+        params = {
+            "limit": str(limit),
+            "offset": str(offset)
+        }
+        if fields:
+            params["fields"] = ",".join(fields)
+
+        response = self.post(url, json=dataset_ids, params=params)
         return response.json()
 
     def get_contracts(self, limit="1000000", offset="0", org_filter=None):

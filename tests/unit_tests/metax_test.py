@@ -21,6 +21,7 @@ from metax_access.metax import (
 )
 
 METAX_URL = 'https://foobar'
+METAX_REST_ROOT_URL = f'{METAX_URL}/rest'
 METAX_REST_URL = f'{METAX_URL}/rest/v2'
 METAX_RPC_URL = f'{METAX_URL}/rpc/v2'
 METAX_USER = 'tpas'
@@ -724,6 +725,65 @@ def test_query_datasets(requests_mock):
     )
     datasets = METAX_CLIENT.query_datasets({'preferred_identifier': 'foobar'})
     assert len(datasets["results"]) == 1
+
+
+def test_get_dataset_by_ids(requests_mock):
+    """Test ``get_datasets_by_ids`` function.
+
+    Test that correct results are returned depending on whether specific
+    fields are requested.
+    """
+    requests_mock.post(
+        f"{METAX_REST_ROOT_URL}/datasets/list?limit=1000000&offset=0",
+        additional_matcher=lambda req: json.loads(req.body) == [1, 3],
+        json={
+            "count": 2,
+            "next": None,
+            "previous": None,
+            "results": [
+                {
+                    "id": 1,
+                    "project_identifier": "blah",
+                    "research_dataset": {"title": "Dataset 1"}
+                },
+                {
+                    "id": 3,
+                    "project_identifier": "bleh",
+                    "research_dataset": {"title": "Dataset 3"}
+                }
+            ]
+        }
+    )
+    requests_mock.post(
+        f"{METAX_REST_ROOT_URL}/datasets/list"
+        "?fields=id,project_identifier&limit=1000000&offset=0",
+        additional_matcher=lambda req: json.loads(req.body) == [1, 3],
+        json={
+            "count": 2,
+            "next": None,
+            "previous": None,
+            "results": [
+                {
+                    "id": 1,
+                    "project_identifier": "blah"
+                },
+                {
+                    "id": 3,
+                    "project_identifier": "bleh"
+                }
+            ]
+        }
+    )
+
+    response = METAX_CLIENT.get_datasets_by_ids([1, 3])
+    assert len(response["results"]) == 2
+    assert response["results"][0]["research_dataset"]["title"] == "Dataset 1"
+
+    # Only retrieve 'id' and 'project_identifier' fields
+    response = METAX_CLIENT.get_datasets_by_ids(
+        [1, 3], fields=["id", "project_identifier"]
+    )
+    assert "research_dataset" not in response["results"][0]
 
 
 def test_get_files_dict(requests_mock):
