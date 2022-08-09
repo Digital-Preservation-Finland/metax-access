@@ -696,6 +696,15 @@ class Metax:
         url = f"{self.baseurl}/files/datasets?keys=files"
         response = self.post(url, json=file_ids)
 
+        result = response.json()
+
+        if not result:
+            # Metax API always returns an empty list if there are no results,
+            # even if the response would otherwise be a dictionary.
+            # Take care of this inconsistency by returning an empty dict
+            # instead.
+            return {}
+
         return response.json()
 
     def delete_file(self, file_id):
