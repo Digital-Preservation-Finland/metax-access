@@ -828,7 +828,7 @@ class Metax:
         """Get directory of project by path.
 
         :param str project: project identifier of the directory
-        :param str project: path of the directory
+        :param str path: path of the directory
         :returns: directory metadata
         """
         url = f'{self.baseurl}/directories/files'
@@ -845,6 +845,23 @@ class Metax:
         metadata = response.json()
         del metadata['directories']
         return metadata
+
+    def get_project_file(self, project, path):
+        """Get file of project by path.
+
+        :param str project: project identifier of the file
+        :param str path: path of the file
+        :returns: directory metadata
+        """
+        url = f'{self.baseurl}/files'
+        response = self.get(url, params={'file_path': path,
+                                         'project_identifier': project})
+
+        files = response.json()['results']
+        if not files:
+            raise FileNotAvailableError
+
+        return response.json()['results'][0]
 
     def request(self, method, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP request.

@@ -816,6 +816,30 @@ def test_get_project_directory(requests_mock):
     assert requests_mock.last_request.qs['directories_only'] == ['true']
 
 
+def test_get_project_file(requests_mock):
+    """Test get_project_file function.
+
+    :param requets_mock: HTTP request mocker
+    """
+    requests_mock.get(
+        METAX_REST_URL + "/files",
+        json={
+            "count": 1,
+            "next": None,
+            "previous": None,
+            "results": [
+                {
+                    "identifier": "bar",
+                }
+            ]
+        }
+    )
+    assert METAX_CLIENT.get_project_file('foo', '/testdir/testfile', ) \
+        == {'identifier': 'bar'}
+    assert requests_mock.last_request.qs['project_identifier'] == ['foo']
+    assert requests_mock.last_request.qs['file_path'] == ['/testdir/testfile']
+
+
 @pytest.mark.parametrize(
     ['method', 'parameters', 'url'],
     [
