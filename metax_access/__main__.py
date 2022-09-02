@@ -243,7 +243,8 @@ def file_datasets(metax_client, identifier):
     print_response(metax_client.get_file_datasets(identifier))
 
 
-if __name__ == "__main__":
+def main():
+    """Execute CLI and deal with HTTP errors."""
     try:
         # pylint: disable=no-value-for-parameter
         cli()
@@ -259,3 +260,7 @@ if __name__ == "__main__":
             print_response(exception.response.json())
         except ValueError:
             click.echo(exception.response.data)
+
+
+if __name__ == "__main__":
+    main()

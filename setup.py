@@ -19,7 +19,7 @@ def main():
         ],
         entry_points={
             'console_scripts': [
-                'metax_access = metax_access.__main__:cli'
+                'metax_access = metax_access.__main__:main'
             ]
         }
     )
