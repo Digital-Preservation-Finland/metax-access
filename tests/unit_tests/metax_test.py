@@ -16,7 +16,8 @@ from metax_access.metax import (
     DirectoryNotAvailableError,
     DataCatalogNotAvailableError,
     DataciteGenerationError,
-    ResourceAlreadyExistsError
+    ResourceAlreadyExistsError,
+    FileNotAvailableError
 )
 
 METAX_URL = 'https://foobar'
@@ -816,9 +817,22 @@ def test_get_project_directory(requests_mock):
     assert requests_mock.last_request.qs['directories_only'] == ['true']
 
 
-def test_get_project_file(requests_mock):
+@pytest.mark.parametrize(
+    'results',
+    (
+        [
+            {"file_path": "/testdir/testfile", "identifier": "correct_file"}
+        ],
+        [
+            {"file_path": "/testdir/testfile/foo", "identifier": "wrong_file"},
+            {"file_path": "/testdir/testfile", "identifier": "correct_file"}
+        ]
+    )
+)
+def test_get_project_file(results, requests_mock):
     """Test get_project_file function.
 
+    :param results: Matching files in Metax
     :param requets_mock: HTTP request mocker
     """
     requests_mock.get(
@@ -827,17 +841,44 @@ def test_get_project_file(requests_mock):
             "count": 1,
             "next": None,
             "previous": None,
-            "results": [
-                {
-                    "identifier": "bar",
-                }
-            ]
+            "results": results
         }
     )
-    assert METAX_CLIENT.get_project_file('foo', '/testdir/testfile', ) \
-        == {'identifier': 'bar'}
+    assert METAX_CLIENT.get_project_file(
+        'foo', '/testdir/testfile'
+    )['identifier'] == 'correct_file'
     assert requests_mock.last_request.qs['project_identifier'] == ['foo']
     assert requests_mock.last_request.qs['file_path'] == ['/testdir/testfile']
+
+
+@pytest.mark.parametrize(
+    'results',
+    (
+        # One match is found, but it is not exact match
+        [
+            {"file_path": "/testdir/testfile/foo", "identifier": "foo"}
+        ],
+        # No matches found
+        []
+    )
+)
+def test_get_project_file_not_found(results, requests_mock):
+    """Test searching file_path that is not available.
+
+    :param results: Matching files in Metax
+    :param requets_mock: HTTP request mocker
+    """
+    requests_mock.get(
+        METAX_REST_URL + "/files",
+        json={
+            "count": 1,
+            "next": None,
+            "previous": None,
+            "results": results
+        }
+    )
+    with pytest.raises(FileNotAvailableError):
+        METAX_CLIENT.get_project_file('foo', '/testdir/testfile')
 
 
 @pytest.mark.parametrize(

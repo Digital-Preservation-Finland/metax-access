@@ -857,11 +857,16 @@ class Metax:
         response = self.get(url, params={'file_path': path,
                                          'project_identifier': project})
 
-        files = response.json()['results']
-        if not files:
+        result = None
+        for file in response.json()['results']:
+            if file['file_path'] == path:
+                result = file
+                break
+
+        if not result:
             raise FileNotAvailableError
 
-        return response.json()['results'][0]
+        return result
 
     def request(self, method, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP request.
