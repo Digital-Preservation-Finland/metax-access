@@ -860,7 +860,7 @@ class Metax:
         try:
             return next(
                 file for file in response.json()['results']
-                if file['file_path'] == path
+                if file['file_path'].strip('/') == path.strip('/')
             )
         except StopIteration:
             raise FileNotAvailableError

@@ -818,20 +818,29 @@ def test_get_project_directory(requests_mock):
 
 
 @pytest.mark.parametrize(
-    'results',
-    (
-        [
-            {"file_path": "/testdir/testfile", "identifier": "correct_file"}
-        ],
-        [
-            {"file_path": "/testdir/testfile/foo", "identifier": "wrong_file"},
-            {"file_path": "/testdir/testfile", "identifier": "correct_file"}
-        ]
-    )
+    'file_path,results',
+    [
+        # Only one matching file in Metax
+        (
+            '/dir/file',
+            [{"file_path": "/dir/file"}],
+        ),
+        # Two matching files in Metax. First one is not exact match.
+        (
+            '/dir/file',
+            [{"file_path": "/dir/file/foo"}, {"file_path": "/dir/file"}]
+        ),
+        # file_path without leading '/' should work as well
+        (
+            'dir/file',
+            [{"file_path": "/dir/file"}],
+        )
+    ]
 )
-def test_get_project_file(results, requests_mock):
+def test_get_project_file(file_path, results, requests_mock):
     """Test get_project_file function.
 
+    :param file_path: Path of file to get
     :param results: Matching files in Metax
     :param requets_mock: HTTP request mocker
     """
@@ -844,11 +853,10 @@ def test_get_project_file(results, requests_mock):
             "results": results
         }
     )
-    assert METAX_CLIENT.get_project_file(
-        'foo', '/testdir/testfile'
-    )['identifier'] == 'correct_file'
+    assert METAX_CLIENT.get_project_file("foo", file_path)["file_path"] \
+        == "/dir/file"
     assert requests_mock.last_request.qs['project_identifier'] == ['foo']
-    assert requests_mock.last_request.qs['file_path'] == ['/testdir/testfile']
+    assert requests_mock.last_request.qs['file_path'] == [file_path]
 
 
 @pytest.mark.parametrize(
