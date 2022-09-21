@@ -245,6 +245,22 @@ def file_datasets(metax_client, identifier):
     print_response(metax_client.get_file_datasets(identifier))
 
 
+@cli.command('search-datasets')
+@click.argument('query')
+@click.pass_obj
+def search_datasets(metax_client, query):
+    """Search datasets using query parameters.
+
+    QUERY should be a JSON formatted string that contains the query
+    parameters. See
+
+    https://metax.fairdata.fi/swagger/v1#/Dataset%20API/get_rest_datasets
+
+    for more information about the query parameters.
+    """
+    print_response(metax_client.query_datasets(json.loads(query)))
+
+
 def main():
     """Execute CLI and deal with HTTP errors."""
     try:
