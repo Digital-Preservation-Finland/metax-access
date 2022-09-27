@@ -245,20 +245,40 @@ def file_datasets(metax_client, identifier):
     print_response(metax_client.get_file_datasets(identifier))
 
 
-@cli.command('search-datasets')
-@click.argument('query')
-@click.pass_obj
-def search_datasets(metax_client, query):
+@cli.command(
+    'search-datasets',
+    context_settings=dict(
+        ignore_unknown_options=True,
+        allow_extra_args=True,
+    )
+)
+@click.pass_context
+def search_datasets(ctx):
     """Search datasets using query parameters.
 
-    QUERY should be a JSON formatted string that contains the query
-    parameters. See
+    Any given aptions are used as query parameters. See
 
     https://metax.fairdata.fi/swagger/v1#/Dataset%20API/get_rest_datasets
 
-    for more information about the query parameters.
+    for more information about the query parameters. Note that Metax
+    will ignore unknown query parameters .
     """
-    print_response(metax_client.query_datasets(json.loads(query)))
+    # TODO: Metax will ignore unknown query parameters. Throwing an
+    # error would be more user friendly.
+
+    # convert argument list to dictionary
+    query = {}
+    args = iter(ctx.args)
+    for arg in args:
+        if not arg.startswith('--'):
+            raise ValueError(f'Unknown argument {arg}')
+        try:
+            query[arg.strip('--')] = next(args)
+        except StopIteration:
+            raise ValueError(f'Missing value for option {arg}') \
+                from StopIteration
+
+    print_response(ctx.obj.query_datasets(query))
 
 
 def main():
