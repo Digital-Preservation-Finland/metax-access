@@ -42,6 +42,8 @@ def print_response(dictionary, fpath=None):
 @click.option('-u', '--user', help="Metax username.")
 @click.option('-p', '--password', help="Metax password.")
 @click.option('-t', '--token', help="Bearer token.")
+@click.option('--verify/--no-verify', help="Verify SSL certificate.",
+              default=True)
 @click.pass_context
 def cli(ctx, config, **kwargs):
     """Manage metadata in Metax."""
@@ -66,7 +68,7 @@ def cli(ctx, config, **kwargs):
 
     # Override default configuration with CLI arguments
     for key, value in kwargs.items():
-        if value:
+        if value is not None:
             metax_config[key] = value
 
     # Init metax client
