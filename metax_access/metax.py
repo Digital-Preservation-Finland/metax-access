@@ -534,13 +534,11 @@ class Metax:
 
         return False
 
-    def set_preservation_state(self, dataset_id, state=None,
-                               user_description=None,
-                               system_description=None):
+    def set_preservation_state(self, dataset_id, state, description):
         """Set preservation state of dataset.
 
-        Sets values of `preservation_state`, `preservation_state_description`
-        and `preservation_description` for dataset in Metax.
+        Sets values of `preservation_state` and
+        `preservation_description` for dataset in Metax.
 
         0 = Initialized
         10 = Proposed for digital preservation
@@ -561,21 +559,15 @@ class Metax:
 
         :param str dataset_id: id or identifier attribute of dataset in Metax
         :param int state: The value for `preservation_state`
-        :param str user_description: The value for
-                                     `preservation_reason_description`
-        :param str system_description: The value for `preservation_description`
+        :param str description: The value for `preservation_description`
         :returns: ``None``
         """
         url = f'{self.baseurl}/datasets/{dataset_id}'
         dataset = self.get_dataset(dataset_id)
         data = {
             'preservation_state': state,
-            'preservation_reason_description': user_description,
-            'preservation_description': system_description
+            'preservation_description': description
         }
-
-        # Remove "None" values
-        data = {key: value for key, value in data.items() if value is not None}
 
         # Remove unchanged keys/value pairs to avoid
         # modifying preservation_state_timestamp
@@ -584,6 +576,18 @@ class Metax:
 
         if data:
             self.patch(url, json=data)
+
+    def set_preservation_reason(self, dataset_id, reason):
+        """Set preservation reason of dataset.
+
+        Sets value of `preservation_description` for dataset in Metax.
+
+        :param str dataset_id: id or identifier attribute of dataset in Metax
+        :param str reason: The value for `preservation_reason_description`
+        :returns: ``None``
+        """
+        url = f'{self.baseurl}/datasets/{dataset_id}'
+        self.patch(url, json={'preservation_reason_description': reason})
 
     def patch_file(self, file_id, data):
         """Patch file metadata.

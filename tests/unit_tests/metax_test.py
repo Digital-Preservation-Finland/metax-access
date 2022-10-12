@@ -1,6 +1,5 @@
 # pylint: disable=no-member
 """Tests for ``metax_access.metax`` module."""
-import json
 from contextlib import ExitStack as does_not_raise
 from urllib.parse import quote
 
@@ -219,7 +218,7 @@ def test_patch_dataset(requests_mock):
     METAX_CLIENT.patch_dataset('test_id', update)
     assert requests_mock.last_request.method == 'PATCH'
 
-    request_body = json.loads(requests_mock.last_request.body)
+    request_body = requests_mock.last_request.json()
     assert isinstance(request_body['research_dataset']['provenance'], list)
     assert request_body['research_dataset']['foo2'] == 'bar2'
     assert request_body['foo1'] == 'bar1'
@@ -393,12 +392,12 @@ def test_set_preservation_state(requests_mock):
 
     METAX_CLIENT.set_preservation_state(
         "test_id",
-        state=DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
-        system_description='Accepted to preservation'
+        DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
+        'Accepted to preservation'
     )
 
     # Check the body of last HTTP request
-    request_body = json.loads(requests_mock.last_request.body)
+    request_body = requests_mock.last_request.json()
     assert request_body["preservation_state"] ==\
         DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE
     assert request_body["preservation_description"] \
@@ -406,6 +405,23 @@ def test_set_preservation_state(requests_mock):
 
     # Check the method of last HTTP request
     assert requests_mock.last_request.method == 'PATCH'
+
+
+def test_set_preservation_reason(requests_mock):
+    """Test ``set_preservation_reason`` method.
+
+    Test that the method sends correct PATCH request to Metax.
+
+    :returns: ``None``
+    """
+    requests_mock.patch(METAX_REST_URL + '/datasets/test_id')
+
+    METAX_CLIENT.set_preservation_reason("test_id", 'The reason.')
+
+    # Check the method of last HTTP request
+    assert requests_mock.last_request.method == 'PATCH'
+    assert requests_mock.last_request.json() \
+        == {'preservation_reason_description': 'The reason.'}
 
 
 def test_patch_file(requests_mock):
@@ -432,7 +448,7 @@ def test_patch_file(requests_mock):
     assert METAX_CLIENT.patch_file('test_id', sample_data) == {'foo': 'bar'}
 
     # Check the body of last HTTP request
-    request_body = json.loads(requests_mock.last_request.body)
+    request_body = requests_mock.last_request.json()
     assert request_body == sample_data
 
     # Check the method of last HTTP request
@@ -735,7 +751,7 @@ def test_get_dataset_by_ids(requests_mock):
     """
     requests_mock.post(
         f"{METAX_REST_ROOT_URL}/datasets/list?limit=1000000&offset=0",
-        additional_matcher=lambda req: json.loads(req.body) == [1, 3],
+        additional_matcher=lambda req: req.json() == [1, 3],
         json={
             "count": 2,
             "next": None,
@@ -757,7 +773,7 @@ def test_get_dataset_by_ids(requests_mock):
     requests_mock.post(
         f"{METAX_REST_ROOT_URL}/datasets/list"
         "?fields=id,project_identifier&limit=1000000&offset=0",
-        additional_matcher=lambda req: json.loads(req.body) == [1, 3],
+        additional_matcher=lambda req: req.json() == [1, 3],
         json={
             "count": 2,
             "next": None,
@@ -998,7 +1014,7 @@ def test_get_file2dataset_dict(requests_mock):
         f"{METAX_REST_URL}/files/datasets",
         json={"161bc25962da8fed6d2f59922fb642": ["urn:dataset:aaffaaff"]},
         # Ensure the request body has the requested file IDs
-        additional_matcher=lambda req: json.loads(req.body) == [10, 20]
+        additional_matcher=lambda req: req.json() == [10, 20]
     )
     result = METAX_CLIENT.get_file2dataset_dict([10, 20])
 
@@ -1095,7 +1111,7 @@ def test_set_preservation_state_http_503(requests_mock):
     requests_mock.get(METAX_REST_URL + '/datasets/foobar', json={})
     requests_mock.patch(METAX_REST_URL + '/datasets/foobar', status_code=503)
     with pytest.raises(requests.HTTPError) as error:
-        METAX_CLIENT.set_preservation_state('foobar', '10', 'foo', 'bar')
+        METAX_CLIENT.set_preservation_state('foobar', '10', 'foo')
     assert error.value.response.status_code == 503
 
 
