@@ -217,3 +217,33 @@ def test_output(tmpdir, monkeypatch, cli_invoke):
 
     # Check that JSON output was written to file
     assert json.loads(output_file.read())['foo'] == 'bar'
+
+
+@pytest.mark.parametrize(
+    ['arguments', 'mock_url_query_string'],
+    [
+        (
+            ['--metadata-owner-org', 'CSC'],
+            'metadata_owner_org=CSC',
+        ),
+        (
+            ['--latest'],
+            'latest=true',
+        ),
+        (
+            ['--owner-id', 'owner_id', '--data-catalog', 'catalog_id'],
+            'owner_id=owner_id&data_catalog=catalog_id',
+        )
+    ]
+)
+def test_searching_dataset(
+    cli_invoke, requests_mock, arguments, mock_url_query_string,
+):
+    """Test searching datasets with different filters."""
+    mocker = requests_mock.get(
+        f'https://metax.localhost/rest/v2/datasets?{mock_url_query_string}',
+        json={}
+    )
+
+    cli_invoke(['search-datasets'] + arguments)
+    assert mocker.called

@@ -245,40 +245,152 @@ def file_datasets(metax_client, identifier):
     print_response(metax_client.get_file_datasets(identifier))
 
 
-@cli.command(
-    'search-datasets',
-    context_settings=dict(
-        ignore_unknown_options=True,
-        allow_extra_args=True,
+@cli.command('search-datasets')
+@click.option(
+    '--latest', is_flag=True,
+    help="Only return latest versions."
+)
+@click.option(
+    '--owner-id',
+    help="Id of the person who owns the record in Metax."
+)
+@click.option(
+    '--user-created',
+    help='Id of the person who created the record in metax'
+)
+@click.option(
+    '--curator',
+    help='Curator identifier (field research_dataset-> curator-> identifier)'
+)
+@click.option(
+    '--preferred-identifier',
+    help=(
+        'Use given preferred_identifier as filter. Returns a best guess of '
+        'the record (always a single record!), by looking from Fairdata '
+        'catalogs first, then from harvested catalogs. If the value of '
+        'preferred_identifier contains special characters such as ampersands, '
+        'the value has to be urlencoded.'
     )
 )
-@click.pass_context
-def search_datasets(ctx):
-    """Search datasets using query parameters.
+@click.option(
+    '--state',
+    help=(
+        'TPAS state (field preservation_state). Multiple states using '
+        'OR-logic are queriable in the same request, e.g. state=5,6. See '
+        'valid values from http://iow.csc.fi/model/mrd/CatalogRecord/ field '
+        'preservation_state'
+    )
+)
+@click.option(
+    '--metadata-owner-org',
+    help='Filter by dataset field metadata_owner_org'
+)
+@click.option(
+    '--metadata-provider-user',
+    help='Filter by dataset field metadata_provider_user'
+)
+@click.option(
+    '--contract-org-identifier',
+    help=(
+        'Filter by dataset '
+        'contract.contract_json.organization.organization_identifier. '
+        'Restricted to permitted users.'
+    )
+)
+@click.option(
+    '--pas-filter',
+    help=(
+        "A specific filter that targets the following fields; "
+        "research_dataset['title'], research_dataset['curator'][n]['name'], "
+        "contract['contract_json']['title']. Restricted to permitted users."
+    )
+)
+@click.option(
+    '--data-catalog',
+    help='Filter by data catalog urn identifier'
+)
+@click.option(
+    '--offset', type=int,
+    help='Offset for paging'
+)
+@click.option(
+    '--limit', type=int,
+    help='Limit for paging'
+)
+@click.option(
+    '--ordering',
+    help=(
+        "Specify ordering of results by fields. Accepts a list of field names "
+        "separated by a comma. Ordering can be reversed by prefixing field "
+        "name with a '-' char."
+    )
+)
+@click.option(
+    '--actor-filter',
+    help=(
+        "Actor_filters are a collection of filter parameters for filtering "
+        "according to the name or organizational/person ID of creator, "
+        "curator, publisher or rights_holder actors. Actor type must be "
+        "defined as a suffix in the filter name ('_person' or "
+        "'_organization'). Actor type '_organization' finds matches from "
+        "'is_member_of' -field if actor is a person. Multiple actor_filters "
+        "can be applied simultaneously (AND) or separately (OR) by using "
+        "'condition_separator'. Default separator is AND. If filtered by "
+        "organizational/person ID, search needs to be made using complete "
+        "IDs. Complete person IDs consist of 19 characters matching the "
+        "following pattern: 0000-0002-1825-0097. Complete organizational IDs "
+        "consist of at least 5 characters, the 5 first characters always "
+        "being numbers (e.g. 00170 or 01901-H960). Examples: "
+        "'?creator_person=person_name', "
+        "'?creator_organization=organizational_id', "
+        "'?publisher_organization=someorganisation&creator_person=person_name&"
+        "condition_separator=or'"
+    )
+)
+@click.option(
+    '--api-version', type=int,
+    help=(
+        'Returns datasets that can be edited with certain api version. '
+        'Possible values are 1 and 2.'
+    )
+)
+@click.option(
+    '--projects',
+    help='Filter datasets with comma-separated list of IDA projects'
+)
+@click.option(
+    '--editor-permissions-user',
+    help='Filter datasets where user has editor permissions'
+)
+@click.option(
+    '--fields',
+    help=(
+        'Comma separated list of fields that are returned. Note that nested '
+        'fields are not supported.'
+    )
+)
+@click.option(
+    '--research-dataset-fields',
+    help=(
+        'Comma separated list of fields in research_dataset that are returned.'
+    )
+)
+@click.option(
+    '--include-legacy', is_flag=True,
+    help=(
+        'Includes legacy datasets in query. Parameter needs to be given when '
+        'fetching, modifying or deleting legacy datasets.'
+    )
+)
+@click.pass_obj
+def search_datasets(metax_client, **search_filter_kwargs):
+    """Search datasets using query parameters."""
+    for search_filter, value in search_filter_kwargs.items():
+        # Boolean values have to be converted to strings "true" and "false"
+        if type(value) == bool:
+            search_filter_kwargs[search_filter] = str(value).lower()
 
-    Any given aptions are used as query parameters. See
-
-    https://metax.fairdata.fi/swagger/v1#/Dataset%20API/get_rest_datasets
-
-    for more information about the query parameters. Note that Metax
-    will ignore unknown query parameters .
-    """
-    # TODO: Metax will ignore unknown query parameters. Throwing an
-    # error would be more user friendly.
-
-    # convert argument list to dictionary
-    query = {}
-    args = iter(ctx.args)
-    for arg in args:
-        if not arg.startswith('--'):
-            raise ValueError(f'Unknown argument {arg}')
-        try:
-            query[arg.strip('--')] = next(args)
-        except StopIteration:
-            raise ValueError(f'Missing value for option {arg}') \
-                from StopIteration
-
-    print_response(ctx.obj.query_datasets(query))
+    print_response(metax_client.query_datasets(search_filter_kwargs))
 
 
 def main():
