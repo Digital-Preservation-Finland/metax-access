@@ -49,6 +49,8 @@ export SETUPTOOLS_SCM_PRETEND_VERSION=%{file_version}
 %pyproject_install
 %pyproject_save_files metax_access
 
+mv %{_prefix}/etc/metax.cfg %{_sysconfdir}/metax.cfg
+
 %files -n python3-metax-access -f %{pyproject_files}
 %{_bindir}/metax_access
 %config %{_sysconfdir}/metax.cfg
