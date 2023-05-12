@@ -59,7 +59,7 @@ cp %{buildroot}%{_bindir}/metax_access %{buildroot}%{_bindir}/metax_access-3
 %files -n python3-metax-access -f %{pyproject_files}
 %{_bindir}/metax_access
 %{_bindir}/metax_access-3
-%config %{_sysconfdir}/metax.cfg
+%config(noreplace) %{_sysconfdir}/metax.cfg
 %license LICENSE
 %doc README.rst
 
