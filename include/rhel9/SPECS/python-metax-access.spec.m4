@@ -52,8 +52,13 @@ export SETUPTOOLS_SCM_PRETEND_VERSION=%{file_version}
 mkdir %{buildroot}%{_sysconfdir}
 mv %{buildroot}%{_prefix}/etc/metax.cfg %{buildroot}%{_sysconfdir}/metax.cfg
 
+# TODO: executables with "-3" suffix are added to maintain compatibility with our systems.
+# executables with "-3" suffix should be deprecated.
+cp %{buildroot}%{_bindir}/metax_access %{buildroot}%{_bindir}/metax_access-3
+
 %files -n python3-metax-access -f %{pyproject_files}
 %{_bindir}/metax_access
+%{_bindir}/metax_access-3
 %config %{_sysconfdir}/metax.cfg
 %license LICENSE
 %doc README.rst
