@@ -11,7 +11,6 @@ def main():
         python_requires='>=3.6',
         setup_requires=['setuptools_scm'],
         use_scm_version=True,
-        data_files=[('etc', ['include/etc/metax.cfg'])],
         install_requires=[
             "requests",
             "lxml",
