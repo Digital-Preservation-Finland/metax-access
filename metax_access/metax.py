@@ -147,7 +147,8 @@ class Metax:
                      limit="1000000",
                      offset="0",
                      pas_filter=None,
-                     org_filter=None,
+                     metadata_owner_org=None,
+                     metadata_provider_user=None,
                      ordering=None,
                      include_user_metadata=True):
         """Get the metadata of datasets from Metax.
@@ -161,9 +162,10 @@ class Metax:
                                    1. research_dataset['title']
                                    2. research_dataset['curator']['name']
                                    3. contract['contract_json']['title']
-        :param str org_filter: string for filtering datasets based on
-                               research_dataset=>metadata_owner_org attribute
-                               value
+        :param str metadata_owner_org: Filter by dataset field
+                                       metadata_owner_org
+        :param str metadata_provider_user: Filter by dataset field
+                                           metadata_provider_user
         :param str ordering: metax dataset attribute for sorting datasets
                              e.g "preservation_state"
         :param bool include_user_metadata: Metax parameter for including
@@ -178,8 +180,10 @@ class Metax:
         params = {}
         if pas_filter is not None:
             params["pas_filter"] = pas_filter
-        if org_filter is not None:
-            params["metadata_owner_org"] = org_filter
+        if metadata_owner_org is not None:
+            params["metadata_owner_org"] = metadata_owner_org
+        if metadata_provider_user is not None:
+            params["metadata_provider_user"] = metadata_provider_user
         if ordering is not None:
             params["ordering"] = ordering
         if include_user_metadata:
