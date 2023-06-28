@@ -46,16 +46,51 @@ def test_get_datasets(requests_mock, caplog):
 
     :returns: None
     """
-    requests_mock.get(
+    metax_mock = requests_mock.get(
         METAX_REST_URL + "/datasets",
         json={"results": [{"identifier": "foo"}, {"identifier": "bar"}]}
     )
-    datasets = METAX_CLIENT.get_datasets('datasets')
+    datasets = METAX_CLIENT.get_datasets()
     assert len(datasets["results"]) == 2
+
+    # Check that correct query parameter were used
+    query_string = metax_mock.last_request.qs
+    assert query_string['preservation_state'][0] \
+        == '0,10,20,30,40,50,60,70,75,80,90,100,110,120,130,140'
+    assert query_string['limit'][0] == '1000000'
+    assert query_string['offset'][0] == '0'
+    assert query_string['include_user_metadata'][0] == 'true'
 
     # No errors should be logged
     logged_errors = [r for r in caplog.records if r.levelname == 'ERROR']
     assert not logged_errors
+
+
+def test_get_datasets_with_parameters(requests_mock):
+    """Test ``get_datasets`` function parameters.
+
+    :returns: None
+    """
+    metax_mock = requests_mock.get(METAX_REST_URL + "/datasets", json={})
+    METAX_CLIENT.get_datasets(
+        states="states-param",
+        limit="limit-param",
+        offset="offset-param",
+        pas_filter='pas-filter-param',
+        metadata_owner_org='owner-org-param',
+        metadata_provider_user='provider-user-param',
+        ordering='ordering-param',
+        include_user_metadata=False
+    )
+    query_string = metax_mock.last_request.qs
+    assert query_string['preservation_state'][0] == 'states-param'
+    assert query_string['limit'][0] == 'limit-param'
+    assert query_string['offset'][0] == 'offset-param'
+    assert query_string['pas_filter'][0] == 'pas-filter-param'
+    assert query_string['metadata_owner_org'][0] == 'owner-org-param'
+    assert query_string['metadata_provider_user'][0] == 'provider-user-param'
+    assert query_string['ordering'][0] == 'ordering-param'
+    assert 'include_user_metadata' not in query_string
 
 
 def test_get_dataset(requests_mock):
