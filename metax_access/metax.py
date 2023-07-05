@@ -7,6 +7,8 @@ import lxml.etree
 import requests
 from requests.auth import HTTPBasicAuth
 
+logger = logging.getLogger(__name__)
+
 DS_STATE_INITIALIZED = 0
 DS_STATE_PROPOSED_FOR_DIGITAL_PRESERVATION = 10
 DS_STATE_TECHNICAL_METADATA_GENERATED = 20
@@ -929,11 +931,13 @@ class Metax:
             kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
 
         response = requests.request(method, url, **kwargs)
+        request = response.request
+        logger.debug("%s %s\n%s", request.method, request.url, request.body)
         try:
             response.raise_for_status()
         except requests.HTTPError as error:
             if error.response.status_code not in allowed_status_codes:
-                logging.error(
+                logger.error(
                     'HTTP request to %s failed. Response from server was: %s',
                     response.url, response.text
                 )
