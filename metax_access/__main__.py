@@ -199,33 +199,34 @@ def patch(metax_client, resource, identifier, filepath, output):
 
 
 @cli.command()
-@click.option('--identifier', help="Directory identifier.")
-@click.option('--path', help="Directory path.")
-@click.option('--project', help="Project identifier.")
-@click.option('--files',
+@click.argument('identifier')
+@click.option('--by-path',
+              help="Identify directory using project and path instead of "
+                   "identifier.",
               is_flag=True,
-              default=False,
-              help="List content of directory instead of directory metadata.")
+              default=False)
+@click.option('--files',
+              help="List content of directory instead of directory metadata.",
+              is_flag=True,
+              default=False)
 @click.pass_obj
-def directory(metax_client, identifier, path, project, files):
+def directory(metax_client, identifier, by_path, files):
     """Print directory metadata or content.
 
-    Directory can be chosen using the directory identifier or path.
-    If path is used, project must defined to identify the directory.
+    Directory can be chosen using the file identifier or path. If
+    --by-path option is used, <project>:<path> should be used as
+    IDENTIFIER.
     """
-    if identifier and path:
-        raise click.UsageError('--identifier and --path can not be used '
-                               'same time.')
-    if path and not project:
-        raise click.UsageError("--project argument is required for searching "
-                               "directory by path.")
-    if not identifier and not path:
-        raise click.UsageError('--identifier or --path is required')
-    if identifier:
-        directory_metadata = metax_client.get_directory(identifier)
-    elif path:
+    if by_path:
+        project = identifier.split(':')[0]
+        path = ''.join(identifier.split(':')[1:])
+        if not (project and path):
+            raise click.UsageError("The identifier should be formatted as "
+                                   "<project>:<path>")
         directory_metadata \
             = metax_client.get_project_directory(project, path)
+    else:
+        directory_metadata = metax_client.get_directory(identifier)
 
     if files:
         print_response(
@@ -237,12 +238,49 @@ def directory(metax_client, identifier, path, project, files):
         print_response(directory_metadata)
 
 
-@cli.command('file-datasets')
+@cli.command()
 @click.argument('identifier')
+@click.option('--by-path',
+              help="Identify file using project and path instead of "
+                   "identifier.",
+              is_flag=True,
+              default=False)
+@click.option('--delete', 'delete_',
+              help="Delete file",
+              is_flag=True,
+              default=False)
+@click.option('--datasets',
+              help="Print datasets associated with file",
+              is_flag=True,
+              default=False)
 @click.pass_obj
-def file_datasets(metax_client, identifier):
-    """Print datasets associated with file IDENTIFIER."""
-    print_response(metax_client.get_file_datasets(identifier))
+def file(metax_client, identifier, by_path, delete_, datasets):
+    """View and manage file metadata.
+
+    File can be chosen using the file identifier or path. If --by-path
+    option is used, <project>:<path> should be used as IDENTIFIER.
+    """
+    if by_path:
+        project = identifier.split(':')[0]
+        path = ''.join(identifier.split(':')[1:])
+        if not (project and path):
+            raise click.UsageError("The identifier should be formatted as "
+                                   "<project>:<path>")
+        file_metadata \
+            = metax_client.get_project_file(project, path)
+    else:
+        file_metadata = metax_client.get_file(identifier)
+
+    if delete_ and datasets:
+        raise click.UsageError('--delete and --datasets can not be used '
+                               'same time.')
+
+    if delete_:
+        metax_client.delete_file(file_metadata['identifier'])
+    elif datasets:
+        print_response(metax_client.get_file_datasets(identifier))
+    else:
+        print_response(file_metadata)
 
 
 @cli.command('search-datasets')

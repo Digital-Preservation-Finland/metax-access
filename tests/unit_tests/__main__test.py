@@ -92,15 +92,15 @@ def test_main(requests_mock, tmpdir, arguments, expected_requests, cli_invoke):
     ('cli_args', 'expected_output'),
     [
         (
-            ['directory', '--identifier', 'foo'],
+            ['directory', 'foo'],
             {'identifier': 'foo'}
         ),
         (
-            ['directory', '--path', 'bar', '--project', 'baz'],
+            ['directory', '--by-path', 'baz:bar'],
             {'identifier': 'foo2'}
         ),
         (
-            ['directory', '--identifier', 'foo', '--files'],
+            ['directory', 'foo', '--files'],
             {'foo': 'bar'}
         )
     ]
@@ -133,8 +133,23 @@ def test_directory_command(requests_mock, cli_args, expected_output,
     assert json.loads(result.output) == expected_output
 
 
-def test_file_datasets_command(requests_mock, cli_invoke):
-    """Test file-datasets command.
+@pytest.mark.parametrize(
+    "parameters,expected_result",
+    [
+        # Search file by identifier
+        (['fileid1'], {'identifier': 'fileid1'}),
+        # Search file by path
+        (['project1:filepath2', '--by-path'],
+         {'file_path': '/filepath2', 'identifier': 'fileid2'}),
+        # Delete file by identifier
+        (['fileid1', '--delete'], ''),
+        # List datasets of file
+        (['fileid1', '--datasets'], {'foo': 'bar'}),
+    ]
+)
+def test_file_datasets_command(requests_mock, cli_invoke, parameters,
+                               expected_result):
+    """Test file command.
 
     The command should send a POST request to Metax and print the
     content of response. The request content should be a list that
@@ -142,19 +157,35 @@ def test_file_datasets_command(requests_mock, cli_invoke):
 
     :param requests_mock: HTTP request mocker
     """
-    mocked_metax = requests_mock.post(
+    requests_mock.get(
+        'https://metax.localhost/rest/v2/files/fileid1',
+        json={'identifier': 'fileid1'}
+    )
+    requests_mock.delete(
+        'https://metax.localhost/rest/v2/files/fileid1',
+        json={}
+    )
+    requests_mock.get(
+        'https://metax.localhost/rest/v2/files?file_path='
+        'filepath2&project_identifier=project1',
+        json={
+            'results': [
+                {'file_path': '/filepath2',
+                 'identifier': 'fileid2'}
+            ]
+        }
+    )
+    requests_mock.post(
         'https://metax.localhost/rest/v2/files/datasets',
         json={'foo': 'bar'}
     )
 
-    # Run command. Command should output JSON from Metax response.
-    result = cli_invoke(['file-datasets', 'baz'])
-    assert json.loads(result.output) == {'foo': 'bar'}
-
-    # Check that sent HTTP request has expected content
-    request_history = mocked_metax.request_history
-    assert len(request_history) == 1
-    assert request_history[0].json() == ['baz']
+    # Run command and check the result
+    result = cli_invoke(['file'] + parameters)
+    if isinstance(expected_result, dict):
+        assert json.loads(result.output) == expected_result
+    else:
+        assert result.output == expected_result
 
 
 @pytest.mark.parametrize(
@@ -166,8 +197,10 @@ def test_file_datasets_command(requests_mock, cli_invoke):
          'Username and password or access token must be provided.'),
         (['--config', '/dev/null', 'post', 'dataset', 'foo'],
          'Configuration file /dev/null not found.'),
-        (['--url', 'foo', '--token', 'bar', 'directory', '--path', 'baz'],
-         '--project argument is required for searching directory by path.')
+        (['--url', 'foo', '--token', 'bar', 'directory', '--by-path', 'baz'],
+         'The identifier should be formatted as <project>:<path>'),
+        (['--url', 'foo', '--token', 'bar', 'file', '--by-path', 'baz'],
+         'The identifier should be formatted as <project>:<path>')
     ]
 )
 def test_invalid_arguments(arguments, error_message, monkeypatch, cli_invoke):
