@@ -56,7 +56,7 @@ def test_get_datasets(requests_mock, caplog):
     # Check that correct query parameter were used
     query_string = metax_mock.last_request.qs
     assert query_string['preservation_state'][0] \
-        == '0,10,20,30,40,50,60,70,75,80,90,100,110,120,130,140'
+        == '0,10,20,30,40,50,60,65,70,75,80,90,100,110,120,130,140'
     assert query_string['limit'][0] == '1000000'
     assert query_string['offset'][0] == '0'
     assert query_string['include_user_metadata'][0] == 'true'
@@ -1093,7 +1093,7 @@ def test_get_http_404(requests_mock, url, method, parameters, expected_error):
     (
         (
             f'/datasets?include_user_metadata=true&preservation_state='
-            f'{quote("0,10,20,30,40,50,60,70,75,80,90,100,110,120,130,140")}'
+            f'{quote("0,10,20,30,40,50,60,65,70,75,80,90,100,110,120,130,140")}'
             f'&limit=1000000&offset=0',
             METAX_CLIENT.get_datasets,
             []
