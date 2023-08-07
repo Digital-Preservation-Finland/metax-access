@@ -911,6 +911,18 @@ def test_get_directory_files(requests_mock):
     assert METAX_CLIENT.get_directory_files('foo') == metadata
 
 
+def test_get_directory_files_dataset(requests_mock):
+    """Test get_directory_files function with dataset_identifier parameter.
+
+    :param requets_mock: HTTP request mocker
+    """
+    metadata = {'identifier': 'foo'}
+    requests_mock.get(METAX_REST_URL + "/directories/foo/files?cr_identifier=bar",
+                      json=metadata)
+    assert METAX_CLIENT.get_directory_files('foo', dataset_identifier='bar') \
+        == metadata
+
+
 def test_get_project_directory(requests_mock):
     """Test get_project_directory function.
 

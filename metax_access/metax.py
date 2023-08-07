@@ -841,14 +841,23 @@ class Metax:
         url = f'{self.baseurl}/contracts/{contract_id}'
         self.delete(url)
 
-    def get_directory_files(self, directory_identifier):
+    def get_directory_files(self, directory_identifier,
+                            dataset_identifier=None):
         """Get files of the directory.
 
         :param str directory_identifier: identifier attribute of directory
+        :param str dataset_identifier: Only list files and directories
+                                       that are part of specified
+                                       dataset
         :returns: directory files as json
         """
+        if dataset_identifier:
+            params = {'cr_identifier': dataset_identifier}
+        else:
+            params = None
+
         url = f'{self.baseurl}/directories/{directory_identifier}/files'
-        response = self.get(url, allowed_status_codes=[404])
+        response = self.get(url, params=params, allowed_status_codes=[404])
 
         if response.status_code == 404:
             raise DirectoryNotAvailableError
