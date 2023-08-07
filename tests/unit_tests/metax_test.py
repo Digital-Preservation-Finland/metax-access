@@ -101,7 +101,7 @@ def test_get_dataset(requests_mock):
 
     :returns: None
     """
-    requests_mock.get(METAX_REST_URL + "/datasets/test_id",
+    requests_mock.get(METAX_REST_URL + "/datasets/test_id?include_user_metadata=true&file_details=true",
                       json={"foo": "bar"})
     dataset = METAX_CLIENT.get_dataset("test_id")
     assert dataset["foo"] == "bar"
@@ -1113,7 +1113,8 @@ def test_get_http_404(requests_mock, url, method, parameters, expected_error):
         ('/contracts?limit=1000000&offset=0', METAX_CLIENT.get_contracts, []),
         ('/contracts/foo', METAX_CLIENT.get_contract, ['foo']),
         ('/datacatalogs/foo', METAX_CLIENT.get_datacatalog, ['foo']),
-        ('/datasets/foo?include_user_metadata=true', METAX_CLIENT.get_dataset, ['foo']),
+        ('/datasets/foo?include_user_metadata=true&file_details=true',
+         METAX_CLIENT.get_dataset, ['foo']),
         ('/files/foo/xml', METAX_CLIENT.get_xml, ['foo']),
         ('/datasets/foo?dataset_format=datacite&dummy_doi=false',
          METAX_CLIENT.get_datacite, ['foo']),

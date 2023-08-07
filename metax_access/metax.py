@@ -317,7 +317,8 @@ class Metax:
             allowed_status_codes=[404],
             params={
                 "include_user_metadata":
-                    "true" if include_user_metadata else "false"
+                    "true" if include_user_metadata else "false",
+                "file_details": "true"
             }
         )
 
