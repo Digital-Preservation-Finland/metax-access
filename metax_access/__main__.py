@@ -425,7 +425,7 @@ def search_datasets(metax_client, **search_filter_kwargs):
     """Search datasets using query parameters."""
     for search_filter, value in search_filter_kwargs.items():
         # Boolean values have to be converted to strings "true" and "false"
-        if type(value) == bool:
+        if isinstance(value, bool):
             search_filter_kwargs[search_filter] = str(value).lower()
 
     print_response(metax_client.query_datasets(search_filter_kwargs))
