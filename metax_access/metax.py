@@ -704,6 +704,12 @@ class Metax:
         :returns: Dictionary with the format
                   {file_identifier: [dataset_identifier1, ...]}
         """
+        if not file_ids:
+            # Querying with an empty list of file IDs causes an error
+            # with Metax V2 and is silly anyway, since the result would be
+            # empty as well.
+            return {}
+
         url = f"{self.baseurl}/files/datasets?keys=files"
         response = self.post(url, json=file_ids)
 

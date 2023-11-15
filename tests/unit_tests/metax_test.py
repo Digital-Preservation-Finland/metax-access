@@ -1069,6 +1069,21 @@ def test_get_file2dataset_dict(requests_mock):
     assert result["161bc25962da8fed6d2f59922fb642"] == ["urn:dataset:aaffaaff"]
 
 
+def test_get_file2dataset_dict_empty(requests_mock):
+    """Test Metax.get_file2dataset dict with an empty list of file identifiers
+    """
+    mocked_req = requests_mock.post(
+        f"{METAX_REST_URL}/files/datasets",
+        status_code=400
+    )
+    result = METAX_CLIENT.get_file2dataset_dict([])
+
+    assert result == {}
+
+    # The mocked endpoint was not called
+    assert not mocked_req.request_history
+
+
 @pytest.mark.parametrize(
     ('url', 'method', 'parameters', 'expected_error'),
     (
