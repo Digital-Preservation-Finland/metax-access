@@ -18,6 +18,8 @@ def mock_default_config(tmpdir, monkeypatch):
     monkeypatch.setattr('metax_access.__main__.DEFAULT_CONFIG_FILES',
                         [tmp_configuration_file])
 
+    return tmp_configuration_file
+
 
 @pytest.mark.parametrize(
     ('arguments', 'expected_requests'),
@@ -280,3 +282,45 @@ def test_searching_dataset(
 
     cli_invoke(['search-datasets'] + arguments)
     assert mocker.called
+
+
+@pytest.mark.parametrize(
+    'config_file_parameter,cli_parameters,expected_value',
+    [
+        ('', [], True),
+        ('', ['--no-verify'], False),
+        ('', ['--verify'], True),
+        ('verify=true', [], True),
+        ('verify=true', ['--no-verify'], False),
+        ('verify=true', ['--verify'], True),
+        ('verify=false', [], False),
+        ('verify=false', ['--no-verify'], False),
+        ('verify=false', ['--verify'], True),
+    ]
+)
+def test_verify(requests_mock, cli_invoke, mock_default_config,
+                config_file_parameter, cli_parameters, expected_value):
+    """Test --verify parameter.
+
+    HTTP request verification should be enabled by default, and when
+    --verify parameter is used. Verification can be disabled with
+    --no-verify CLI parameter or by adding `verify=false` to
+    configuration file.
+    """
+    mocker = requests_mock.get('https://metax.localhost/rest/v2/datasets/1',
+                               json={})
+
+    # Create a config file
+    mock_default_config.write(
+        '[metax]\n'
+        'url=https://metax.localhost\n'
+        'token=bar\n'
+        f'{config_file_parameter}'
+    )
+
+    # Run command using provided CLI parameters
+    cli_invoke(cli_parameters + ['get', 'dataset', '1'])
+
+    # Check if request was verified
+    request = mocker.last_request
+    assert request.verify is expected_value

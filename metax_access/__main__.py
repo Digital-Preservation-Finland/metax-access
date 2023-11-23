@@ -31,6 +31,7 @@ def print_response(dictionary, fpath=None):
 
 
 @click.group(context_settings={"help_option_names": ['-h', '--help']})
+@click.option('--debug/--no-debug', help="Print debug messages.", default=None)
 @click.option(
     '-c', '--config',
     default=None,
@@ -43,7 +44,7 @@ def print_response(dictionary, fpath=None):
 @click.option('-p', '--password', help="Metax password.")
 @click.option('-t', '--token', help="Bearer token.")
 @click.option('--verify/--no-verify', help="Verify SSL certificate.",
-              default=True)
+              default=None)
 @click.pass_context
 def cli(ctx, config, **kwargs):
     """Manage metadata in Metax."""
@@ -59,32 +60,47 @@ def cli(ctx, config, **kwargs):
                 config = file_
 
     # Read config file
+    configuration = configparser.ConfigParser()
     if config:
-        configuration = configparser.ConfigParser()
         configuration.read(config)
-        metax_config = dict(configuration['metax'])
     else:
-        metax_config = dict()
+        configuration.add_section('metax')
+    metax_config = configuration['metax']
 
     # Override default configuration with CLI arguments
     for key, value in kwargs.items():
         if value is not None:
-            metax_config[key] = value
+            configuration.set('metax', key, str(value))
 
-    # Init metax client
+    # Accept also 'host' parameter for backward
+    # compatibility
+    if not metax_config.get('url') and metax_config.get('host'):
+        configuration.set('metax', 'url', metax_config.get('host'))
+    metax_config.pop('host', None)
+
+    if metax_config.getboolean('debug'):
+        logging.basicConfig(level=logging.DEBUG)
+    metax_config.pop('debug', None)
+
     if not metax_config.get('url'):
-        try:
-            # Accept also 'host' parameter for backward compatibility
-            metax_config['url'] = metax_config['host']
-        except KeyError:
-            raise click.UsageError("Metax URL must be provided.")
+        raise click.UsageError("Metax URL must be provided.")
     if not metax_config.get('token') and not metax_config.get('user'):
         raise click.UsageError(
             'Username and password or access token must be provided.'
         )
-    if metax_config.get('host'):
-        del metax_config['host']
-    ctx.obj = metax_access.Metax(**metax_config)
+
+    # Init metax client
+    ctx.obj = metax_access.Metax(
+        url=metax_config.pop('url', None),
+        user=metax_config.pop('user', None),
+        password=metax_config.pop('password', None),
+        token=metax_config.pop('token', None),
+        verify=metax_config.getboolean('verify', None)
+    )
+    metax_config.pop('verify', None)
+
+    for item in dict(metax_config):
+        raise ValueError(f'invalid parameter {item}')
 
 
 @cli.command()
