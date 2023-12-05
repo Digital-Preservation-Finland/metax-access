@@ -26,7 +26,7 @@ def print_response(dictionary, fpath=None):
     if not fpath:
         click.echo(output)
     else:
-        with open(fpath, 'wt') as file:
+        with open(fpath, 'w') as file:
             click.echo(output, file=file)
 
 
