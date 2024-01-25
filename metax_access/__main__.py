@@ -31,7 +31,10 @@ def print_response(dictionary, fpath=None):
 
 
 @click.group(context_settings={"help_option_names": ['-h', '--help']})
-@click.option('--debug/--no-debug', help="Print debug messages.", default=None)
+@click.option(
+    '--verbose/--no-verbose', '-v', help="Print debug messages.",
+    default=None
+)
 @click.option(
     '-c', '--config',
     default=None,
@@ -78,9 +81,9 @@ def cli(ctx, config, **kwargs):
         configuration.set('metax', 'url', metax_config.get('host'))
     metax_config.pop('host', None)
 
-    if metax_config.getboolean('debug'):
+    if metax_config.getboolean('verbose'):
         logging.basicConfig(level=logging.DEBUG)
-    metax_config.pop('debug', None)
+    metax_config.pop('verbose', None)
 
     if not metax_config.get('url'):
         raise click.UsageError("Metax URL must be provided.")
