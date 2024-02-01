@@ -2,28 +2,23 @@ Metax access library
 ====================
 Library for accessing Metax.
 
-Installation
+Requirements
 ------------
 
-Installation and usage requires Python 3.6 or newer.
-The software is tested with Python 3.6 on Centos 7.x release.
+Installation and usage requires Python 3.9 or newer.
+The software is tested with Python 3.9 on AlmaLinux 9 release.
 
-Create a virtual environment::
+Installation using RPM packages (preferred)
+-------------------------------------------
 
-   python3 -m venv venv
+Installation on Linux distributions is done by using the RPM Package Manager.
+See how to `configure the PAS-jakelu RPM repositories`_ to setup necessary software sources.
 
-Run the following to activate the virtual environment::
+.. _configure the PAS-jakelu RPM repositories: https://www.digitalpreservation.fi/user_guide/installation_of_tools 
 
-   source venv/bin/activate
+After the repository has been added, the package can be installed by running the following command::
 
-Install the required software with commands::
-
-   pip install --upgrade pip setuptools
-   pip install -r requirements_dev.txt
-   pip install .
-
-To deactivate the virtual environment, run ``deactivate``. To reactivate it, run the ``source`` command above.
-
+    sudo dnf install python3-metax-access
 
 Usage
 -----
@@ -46,6 +41,25 @@ which can be used wifh ``-c`` flag ::
 For more information see::
 
    metax_access -h
+
+Installation using Python Virtualenv for development purposes
+-------------------------------------------------------------
+
+Create a virtual environment::
+
+   python3 -m venv venv
+
+Run the following to activate the virtual environment::
+
+   source venv/bin/activate
+
+Install the required software with commands::
+
+   pip install --upgrade pip setuptools
+   pip install -r requirements_dev.txt
+   pip install .
+
+To deactivate the virtual environment, run ``deactivate``. To reactivate it, run the ``source`` command above.
 
 Testing
 -------
