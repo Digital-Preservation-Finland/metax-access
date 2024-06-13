@@ -622,7 +622,7 @@ class Metax:
         :param dataset_id: id or identifier attribute of dataset
         :param dummy_doi: "false" or "true". "true" asks Metax to use
                           a dummy DOI if the actual DOI is not yet generated
-        :returns: Datacite XML (lxml.etree.ElementTree object)
+        :returns: Datacite XML as string
         """
         url = f"{self.baseurl}/datasets/{dataset_id}"
         params = {
@@ -643,7 +643,7 @@ class Metax:
             raise DatasetNotAvailableError
 
         # pylint: disable=no-member
-        return lxml.etree.fromstring(response.content).getroottree()
+        return response.content
 
     def get_dataset_file_count(self, dataset_id):
         """

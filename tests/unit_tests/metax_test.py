@@ -354,7 +354,7 @@ def test_set_xml_metadata_already_set(requests_mock):
 def test_get_datacite(requests_mock):
     """Test ``get_datacite`` function.
 
-    Read one field from returned etree object and check its correctness.
+    Read one field from returned XML and check its correctness.
 
     :returns: ``None``
     """
@@ -371,7 +371,7 @@ def test_get_datacite(requests_mock):
                       complete_qs=True,
                       json={'identifier': 'test_id'})
 
-    xml = METAX_CLIENT.get_datacite("test_id")
+    xml = lxml.etree.fromstring(METAX_CLIENT.get_datacite("test_id"))
 
     # Read field "creatorName" from xml file
     ns_string = 'http://datacite.org/schema/kernel-4'
