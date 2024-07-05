@@ -3,7 +3,6 @@ import copy
 import logging
 import re
 
-import lxml.etree
 import requests
 from requests.auth import HTTPBasicAuth
 
@@ -489,63 +488,6 @@ class Metax:
             }
 
         return file_dict
-
-    def get_xml(self, identifier):
-        """Get technical metadata of file in xml format.
-
-        :param str identifier: id or identifier attribute of object
-        :returns: dict with XML namespace strings as keys and
-                  lxml.etree.ElementTree objects as values
-        """
-        # Init result dict
-        xml_dict = {}
-
-        # Get list of xml namespaces
-        ns_key_url = f'{self.baseurl}/files/{identifier}/xml'
-        response = self.get(ns_key_url, allowed_status_codes=[404])
-        if response.status_code == 404:
-            raise FileNotAvailableError
-        ns_key_list = response.json()
-
-        # For each listed namespace, download the xml, create ElementTree, and
-        # add it to result dict
-        for ns_key in ns_key_list:
-            response = self.get(ns_key_url, params={"namespace": ns_key})
-            # pylint: disable=no-member
-            xml_dict[ns_key] \
-                = lxml.etree.fromstring(response.content).getroottree()
-
-        return xml_dict
-
-    def set_xml(self, file_id, xml_element):
-        """Add xml data to a file with in Metax.
-
-        :param str file_id: id or identifier attribute of file
-        :param str xml_element: XML Element
-        :returns bool: True: xml data set. False: xml data already set
-        """
-        # Read namespace from XML element
-        namespace = \
-            xml_element.attrib[
-                '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation'
-            ].split()[0]
-        xmls = self.get_xml(file_id)
-        if namespace not in xmls:
-            # Convert XML element to string
-            # pylint: disable=no-member
-            data = lxml.etree.tostring(xml_element, pretty_print=True)
-            # POST to Metax
-            url = f'{self.baseurl}/files/{file_id}/xml'
-            params = {
-                "namespace": namespace
-            }
-
-            headers = {'Content-Type': 'application/xml'}
-            self.post(url, data=data, headers=headers, params=params)
-
-            return True
-
-        return False
 
     def set_preservation_state(self, dataset_id, state, description):
         """Set preservation state of dataset.

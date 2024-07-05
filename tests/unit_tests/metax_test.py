@@ -258,99 +258,6 @@ def test_patch_dataset(requests_mock):
     assert request_body['research_dataset']['foo2'] == 'bar2'
     assert request_body['foo1'] == 'bar1'
 
-
-def test_get_xml(requests_mock):
-    """Test ``get_xml`` function.
-
-    Mocks Metax HTTP responses and and checks that the function returns
-    dictionary that contains xml objects.
-
-    :returns: ``None``
-    """
-    requests_mock.get(METAX_REST_URL + '/files/test_id/xml',
-                      json=["http://www.loc.gov/METS/",
-                            "http://www.arkivverket.no/standarder/addml"])
-    requests_mock.get((METAX_REST_URL + '/files/test_id/xml?namespace=http://'
-                       'www.arkivverket.no/standarder/addml'),
-                      text=('<root xmlns:addml="http://www.arkivverket.no/'
-                            'standarder/addml"></root>'))
-    requests_mock.get(
-        METAX_REST_URL+'/files/test_id/xml?namespace=http://www.loc.gov/METS/',
-        text='<root xmlns:mets="http://www.loc.gov/METS/"></root>'
-    )
-
-    xml_dict = METAX_CLIENT.get_xml("test_id")
-    assert isinstance(xml_dict, dict)
-
-    # The keys of returned dictionary should be xml namespace urls and
-    # the values of returned dictionary should be lxml.etree.ElementTree
-    # objects with the namespaces defined
-    addml_url = "http://www.arkivverket.no/standarder/addml"
-    assert xml_dict[addml_url].getroot().nsmap['addml'] == addml_url
-    mets_url = "http://www.loc.gov/METS/"
-    assert xml_dict[mets_url].getroot().nsmap['mets'] == mets_url
-
-
-def test_set_xml(requests_mock):
-    """Test ``set_xml`` functions.
-
-    Reads XML file and posts it to Metax. The body
-    and headers of HTTP request are checked.
-
-    :returns: ``None``
-    """
-    requests_mock.get(METAX_REST_URL + '/files/set_xml_1/xml', json=[])
-    requests_mock.post(METAX_REST_URL + '/files/set_xml_1/xml',
-                       status_code=201)
-
-    # Read sample MIX xml file
-    mix = lxml.etree.parse('./tests/data/mix_sample.xml').getroot()
-
-    # POST XML to Metax
-    assert METAX_CLIENT.set_xml('set_xml_1', mix)
-
-    # Check that posted message body is valid XML
-    lxml.etree.fromstring(requests_mock.last_request.body)
-
-    # Check message headers
-    assert requests_mock.last_request.headers['content-type'] \
-        == 'application/xml'
-
-    # Check that message method is correct
-    assert requests_mock.last_request.method == 'POST'
-
-    # Check that message query string has correct parameters
-    assert requests_mock.last_request.qs['namespace'][0] \
-        == 'http://www.loc.gov/mix/v20'
-
-
-# pylint: disable=invalid-name
-def test_set_xml_metadata_already_set(requests_mock):
-    """Test ``set_xml`` functions.
-
-    Reads XML file and posts it to Metax. The body and headers of HTTP request
-    are checked.
-
-    :returns: ``None``
-    """
-    requests_mock.get(METAX_REST_URL + '/files/xml_metadata_already_set/xml',
-                      json=['http://www.loc.gov/mix/v20'])
-    requests_mock.get(METAX_REST_URL + '/files/xml_metadata_already_set/xml'
-                      '?namespace=http://www.loc.gov/mix/v20',
-                      text='<foo></foo>')
-
-    # Read sample MIX xml file
-    mix = lxml.etree.parse('./tests/data/mix_sample.xml').getroot()
-
-    # POST XML to Metax
-    assert not METAX_CLIENT.set_xml('xml_metadata_already_set', mix)
-
-    # Check that message method is correct
-    assert requests_mock.last_request.method == 'GET'
-    assert requests_mock.last_request.qs['namespace'][0] ==\
-        'http://www.loc.gov/mix/v20'
-
-
 def test_get_datacite(requests_mock):
     """Test ``get_datacite`` function.
 
@@ -1130,7 +1037,6 @@ def test_get_http_404(requests_mock, url, method, parameters, expected_error):
         ('/datacatalogs/foo', METAX_CLIENT.get_datacatalog, ['foo']),
         ('/datasets/foo?include_user_metadata=true&file_details=true',
          METAX_CLIENT.get_dataset, ['foo']),
-        ('/files/foo/xml', METAX_CLIENT.get_xml, ['foo']),
         ('/datasets/foo?dataset_format=datacite&dummy_doi=false',
          METAX_CLIENT.get_datacite, ['foo']),
         ('/datasets/foo/files', METAX_CLIENT.get_dataset_files, ['foo']),
