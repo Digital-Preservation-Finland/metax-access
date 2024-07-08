@@ -151,45 +151,6 @@ def test_get_datacatalog(requests_mock):
     catalog = METAX_CLIENT.get_datacatalog('test_catalog')
     assert catalog['catalog_json']['identifier'] == 'foo'
 
-
-def test_get_dataset_filetypes(requests_mock):
-    """Test ``get_dataset`` filetypes function.
-
-    Mocks Metax HTTP response and checks that the function returns dictionary
-    with correct items.
-
-    :returns: ``None``
-    """
-    requests_mock.get(
-        METAX_REST_URL + '/datasets/test_id/files',
-        json=[
-            {
-                "file_characteristics": {
-                    "file_format": "text/plain",
-                    "format_version": "",
-                    "encoding": "UTF-8",
-                }
-            },
-            {
-                "file_characteristics": {
-                    "file_format": "text/html",
-                    "format_version": "4.01",
-                    "encoding": "UTF-8",
-                }
-            }
-        ]
-    )
-
-    filetypes = METAX_CLIENT.get_dataset_filetypes('test_id')
-    assert isinstance(filetypes, dict)
-    assert filetypes['total_count'] == 2
-    assert filetypes['filetypes'][0]['encoding'] == 'UTF-8'
-    assert filetypes['filetypes'][0]['file_format'] == 'text/plain' or\
-        filetypes['filetypes'][0]['file_format'] == 'text/html'
-    assert filetypes['filetypes'][0]['format_version'] == '' or\
-        filetypes['filetypes'][0]['format_version'] == '4.01'
-
-
 def test_get_dataset_file_count(requests_mock):
     """Test retrieving the total file count for a dataset"""
     def _request_has_correct_params(req):

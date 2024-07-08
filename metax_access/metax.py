@@ -372,53 +372,6 @@ class Metax:
 
         return response.json()
 
-    def get_dataset_filetypes(self, dataset_id):
-        """Get list of filetypes in dataset.
-
-        Returns unique triples of file_format, format_version, encoding of the
-        files in dataset.
-
-        :param str dataset_id: id or identifier of the dataset
-        :returns dict:
-                  {
-                      'total_count': len(filetypes),
-                      'filetypes': [{'file_format': <format>,
-                                     'format_version': <version>,
-                                     'encoding': <encoding>}]
-                  }
-        """
-        temp_types = set()
-        mime_types = []
-
-        url = f"{self.baseurl}/datasets/{dataset_id}/files"
-        response = self.get(url, allowed_status_codes=[404])
-        if response.status_code == 404:
-            raise DatasetNotAvailableError
-
-        for fil in response.json():
-            file_format = ''
-            format_version = ''
-            encoding = ''
-            if 'file_format' in fil['file_characteristics']:
-                file_format = fil['file_characteristics']['file_format']
-            if 'format_version' in fil['file_characteristics']:
-                format_version = fil['file_characteristics']['format_version']
-            if 'encoding' in fil['file_characteristics']:
-                encoding = fil['file_characteristics']['encoding']
-            if file_format:
-                temp_types.add(f"{file_format}||{format_version}||{encoding}")
-
-        for temp_type in temp_types:
-            attrs = temp_type.split('||')
-            mime_types.append({'file_format': attrs[0],
-                               'format_version': attrs[1],
-                               'encoding': attrs[2]})
-        file_types = {
-            'total_count': len(mime_types),
-            'filetypes': mime_types
-        }
-        return file_types
-
     def get_contract_datasets(self, pid):
         """Get the datasets of a contract from Metax.
 
@@ -696,17 +649,6 @@ class Metax:
         """
         url = f'{self.baseurl}/datasets/{dataset_id}'
         self.delete(url)
-
-    def delete_dataset_files(self, dataset_id):
-        """Delete metadata of files of a dataset.
-
-        :param dataset_id: dataset identifier
-        :returns: list of requests Responses
-        """
-        dataset_files = self.get_dataset_files(dataset_id)
-
-        for file_ in dataset_files:
-            self.delete_file(file_['identifier'])
 
     def post_file(self, metadata):
         """Post file metadata.
