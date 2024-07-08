@@ -8,4 +8,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Removed
 
-- Unused methods set_xml and get_xml are removed.
+- Unused methods set_xml, get_xml, delete_dataset_files and get_dataset_filetypes removed.
