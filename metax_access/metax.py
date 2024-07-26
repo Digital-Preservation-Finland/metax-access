@@ -278,7 +278,6 @@ class Metax:
         response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
             raise ContractNotAvailableError
-
         return response.json()
 
     def patch_contract(self, contract_id, data):
@@ -369,7 +368,6 @@ class Metax:
 
         url = f"{self.baseurl}/datasets/{dataset_id}"
         response = self.patch(url, json=data)
-
         return response.json()
 
     def get_contract_datasets(self, pid):
@@ -732,64 +730,32 @@ class Metax:
         url = f'{self.baseurl}/contracts/{contract_id}'
         self.delete(url)
 
-    def get_directory_files(self, directory_identifier,
-                            dataset_identifier=None):
-        """Get files of the directory.
-
-        :param str directory_identifier: identifier attribute of directory
-        :param str dataset_identifier: Only list files and directories
-                                       that are part of specified
-                                       dataset
-        :returns: directory files as json
-        """
-        if dataset_identifier:
-            params = {'cr_identifier': dataset_identifier}
-        else:
-            params = None
-
-        url = f'{self.baseurl}/directories/{directory_identifier}/files'
-        response = self.get(url, params=params, allowed_status_codes=[404])
-
-        if response.status_code == 404:
-            raise DirectoryNotAvailableError
-
-        return response.json()
-
-    def get_directory(self, directory_identifier):
-        """Get directory.
-
-        :param str directory_identifier: identifier attribute of directory
-        :returns: directory metadata
-        """
-        url = f'{self.baseurl}/directories/{directory_identifier}'
-
-        response = self.get(url, allowed_status_codes=[404])
-
-        if response.status_code == 404:
-            raise DirectoryNotAvailableError
-
-        return response.json()
-
-    def get_project_directory(self, project, path):
-        """Get directory of project by path.
+    def get_project_directory(self, project, path,
+                              dataset_identifier=None):
+        """Get directory metadata, directoreis, or files of project by path.
 
         :param str project: project identifier of the directory
         :param str path: path of the directory
+        :param str dataset_identifier: Only list files and directories
+                                       that are part of specified
+                                       dataset
         :returns: directory metadata
         """
         url = f'{self.baseurl}/directories/files'
-        response = self.get(url, allowed_status_codes=[404],
-                            params={'path': path,
-                                    'project': project,
-                                    'depth': 1,
-                                    'directories_only': 'true',
-                                    'include_parent': 'true'})
+        params = {'path': path,
+                  'project': project,
+                  'depth': 1,
+                  'include_parent': 'true',
+                  }
+        if dataset_identifier:
+            params['cr_identifier'] = dataset_identifier
 
+        response = self.get(url, allowed_status_codes=[404],
+                            params=params)
         if response.status_code == 404:
             raise DirectoryNotAvailableError
 
         metadata = response.json()
-        del metadata['directories']
         return metadata
 
     def get_project_file(self, project, path):

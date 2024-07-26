@@ -756,41 +756,6 @@ def test_get_files_dict(requests_mock):
     assert files["/path/file1"]['storage_identifier'] ==\
         "urn:nbn:fi:att:file-storage-pas"
 
-
-def test_get_directory(requests_mock):
-    """Test get_directory function.
-
-    :param requets_mock: HTTP request mocker
-    """
-    metadata = {'identifier': 'foo'}
-    requests_mock.get(METAX_REST_URL + "/directories/foo",
-                      json=metadata)
-    assert METAX_CLIENT.get_directory('foo') == metadata
-
-
-def test_get_directory_files(requests_mock):
-    """Test get_directory_files function.
-
-    :param requets_mock: HTTP request mocker
-    """
-    metadata = {'identifier': 'foo'}
-    requests_mock.get(METAX_REST_URL + "/directories/foo/files",
-                      json=metadata)
-    assert METAX_CLIENT.get_directory_files('foo') == metadata
-
-
-def test_get_directory_files_dataset(requests_mock):
-    """Test get_directory_files function with dataset_identifier parameter.
-
-    :param requets_mock: HTTP request mocker
-    """
-    metadata = {'identifier': 'foo'}
-    requests_mock.get(METAX_REST_URL + "/directories/foo/files?cr_identifier=bar",
-                      json=metadata)
-    assert METAX_CLIENT.get_directory_files('foo', dataset_identifier='bar') \
-        == metadata
-
-
 def test_get_project_directory(requests_mock):
     """Test get_project_directory function.
 
@@ -798,14 +763,14 @@ def test_get_project_directory(requests_mock):
     """
     metadata = {
         'directories': [{'identifier': 'bar'}],
+        'files': [{'identifier': 'file1'}],
         'identifier': 'foo'
     }
     requests_mock.get(METAX_REST_URL + "/directories/files", json=metadata)
     assert METAX_CLIENT.get_project_directory('foo', '/testdir') \
-        == {'identifier': 'foo'}
+        == metadata
     assert requests_mock.last_request.qs['project'] == ['foo']
     assert requests_mock.last_request.qs['path'] == ['/testdir']
-    assert requests_mock.last_request.qs['directories_only'] == ['true']
 
 
 @pytest.mark.parametrize(
@@ -883,16 +848,6 @@ def test_get_project_file_not_found(results, requests_mock):
 @pytest.mark.parametrize(
     ['method', 'parameters', 'url'],
     [
-        (
-            METAX_CLIENT.get_directory,
-            ['foo'],
-            '/directories/foo'
-        ),
-        (
-            METAX_CLIENT.get_directory_files,
-            ['foo'],
-            '/directories/foo/files'
-        ),
         (
             METAX_CLIENT.get_project_directory,
             ['foo', 'bar'],

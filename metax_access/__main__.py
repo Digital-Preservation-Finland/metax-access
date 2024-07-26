@@ -249,9 +249,9 @@ def directory(metax_client, identifier, by_path, files):
 
     if files:
         print_response(
-            metax_client.get_directory_files(
+            metax_client.get_project_directory(
                 directory_metadata["identifier"]
-            )
+            )['files']
         )
     else:
         print_response(directory_metadata)

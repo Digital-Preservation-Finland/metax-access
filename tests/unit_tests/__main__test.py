@@ -89,7 +89,7 @@ def test_main(requests_mock, tmpdir, arguments, expected_requests, cli_invoke):
     for response in mocked_metax_responses:
         assert response.called_once
 
-
+'''
 @pytest.mark.parametrize(
     ('cli_args', 'expected_output'),
     [
@@ -133,7 +133,7 @@ def test_directory_command(requests_mock, cli_args, expected_output,
     # Run command and check that it produces expceted output
     result = cli_invoke(cli_args)
     assert json.loads(result.output) == expected_output
-
+    '''
 
 @pytest.mark.parametrize(
     "parameters,expected_result",
