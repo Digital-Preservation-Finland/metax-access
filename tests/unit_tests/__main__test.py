@@ -89,21 +89,16 @@ def test_main(requests_mock, tmpdir, arguments, expected_requests, cli_invoke):
     for response in mocked_metax_responses:
         assert response.called_once
 
-'''
 @pytest.mark.parametrize(
     ('cli_args', 'expected_output'),
     [
-        (
-            ['directory', 'foo'],
-            {'identifier': 'foo'}
-        ),
-        (
-            ['directory', '--by-path', 'baz:bar'],
+       (
+            ['directory', 'baz:bar'],
             {'identifier': 'foo2'}
         ),
         (
-            ['directory', 'foo', '--files'],
-            {'foo': 'bar'}
+            ['directory', 'baz:bar', '--files'],
+            [{'foo': 'bar'}]
         )
     ]
 )
@@ -115,25 +110,14 @@ def test_directory_command(requests_mock, cli_args, expected_output,
     :param cli_args: list of commandline arguments
     :param expected_output: expected output as dictionary
     """
-    # Mock metax
     requests_mock.get(
-        'https://metax.localhost/rest/v2/directories/foo',
-        json={'identifier': 'foo'}
-    )
-    requests_mock.get(
-        'https://metax.localhost/rest/v2/directories/files?path=bar'
-        '&project=baz&depth=1&directories_only=true&include_parent=true',
-        json={'directories': None, 'identifier': 'foo2'}
-    )
-    requests_mock.get(
-        'https://metax.localhost/rest/v2/directories/foo/files',
-        json={'foo': 'bar'}
+        'https://metax.localhost/rest/v2/directories/files?path=bar&project=baz&depth=1&include_parent=true',
+        json={'directories': None, 'files':[{'foo': 'bar'}], 'identifier': 'foo2'}
     )
 
     # Run command and check that it produces expceted output
     result = cli_invoke(cli_args)
     assert json.loads(result.output) == expected_output
-    '''
 
 @pytest.mark.parametrize(
     "parameters,expected_result",
@@ -199,7 +183,7 @@ def test_file_datasets_command(requests_mock, cli_invoke, parameters,
          'Username and password or access token must be provided.'),
         (['--config', '/dev/null', 'post', 'dataset', 'foo'],
          'Configuration file /dev/null not found.'),
-        (['--url', 'foo', '--token', 'bar', 'directory', '--by-path', 'baz'],
+        (['--url', 'foo', '--token', 'bar', 'directory', 'baz'],
          'The identifier should be formatted as <project>:<path>'),
         (['--url', 'foo', '--token', 'bar', 'file', '--by-path', 'baz'],
          'The identifier should be formatted as <project>:<path>')

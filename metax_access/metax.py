@@ -755,8 +755,7 @@ class Metax:
         if response.status_code == 404:
             raise DirectoryNotAvailableError
 
-        metadata = response.json()
-        return metadata
+        return response.json()
 
     def get_project_file(self, project, path):
         """Get file of project by path.

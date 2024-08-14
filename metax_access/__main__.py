@@ -219,41 +219,31 @@ def patch(metax_client, resource, identifier, filepath, output):
 
 @cli.command()
 @click.argument('identifier')
-@click.option('--by-path',
-              help="Identify directory using project and path instead of "
-                   "identifier.",
-              is_flag=True,
-              default=False)
 @click.option('--files',
               help="List content of directory instead of directory metadata.",
               is_flag=True,
               default=False)
 @click.pass_obj
-def directory(metax_client, identifier, by_path, files):
+def directory(metax_client, identifier, files):
     """Print directory metadata or content.
 
-    Directory can be chosen using the file identifier or path. If
-    --by-path option is used, <project>:<path> should be used as
-    IDENTIFIER.
+    Use <project>:<path> as IDENTIFIER.
     """
-    if by_path:
-        project = identifier.split(':')[0]
-        path = ''.join(identifier.split(':')[1:])
-        if not (project and path):
-            raise click.UsageError("The identifier should be formatted as "
-                                   "<project>:<path>")
-        directory_metadata \
-            = metax_client.get_project_directory(project, path)
-    else:
-        directory_metadata = metax_client.get_directory(identifier)
+    project = identifier.split(':')[0]
+    path = ''.join(identifier.split(':')[1:])
+    if not (project and path):
+        raise click.UsageError("The identifier should be formatted as "
+                               "<project>:<path>")
+    directory_metadata \
+        = metax_client.get_project_directory(project, path)
 
     if files:
         print_response(
-            metax_client.get_project_directory(
-                directory_metadata["identifier"]
-            )['files']
+            directory_metadata['files']
         )
     else:
+        del directory_metadata['directories']
+        del directory_metadata['files']
         print_response(directory_metadata)
 
 
