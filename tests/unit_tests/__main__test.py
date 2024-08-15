@@ -99,7 +99,9 @@ def test_main(requests_mock, tmpdir, arguments, expected_requests, cli_invoke):
         ),
         (
             ['directory', 'baz', 'bar', '--files'],
-            [{'foo': 'bar'}]
+            {'files': [{'foo': 'bar'}],
+             'directories': [{'directory_name': 'dir'}]
+             }
         )
     ]
 )
@@ -113,7 +115,7 @@ def test_directory_command(requests_mock, cli_args, expected_output,
     """
     requests_mock.get(
         'https://metax.localhost/rest/v2/directories/files?path=bar&project=baz&depth=1&include_parent=true',
-        json={'directories': None, 'files': [
+        json={'directories': [{'directory_name': 'dir'}], 'files': [
             {'foo': 'bar'}], 'identifier': 'foo2'}
     )
 

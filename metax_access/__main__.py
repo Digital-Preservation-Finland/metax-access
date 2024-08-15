@@ -234,9 +234,11 @@ def directory(metax_client, project_id, directorypath, files):
         = metax_client.get_project_directory(project_id, directorypath)
 
     if files:
-        print_response(
-            directory_metadata['files']
-        )
+        print_response({
+            "files": directory_metadata['files'],
+            "directories": directory_metadata['directories']
+        })
+
     else:
         del directory_metadata['directories']
         del directory_metadata['files']
