@@ -218,24 +218,20 @@ def patch(metax_client, resource, identifier, filepath, output):
 
 
 @cli.command()
-@click.argument('identifier')
+@click.argument('project-id')
+@click.argument('directorypath')
 @click.option('--files',
               help="List content of directory instead of directory metadata.",
               is_flag=True,
               default=False)
 @click.pass_obj
-def directory(metax_client, identifier, files):
+def directory(metax_client, project_id, directorypath, files):
     """Print directory metadata or content.
 
-    Use <project>:<path> as IDENTIFIER.
+    The directory is identified with DIRECTORYPATH and PROJECT-ID
     """
-    project = identifier.split(':')[0]
-    path = ''.join(identifier.split(':')[1:])
-    if not (project and path):
-        raise click.UsageError("The identifier should be formatted as "
-                               "<project>:<path>")
     directory_metadata \
-        = metax_client.get_project_directory(project, path)
+        = metax_client.get_project_directory(project_id, directorypath)
 
     if files:
         print_response(
