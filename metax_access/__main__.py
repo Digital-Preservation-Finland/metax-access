@@ -220,12 +220,12 @@ def patch(metax_client, resource, identifier, filepath, output):
 @cli.command()
 @click.argument('project-id')
 @click.argument('directorypath')
-@click.option('--files',
+@click.option('--content',
               help="List content of directory instead of directory metadata.",
               is_flag=True,
               default=False)
 @click.pass_obj
-def directory(metax_client, project_id, directorypath, files):
+def directory(metax_client, project_id, directorypath, content):
     """Print directory metadata or content.
 
     The directory is identified with DIRECTORYPATH and PROJECT-ID
@@ -233,7 +233,7 @@ def directory(metax_client, project_id, directorypath, files):
     directory_metadata \
         = metax_client.get_project_directory(project_id, directorypath)
 
-    if files:
+    if content:
         print_response({
             "files": directory_metadata['files'],
             "directories": directory_metadata['directories']

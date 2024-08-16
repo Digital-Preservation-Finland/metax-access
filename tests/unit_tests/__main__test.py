@@ -98,7 +98,7 @@ def test_main(requests_mock, tmpdir, arguments, expected_requests, cli_invoke):
             {'identifier': 'foo2'}
         ),
         (
-            ['directory', 'baz', 'bar', '--files'],
+            ['directory', 'baz', 'bar', '--content'],
             {'files': [{'foo': 'bar'}],
              'directories': [{'directory_name': 'dir'}]
              }

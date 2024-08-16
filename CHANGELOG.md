@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- `directory` CLI command retrieves the metadata and the content of a directory by the path and the project id of a directory. Accessing a directory with the directory ID is no longer supported.
+- `directory` CLI command retrieves the metadata and the content of a directory by the path and the project id of a directory. Accessing a directory with the directory ID is no longer supported. The command's flag `--files` was changed to `--content`
 
 ### Removed
 
