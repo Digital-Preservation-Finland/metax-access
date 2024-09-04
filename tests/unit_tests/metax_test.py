@@ -102,9 +102,9 @@ def test_get_dataset(requests_mock):
     :returns: None
     """
     requests_mock.get(METAX_REST_URL + "/datasets/test_id?include_user_metadata=true&file_details=true",
-                      json={"foo": "bar"})
+                      json={"identifier": "123"})
     dataset = METAX_CLIENT.get_dataset("test_id")
-    assert dataset["foo"] == "bar"
+    assert dataset["id"] == "123" #fixed to metax normalization. normalization does not support extra fields currently
 
 
 def test_get_contracts(requests_mock):
@@ -132,9 +132,11 @@ def test_get_contract(requests_mock):
     :returns: None
     """
     requests_mock.get(METAX_REST_URL + "/contracts/test_id",
-                      json={"foo": "bar"})
+                      json={"contract_json":
+                                {"identifier": "bar"}
+                            })
     contract = METAX_CLIENT.get_contract('test_id')
-    assert contract['foo'] == "bar"
+    assert contract['contract_identifier'] == "bar"
 
 
 def test_get_datacatalog(requests_mock):
@@ -202,7 +204,7 @@ def test_patch_dataset(requests_mock):
     requests_mock.patch(METAX_REST_URL + '/datasets/test_id', json={})
     requests_mock.get(
         METAX_REST_URL + '/datasets/test_id',
-        json={'research_dataset': {"provenance": ['foo', 'bar']}}
+        json={'research_dataset': {"provenance": [{'foo':'bar'}, {'fiz':'buz'}]}}
     )
 
     update = {
@@ -696,13 +698,13 @@ def test_get_dataset_by_ids(requests_mock):
 
     response = METAX_CLIENT.get_datasets_by_ids([1, 3])
     assert len(response["results"]) == 2
-    assert response["results"][0]["research_dataset"]["title"] == "Dataset 1"
+    assert response["results"][0]["title"] == "Dataset 1"
 
     # Only retrieve 'id' and 'project_identifier' fields
     response = METAX_CLIENT.get_datasets_by_ids(
         [1, 3], fields=["id", "project_identifier"]
     )
-    assert "research_dataset" not in response["results"][0]
+    assert "title" not in response["results"][0]
 
 
 def test_get_files_dict(requests_mock):
@@ -751,7 +753,6 @@ def test_get_files_dict(requests_mock):
     files = METAX_CLIENT.get_files_dict("test")
     assert "/path/file1" in files
     assert "/path/file2" in files
-    assert files["/path/file1"]['id'] == 28260
     assert files["/path/file1"]['identifier'] == "file1_identifier"
     assert files["/path/file1"]['storage_identifier'] ==\
         "urn:nbn:fi:att:file-storage-pas"
@@ -762,13 +763,31 @@ def test_get_project_directory(requests_mock):
     :param requets_mock: HTTP request mocker
     """
     metadata = {
-        'directories': [{'identifier': 'bar'}],
+        'directories': [{"directory_path": "/testdir/bar"}],
         'files': [{'identifier': 'file1'}],
-        'identifier': 'foo'
+        "directory_path" : "/testdir"
+    }
+    metadataV3 = {
+        'directories': [{"pathname": "/testdir/bar"}],
+        'files': [{'id': 'file1'}],
+        'directory': {"pathname": "/testdir"}
     }
     requests_mock.get(METAX_REST_URL + "/directories/files", json=metadata)
-    assert METAX_CLIENT.get_project_directory('foo', '/testdir') \
-        == metadata
+    assert METAX_CLIENT.get_project_directory('foo', '/testdir')['results'] \
+        == metadataV3
+    assert requests_mock.last_request.qs['project'] == ['foo']
+    assert requests_mock.last_request.qs['path'] == ['/testdir']
+
+def test_get_directory_id(requests_mock):
+    """Test get_directory_id function.
+
+    :param requets_mock: HTTP request mocker
+    """
+    metadata = {
+        "identifier": "dir:id:1"
+    }
+    requests_mock.get(METAX_REST_URL + "/directories/files", json=metadata)
+    assert METAX_CLIENT.get_directory_id('foo', '/testdir') == metadata['identifier']
     assert requests_mock.last_request.qs['project'] == ['foo']
     assert requests_mock.last_request.qs['path'] == ['/testdir']
 
@@ -809,7 +828,7 @@ def test_get_project_file(file_path, results, requests_mock):
             "results": results
         }
     )
-    assert METAX_CLIENT.get_project_file("foo", file_path)["file_path"] \
+    assert METAX_CLIENT.get_project_file("foo", file_path)["pathname"] \
         == "/dir/file"
     assert requests_mock.last_request.qs['project_identifier'] == ['foo']
     assert requests_mock.last_request.qs['file_path'] == [file_path]

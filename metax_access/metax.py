@@ -1,7 +1,14 @@
 """Metax interface class."""
+
 import copy
 import logging
 import re
+from metax_access.v2_to_v3_converter import (
+    convert_dataset,
+    convert_file,
+    convert_directory_files_response,
+    convert_contract,
+)
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -43,7 +50,7 @@ DS_STATE_ALL_STATES = (
     DS_STATE_SIP_SENT_TO_INGESTION_IN_DPRES_SERVICE,
     DS_STATE_IN_DIGITAL_PRESERVATION,
     DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
-    DS_STATE_IN_DISSEMINATION
+    DS_STATE_IN_DISSEMINATION,
 )
 
 
@@ -114,7 +121,7 @@ class DirectoryNotAvailableError(ResourceNotAvailableError):
 
     def __init__(self):
         """Init DirectoryNotAvailableError."""
-        super().__init__('Directory not found')
+        super().__init__("Directory not found")
 
 
 class DataciteGenerationError(MetaxError):
@@ -130,8 +137,7 @@ class Metax:
     """Get metadata from metax as dict object."""
 
     # pylint: disable=too-many-arguments
-    def __init__(self, url, user=None, password=None, token=None,
-                 verify=True):
+    def __init__(self, url, user=None, password=None, token=None, verify=True):
         """Initialize Metax object.
 
         :param url: Metax url
@@ -140,24 +146,27 @@ class Metax:
         :param token: Metax access token
         """
         if not user and not token:
-            raise ValueError('Metax user or access token is required.')
+            raise ValueError("Metax user or access token is required.")
         self.username = user
         self.password = password
         self.token = token
         self.url = url
-        self.baseurl = f'{url}/rest/v2'
-        self.rpcurl = f'{url}/rpc/v2'
+        self.baseurl = f"{url}/rest/v2"
+        self.rpcurl = f"{url}/rpc/v2"
         self.verify = verify
 
     # pylint: disable=too-many-arguments
-    def get_datasets(self, states=None,
-                     limit="1000000",
-                     offset="0",
-                     pas_filter=None,
-                     metadata_owner_org=None,
-                     metadata_provider_user=None,
-                     ordering=None,
-                     include_user_metadata=True):
+    def get_datasets(
+        self,
+        states=None,
+        limit="1000000",
+        offset="0",
+        pas_filter=None,
+        metadata_owner_org=None,
+        metadata_provider_user=None,
+        ordering=None,
+        include_user_metadata=True,
+    ):
         """Get the metadata of datasets from Metax.
 
         :param str states: string containing dataset preservation state values
@@ -180,9 +189,7 @@ class Metax:
         :returns: datasets from Metax as json.
         """
         if states is None:
-            states = ','.join(
-                str(state) for state in DS_STATE_ALL_STATES
-            )
+            states = ",".join(str(state) for state in DS_STATE_ALL_STATES)
 
         params = {}
         if pas_filter is not None:
@@ -204,7 +211,10 @@ class Metax:
         response = self.get(url, allowed_status_codes=[404], params=params)
         if response.status_code == 404:
             raise DatasetNotAvailableError
-        return response.json()
+        json = response.json()
+        if "results" in json:
+            json["results"] = [convert_dataset(d) for d in json["results"]]
+        return json
 
     def query_datasets(self, param_dict):
         """Get datasets from metax based on query parameters.
@@ -216,10 +226,14 @@ class Metax:
         url = f"{self.baseurl}/datasets"
         response = self.get(url, params=param_dict)
 
-        return response.json()
+        json = response.json()
+        if "results" in json:
+            json["results"] = [convert_dataset(d) for d in json["results"]]
+        return json
 
     def get_datasets_by_ids(
-            self, dataset_ids, limit=1000000, offset=0, fields=None):
+        self, dataset_ids, limit=1000000, offset=0, fields=None
+    ):
         """Get datasets with given IDs.
 
         :param list dataset_ids: Dataset identifiers
@@ -234,15 +248,15 @@ class Metax:
         # (ie. no API version in the path)
         url = f"{self.url}/rest/datasets/list"
 
-        params = {
-            "limit": str(limit),
-            "offset": str(offset)
-        }
+        params = {"limit": str(limit), "offset": str(offset)}
         if fields:
             params["fields"] = ",".join(fields)
 
         response = self.post(url, json=dataset_ids, params=params)
-        return response.json()
+        json = response.json()
+        if "results" in json:
+            json["results"] = [convert_dataset(d) for d in json["results"]]
+        return json
 
     def get_contracts(self, limit="1000000", offset="0", org_filter=None):
         """Get the data for contracts list from Metax.
@@ -265,8 +279,14 @@ class Metax:
         response = self.get(url, allowed_status_codes=[404], params=params)
         if response.status_code == 404:
             raise ContractNotAvailableError
-
-        return response.json()
+        json = response.json()
+        json |= {
+            "results": [
+                convert_contract(contract)
+                for contract in json.get("results", [])
+            ]
+        }
+        return json
 
     def get_contract(self, pid):
         """Get the contract data from Metax.
@@ -278,7 +298,7 @@ class Metax:
         response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
             raise ContractNotAvailableError
-        return response.json()
+        return convert_contract(response.json())
 
     def patch_contract(self, contract_id, data):
         """Patch a contract.
@@ -297,10 +317,9 @@ class Metax:
 
         url = f"{self.baseurl}/contracts/{contract_id}"
         response = self.patch(url, json=data)
+        return convert_contract(response.json())
 
-        return response.json()
-
-    def get_dataset(self, dataset_id, include_user_metadata=True):
+    def get_dataset(self, dataset_id, include_user_metadata=True, v2=False):
         """Get dataset metadata from Metax.
 
         :param str dataset_id: id or identifier attribute of dataset
@@ -308,22 +327,23 @@ class Metax:
                                            metadata for files
         :returns: dataset as json
         """
-        url = f'{self.baseurl}/datasets/{dataset_id}'
+        url = f"{self.baseurl}/datasets/{dataset_id}"
 
         response = self.get(
             url,
             allowed_status_codes=[404],
             params={
-                "include_user_metadata":
-                    "true" if include_user_metadata else "false",
-                "file_details": "true"
-            }
+                "include_user_metadata": (
+                    "true" if include_user_metadata else "false"
+                ),
+                "file_details": "true",
+            },
         )
 
         if response.status_code == 404:
             raise DatasetNotAvailableError
 
-        return response.json()
+        return convert_dataset(response.json()) if not v2 else response.json()
 
     def get_dataset_template(self):
         """Get minimal dataset template.
@@ -341,6 +361,8 @@ class Metax:
     def get_datacatalog(self, catalog_id):
         """Get the metadata of a datacatalog from Metax.
 
+        TODO: Only used by metax access, not normalized
+
         :param str catalog_id: id or identifier attribute of the datacatalog
         :returns: The datacatalog as json.
         """
@@ -351,7 +373,7 @@ class Metax:
 
         return response.json()
 
-    def patch_dataset(self, dataset_id, data):
+    def patch_dataset(self, dataset_id, data, overwrite_objects=False):
         """Patch a dataset.
 
         :param str dataset_id: id or identifier of the dataset
@@ -359,12 +381,16 @@ class Metax:
                           key/value pairs that will be updated
         :returns: ``None``
         """
-        # The original data must be added to updated objects since Metax patch
-        # request will just overwrite them
-        original_data = self.get_dataset(dataset_id)
-        for key in data:
-            if isinstance(data[key], dict) and key in original_data:
-                data[key] = _update_nested_dict(original_data[key], data[key])
+        if not overwrite_objects:
+            # The original data must be added to updated
+            # objects since Metax patch
+            # request will just overwrite them
+            original_data = self.get_dataset(dataset_id, v2=True)
+            for key in data:
+                if isinstance(data[key], dict) and key in original_data:
+                    data[key] = _update_nested_dict(
+                        original_data[key], data[key]
+                    )
 
         url = f"{self.baseurl}/datasets/{dataset_id}"
         response = self.patch(url, json=data)
@@ -379,22 +405,22 @@ class Metax:
         url = f"{self.baseurl}/contracts/{pid}/datasets"
         response = self.get(url)
 
-        return response.json()
+        return [convert_dataset(dataset) for dataset in response.json()]
 
-    def get_file(self, file_id):
+    def get_file(self, file_id, v2=False):
         """Get file metadata from Metax.
 
         :param str file_id: id or identifier attribute of file
         :returns: file metadata as json
         """
-        url = f'{self.baseurl}/files/{file_id}'
+        url = f"{self.baseurl}/files/{file_id}"
 
         response = self.get(url, allowed_status_codes=[404])
 
         if response.status_code == 404:
             raise FileNotAvailableError
 
-        return response.json()
+        return convert_file(response.json()) if not v2 else response.json()
 
     def get_files(self, project):
         """Get all files of a given project.
@@ -403,7 +429,7 @@ class Metax:
         :returns: list of files
         """
         files = []
-        url = f'{self.baseurl}/files?limit=10000&project_identifier={project}'
+        url = f"{self.baseurl}/files?limit=10000&project_identifier={project}"
 
         # GET 10000 files every iteration until all files are read
         while url is not None:
@@ -411,7 +437,7 @@ class Metax:
             url = response["next"]
             files.extend(response["results"])
 
-        return files
+        return [convert_file(file) for file in files]
 
     def get_files_dict(self, project):
         """Get all the files of a given project.
@@ -432,13 +458,35 @@ class Metax:
 
         file_dict = {}
         for _file in files:
-            file_dict[_file["file_path"]] = {
-                "id": _file["id"],
-                "identifier": _file["identifier"],
-                "storage_identifier": _file["file_storage"]["identifier"]
+            file_dict[_file["pathname"]] = {
+                "identifier": _file["id"],
+                "storage_identifier": _file["storage_identifier"],
             }
 
         return file_dict
+
+    def get_directory_id(self, project, path,):
+        """Get the identifier of a direcotry with project and a path.
+
+        The directory id will be deprecated in Metax V3 but the V2's
+        directory identifier is available with this method.
+
+        :param str project: project identifier of the directory
+        :param str path: path of the directory
+        :returns: directory identifier
+        """
+        url = f"{self.baseurl}/directories/files"
+        params = {
+            "path": path,
+            "project": project,
+            "include_parent": "true",
+        }
+
+        response = self.get(url, allowed_status_codes=[404], params=params)
+        if response.status_code == 404:
+            raise DirectoryNotAvailableError
+
+        return response.json()["identifier"]
 
     def set_preservation_state(self, dataset_id, state, description):
         """Set preservation state of dataset.
@@ -468,10 +516,10 @@ class Metax:
         :param str description: The value for `preservation_description`
         :returns: ``None``
         """
-        url = f'{self.baseurl}/datasets/{dataset_id}'
+        url = f"{self.baseurl}/datasets/{dataset_id}"
         data = {
-            'preservation_state': state,
-            'preservation_description': description
+            "preservation_state": state,
+            "preservation_description": description,
         }
 
         self.patch(url, json=data)
@@ -486,8 +534,8 @@ class Metax:
         :param str reason: The value for `preservation_reason_description`
         :returns: ``None``
         """
-        url = f'{self.baseurl}/datasets/{dataset_id}'
-        self.patch(url, json={'preservation_reason_description': reason})
+        url = f"{self.baseurl}/datasets/{dataset_id}"
+        self.patch(url, json={"preservation_reason_description": reason})
 
     def patch_file(self, file_id, data):
         """Patch file metadata.
@@ -499,14 +547,13 @@ class Metax:
         """
         # The original data must be added to updated objects since Metax patch
         # request will just overwrite them
-        original_data = self.get_file(file_id)
+        original_data = self.get_file(file_id, True)
         for key in data:
             if isinstance(data[key], dict) and key in original_data:
                 data[key] = _update_nested_dict(original_data[key], data[key])
 
         url = f"{self.baseurl}/files/{file_id}"
         response = self.patch(url, json=data)
-
         return response.json()
 
     def get_datacite(self, dataset_id, dummy_doi="false"):
@@ -518,16 +565,13 @@ class Metax:
         :returns: Datacite XML as string
         """
         url = f"{self.baseurl}/datasets/{dataset_id}"
-        params = {
-            "dataset_format": "datacite",
-            "dummy_doi": dummy_doi
-        }
+        params = {"dataset_format": "datacite", "dummy_doi": dummy_doi}
         response = self.get(
             url, allowed_status_codes=[400, 404], params=params
         )
 
         if response.status_code == 400:
-            detail = response.json()['detail']
+            detail = response.json()["detail"]
             raise DataciteGenerationError(
                 f"Datacite generation failed: {detail}"
             )
@@ -551,8 +595,7 @@ class Metax:
         url = f"{self.baseurl}/datasets/{dataset_id}/files"
 
         response = self.get(
-            url, params={"file_fields": "id"},
-            allowed_status_codes=[404]
+            url, params={"file_fields": "id"}, allowed_status_codes=[404]
         )
 
         if response.status_code == 404:
@@ -567,14 +610,29 @@ class Metax:
         :param str dataset_id: id or identifier attribute of dataset
         :returns: metadata of dataset files as json
         """
-        url = f'{self.baseurl}/datasets/{dataset_id}/files'
+        url = f"{self.baseurl}/datasets/{dataset_id}/files"
 
         response = self.get(url, allowed_status_codes=[404])
 
         if response.status_code == 404:
             raise DatasetNotAvailableError
 
-        return response.json()
+        # use category is defined only in research dataset
+        research_dataset_file_info = {
+            file.get("identifier"): file
+            for file in self.get_dataset(dataset_id, v2=True)
+            .get("research_dataset", {})
+            .get("files", [])
+        }
+
+        return [
+            convert_file(
+                file, research_dataset_file_info.get(
+                    file.get("identifier"), {}
+                )
+            )
+            for file in response.json()
+        ]
 
     def get_file_datasets(self, file_id):
         """Get a list of research datasets associated with file_id.
@@ -582,12 +640,13 @@ class Metax:
         :param file_id: File identifier
         :returns: List of datasets associated with file_id
         """
-        url = f'{self.baseurl}/files/datasets'
+        url = f"{self.baseurl}/files/datasets"
         response = self.post(url, allowed_status_codes=[404], json=[file_id])
 
         if response.status_code == 404:
             raise FileNotAvailableError
-
+        # same output is given by
+        # 'https://metax.fd-test.csc.fi/v3/files/datasets?relations=false'
         return response.json()
 
     def get_file2dataset_dict(self, file_ids):
@@ -605,7 +664,8 @@ class Metax:
 
         url = f"{self.baseurl}/files/datasets?keys=files"
         response = self.post(url, json=file_ids)
-
+        # same output is given by
+        # 'https://metax.fd-test.csc.fi/v3/files/datasets?relations=true'
         result = response.json()
 
         if not result:
@@ -623,7 +683,7 @@ class Metax:
         :param file_id: file identifier
         :returns: JSON response from Metax
         """
-        url = f'{self.baseurl}/files/{file_id}'
+        url = f"{self.baseurl}/files/{file_id}"
         response = self.delete(url)
 
         return response.json()
@@ -634,7 +694,7 @@ class Metax:
         :param file_id_list: List of ids to delete from Metax
         :returns: JSON returned by Metax
         """
-        url = f'{self.baseurl}/files'
+        url = f"{self.baseurl}/files"
         response = self.delete(url, json=file_id_list)
 
         return response.json()
@@ -645,7 +705,7 @@ class Metax:
         :param dataset_id: dataset identifier
         :returns: ``None``
         """
-        url = f'{self.baseurl}/datasets/{dataset_id}'
+        url = f"{self.baseurl}/datasets/{dataset_id}"
         self.delete(url)
 
     def post_file(self, metadata):
@@ -654,10 +714,10 @@ class Metax:
         :param metadata: file metadata dictionary
         :returns: JSON response from Metax
         """
-        url = f'{self.baseurl}/files/'
-        response = self.post(url,
-                             json=metadata,
-                             allowed_status_codes=[400, 404])
+        url = f"{self.baseurl}/files/"
+        response = self.post(
+            url, json=metadata, allowed_status_codes=[400, 404]
+        )
 
         if response.status_code == 404:
             raise FileNotAvailableError
@@ -666,32 +726,34 @@ class Metax:
 
             # Read the response and parse list of failed files
             try:
-                failed_files = response.json()['failed']
+                failed_files = response.json()["failed"]
             except KeyError:
                 # Most likely only one file was posted, so Metax
                 # response is formatted differently: just one error
                 # instead of list of errors
-                failed_files = [{'object': metadata,
-                                 'errors': response.json()}]
+                failed_files = [
+                    {"object": metadata, "errors": response.json()}
+                ]
 
             # If all errors are caused by files that already exist,
             # raise ResourceAlreadyExistsError.
             all_errors = []
             for file_ in failed_files:
-                for error_message in file_['errors'].values():
+                for error_message in file_["errors"].values():
                     all_errors.extend(error_message)
-            path_exists_pattern \
-                = 'a file with path .* already exists in project .*'
-            identifier_exists_pattern \
-                = 'a file with given identifier already exists'
+            path_exists_pattern = (
+                "a file with path .* already exists in project .*"
+            )
+            identifier_exists_pattern = (
+                "a file with given identifier already exists"
+            )
             if all(
-                    re.search(path_exists_pattern, string)
-                    or re.search(identifier_exists_pattern, string)
-                    for string in all_errors
+                re.search(path_exists_pattern, string)
+                or re.search(identifier_exists_pattern, string)
+                for string in all_errors
             ):
                 raise ResourceAlreadyExistsError(
-                    'Some of the files already exist.',
-                    response=response
+                    "Some of the files already exist.", response=response
                 )
 
             # Raise HTTPError for unknown "bad request error"
@@ -705,7 +767,7 @@ class Metax:
         :param metadata: dataset metadata dictionary
         :returns: JSON response from Metax
         """
-        url = f'{self.baseurl}/datasets/'
+        url = f"{self.baseurl}/datasets/"
         response = self.post(url, json=metadata)
 
         return response.json()
@@ -716,10 +778,10 @@ class Metax:
         :param metadata: contract metadata dictionary
         :returns: JSON response from Metax
         """
-        url = f'{self.baseurl}/contracts/'
+        url = f"{self.baseurl}/contracts/"
         response = self.post(url, json=metadata)
 
-        return response.json()
+        return convert_contract(response.json())
 
     def delete_contract(self, contract_id):
         """Delete metadata of contract.
@@ -727,12 +789,11 @@ class Metax:
         :param dataset_id: contract identifier
         :returns: ``None``
         """
-        url = f'{self.baseurl}/contracts/{contract_id}'
+        url = f"{self.baseurl}/contracts/{contract_id}"
         self.delete(url)
 
-    def get_project_directory(self, project, path,
-                              dataset_identifier=None):
-        """Get directory metadata, directoreis, or files of project by path.
+    def get_project_directory(self, project, path, dataset_identifier=None):
+        """Get directory metadata, directories, and files of project by path.
 
         :param str project: project identifier of the directory
         :param str path: path of the directory
@@ -741,21 +802,21 @@ class Metax:
                                        dataset
         :returns: directory metadata
         """
-        url = f'{self.baseurl}/directories/files'
-        params = {'path': path,
-                  'project': project,
-                  'depth': 1,
-                  'include_parent': 'true',
-                  }
+        url = f"{self.baseurl}/directories/files"
+        params = {
+            "path": path,
+            "project": project,
+            "depth": 1,
+            "include_parent": "true",
+        }
         if dataset_identifier:
-            params['cr_identifier'] = dataset_identifier
+            params["cr_identifier"] = dataset_identifier
 
-        response = self.get(url, allowed_status_codes=[404],
-                            params=params)
+        response = self.get(url, allowed_status_codes=[404], params=params)
         if response.status_code == 404:
             raise DirectoryNotAvailableError
 
-        return response.json()
+        return convert_directory_files_response(response.json())
 
     def get_project_file(self, project, path):
         """Get file of project by path.
@@ -764,14 +825,16 @@ class Metax:
         :param str path: path of the file
         :returns: directory metadata
         """
-        url = f'{self.baseurl}/files'
-        response = self.get(url, params={'file_path': path,
-                                         'project_identifier': project})
+        url = f"{self.baseurl}/files"
+        response = self.get(
+            url, params={"file_path": path, "project_identifier": project}
+        )
 
         try:
             return next(
-                file for file in response.json()['results']
-                if file['file_path'].strip('/') == path.strip('/')
+                convert_file(file)
+                for file in response.json()["results"]
+                if file["file_path"].strip("/") == path.strip("/")
             )
         except StopIteration:
             raise FileNotAvailableError
@@ -809,8 +872,9 @@ class Metax:
         except requests.HTTPError as error:
             if error.response.status_code not in allowed_status_codes:
                 logger.error(
-                    'HTTP request to %s failed. Response from server was: %s',
-                    response.url, response.text
+                    "HTTP request to %s failed. Response from server was: %s",
+                    response.url,
+                    response.text,
                 )
                 raise
 
@@ -827,7 +891,7 @@ class Metax:
         :param allowed_status_codes: List of allowed HTTP error codes
         :returns: requests response
         """
-        return self.request('GET', url, allowed_status_codes, **kwargs)
+        return self.request("GET", url, allowed_status_codes, **kwargs)
 
     def patch(self, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP PATCH request.
@@ -840,7 +904,7 @@ class Metax:
         :param allowed_status_codes: List of allowed HTTP error codes
         :returns: requests response
         """
-        return self.request('PATCH', url, allowed_status_codes, **kwargs)
+        return self.request("PATCH", url, allowed_status_codes, **kwargs)
 
     def post(self, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP POST request.
@@ -853,7 +917,7 @@ class Metax:
         :param allowed_status_codes: List of allowed HTTP error codes
         :returns: requests response
         """
-        return self.request('POST', url, allowed_status_codes, **kwargs)
+        return self.request("POST", url, allowed_status_codes, **kwargs)
 
     def delete(self, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP DELETE request.
@@ -866,7 +930,7 @@ class Metax:
         :param allowed_status_codes: List of allowed HTTP error codes
         :returns: requests response
         """
-        return self.request('DELETE', url, allowed_status_codes, **kwargs)
+        return self.request("DELETE", url, allowed_status_codes, **kwargs)
 
 
 def _update_nested_dict(original, update):

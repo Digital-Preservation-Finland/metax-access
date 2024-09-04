@@ -95,12 +95,12 @@ def test_main(requests_mock, tmpdir, arguments, expected_requests, cli_invoke):
     [
         (
             ['directory', 'baz', 'bar'],
-            {'identifier': 'foo2'}
+            {'directory':{'pathname': '/bar'}}
         ),
         (
             ['directory', 'baz', 'bar', '--content'],
-            {'files': [{'foo': 'bar'}],
-             'directories': [{'directory_name': 'dir'}]
+            {'files': [{'id': 'bar'}],
+             'directories': [{'name': 'dir'}]
              }
         )
     ]
@@ -115,8 +115,15 @@ def test_directory_command(requests_mock, cli_args, expected_output,
     """
     requests_mock.get(
         'https://metax.localhost/rest/v2/directories/files?path=bar&project=baz&depth=1&include_parent=true',
-        json={'directories': [{'directory_name': 'dir'}], 'files': [
-            {'foo': 'bar'}], 'identifier': 'foo2'}
+        json={
+                'directories': [
+                        {'directory_name': 'dir'}
+                    ], 
+                'files': [
+                    {'identifier': 'bar'}
+                ], 
+                'directory_path': '/bar'
+            }
     )
 
     # Run command and check that it produces expceted output
@@ -128,10 +135,10 @@ def test_directory_command(requests_mock, cli_args, expected_output,
     "parameters,expected_result",
     [
         # Search file by identifier
-        (['fileid1'], {'identifier': 'fileid1'}),
+        (['fileid1'], {'id': 'fileid1', 'characteristics_extension': None}),
         # Search file by path
         (['project1:filepath2', '--by-path'],
-         {'file_path': '/filepath2', 'identifier': 'fileid2'}),
+         {'pathname': '/filepath2', 'id': 'fileid2', 'characteristics_extension': None}),
         # Delete file by identifier
         (['fileid1', '--delete'], ''),
         # List datasets of file

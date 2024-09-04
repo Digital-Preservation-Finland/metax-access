@@ -231,7 +231,8 @@ def directory(metax_client, project_id, directorypath, content):
     The directory is identified with DIRECTORYPATH and PROJECT-ID
     """
     directory_metadata \
-        = metax_client.get_project_directory(project_id, directorypath)
+        = metax_client.get_project_directory(project_id,
+                                             directorypath).get('results', {})
 
     if content:
         print_response({
@@ -283,7 +284,7 @@ def file(metax_client, identifier, by_path, delete_, datasets):
                                'same time.')
 
     if delete_:
-        metax_client.delete_file(file_metadata['identifier'])
+        metax_client.delete_file(file_metadata['id'])
     elif datasets:
         print_response(metax_client.get_file_datasets(identifier))
     else:
