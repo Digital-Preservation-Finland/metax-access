@@ -78,7 +78,7 @@ def convert_directory_files_response(json):
     }
 
 
-def convert_dataset(json):
+def convert_dataset(json, metax=None):
     """Converts Metax V2 dataset to Metax V3 dataset
     info response. If a value is not defined in V2 payload,
     the value is not icluded in the output. Most of this conversion is from
@@ -171,7 +171,11 @@ def convert_dataset(json):
                 _convert_remote_resource(v)
                 for v in research_dataset.get("remote_resources", [])
             ],
-            "fileset": _convert_fileset(research_dataset),
+            "fileset": _convert_fileset(
+                research_dataset,
+                metax,
+                json.get('identifier')
+            ),
         }.items()
         if v != []
     }
@@ -333,7 +337,7 @@ def _convert_preservation(json):
     }
 
 
-def _convert_csc_project(json):
+def _convert_csc_project(json, metax, dataset_id):
     if files := json.get("files", []):
         return (
             files[0].get("details", {}).get("project_identifier")
@@ -344,12 +348,20 @@ def _convert_csc_project(json):
             .get("details", {})
             .get("project_identifier")
         )
+    if metax is not None and dataset_id is not None:
+        for file in metax.get_dataset_files(dataset_id):
+            if project_id := file.get("project_identifier"):
+                return project_id
     return None
 
 
-def _convert_fileset(research_dataset):
+def _convert_fileset(research_dataset, metax, dataset_id):
     return {
-        "csc_project": _convert_csc_project(research_dataset),
+        "csc_project": _convert_csc_project(
+            research_dataset,
+            metax,
+            dataset_id
+        ),
         "total_files_size": research_dataset.get('total_files_byte_size')
     }
 

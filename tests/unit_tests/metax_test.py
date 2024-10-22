@@ -47,9 +47,26 @@ def test_get_datasets(requests_mock, caplog):
     :returns: None
     """
     metax_mock = requests_mock.get(
+        METAX_REST_URL + "/datasets/foo/files",
+        json={}
+    )
+    metax_mock = requests_mock.get(
+        METAX_REST_URL + "/datasets/bar/files",
+        json={}
+    )
+    metax_mock = requests_mock.get(
+        METAX_REST_URL + "/datasets/foo?include_user_metadata=true&file_details=true",
+        json={}
+    )
+    metax_mock = requests_mock.get(
+        METAX_REST_URL + "/datasets/bar?include_user_metadata=true&file_details=true",
+        json={}
+    )
+    metax_mock = requests_mock.get(
         METAX_REST_URL + "/datasets",
         json={"results": [{"identifier": "foo"}, {"identifier": "bar"}]}
     )
+    
     datasets = METAX_CLIENT.get_datasets()
     assert len(datasets["results"]) == 2
 
@@ -103,7 +120,16 @@ def test_get_dataset(requests_mock):
     """
     requests_mock.get(METAX_REST_URL + "/datasets/test_id?include_user_metadata=true&file_details=true",
                       json={"identifier": "123"})
+    requests_mock.get(
+        METAX_REST_URL + "/datasets/123?include_user_metadata=true&file_details=true",
+        json={}
+    )
+    requests_mock.get(
+        METAX_REST_URL + "/datasets/123/files",
+        json={}
+    )
     dataset = METAX_CLIENT.get_dataset("test_id")
+
     assert dataset["id"] == "123" #fixed to metax normalization. normalization does not support extra fields currently
 
 
@@ -643,6 +669,14 @@ def test_query_datasets(requests_mock):
     requests_mock.get(
         METAX_REST_URL + "/datasets?preferred_identifier=foobar",
         json={"results": [{"identifier": "foo"}]}
+    )
+    requests_mock.get(
+        METAX_REST_URL + "/datasets/foo/files",
+        json={}
+    )
+    requests_mock.get(
+        METAX_REST_URL + "/datasets/foo?include_user_metadata=true&file_details=true",
+        json={}
     )
     datasets = METAX_CLIENT.query_datasets({'preferred_identifier': 'foobar'})
     assert len(datasets["results"]) == 1

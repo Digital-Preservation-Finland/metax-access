@@ -213,7 +213,9 @@ class Metax:
             raise DatasetNotAvailableError
         json = response.json()
         if "results" in json:
-            json["results"] = [convert_dataset(d) for d in json["results"]]
+            json["results"] = [
+                convert_dataset(d, self) for d in json["results"]
+            ]
         return json
 
     def query_datasets(self, param_dict):
@@ -228,7 +230,9 @@ class Metax:
 
         json = response.json()
         if "results" in json:
-            json["results"] = [convert_dataset(d) for d in json["results"]]
+            json["results"] = [
+                convert_dataset(d, self) for d in json["results"]
+            ]
         return json
 
     def get_datasets_by_ids(
@@ -255,7 +259,9 @@ class Metax:
         response = self.post(url, json=dataset_ids, params=params)
         json = response.json()
         if "results" in json:
-            json["results"] = [convert_dataset(d) for d in json["results"]]
+            json["results"] = [
+                convert_dataset(d, self) for d in json["results"]
+            ]
         return json
 
     def get_contracts(self, limit="1000000", offset="0", org_filter=None):
@@ -343,7 +349,9 @@ class Metax:
         if response.status_code == 404:
             raise DatasetNotAvailableError
 
-        return convert_dataset(response.json()) if not v2 else response.json()
+        return convert_dataset(
+            response.json(), self
+        ) if not v2 else response.json()
 
     def get_dataset_template(self):
         """Get minimal dataset template.
@@ -405,7 +413,9 @@ class Metax:
         url = f"{self.baseurl}/contracts/{pid}/datasets"
         response = self.get(url)
 
-        return [convert_dataset(dataset) for dataset in response.json()]
+        return [
+            convert_dataset(dataset, self) for dataset in response.json()
+        ]
 
     def get_file(self, file_id, v2=False):
         """Get file metadata from Metax.
