@@ -16,6 +16,7 @@ def main():
             "lxml",
             "click"
         ],
+        package_data={"metax_access": ["py.typed"]},
         entry_points={
             'console_scripts': [
                 'metax_access = metax_access.__main__:main'

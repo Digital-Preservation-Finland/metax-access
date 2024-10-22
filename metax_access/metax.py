@@ -3,15 +3,15 @@
 import copy
 import logging
 import re
-from metax_access.v2_to_v3_converter import (
-    convert_dataset,
-    convert_file,
-    convert_directory_files_response,
-    convert_contract,
-)
-import metax_access.v3_to_v2_converter as v3_to_v2_converter
+
 import requests
 from requests.auth import HTTPBasicAuth
+
+import metax_access.v3_to_v2_converter as v3_to_v2_converter
+from metax_access.response import MetaxFile
+from metax_access.v2_to_v3_converter import (convert_contract, convert_dataset,
+                                             convert_directory_files_response,
+                                             convert_file)
 
 logger = logging.getLogger(__name__)
 
@@ -426,7 +426,7 @@ class Metax:
             convert_dataset(dataset, self) for dataset in response.json()
         ]
 
-    def get_file(self, file_id, v2=False):
+    def get_file(self, file_id, v2=False) -> MetaxFile:
         """Get file metadata from Metax.
 
         :param str file_id: id or identifier attribute of file
@@ -441,7 +441,7 @@ class Metax:
 
         return convert_file(response.json()) if not v2 else response.json()
 
-    def get_files(self, project):
+    def get_files(self, project) -> list[MetaxFile]:
         """Get all files of a given project.
 
         :param project: project id
@@ -623,7 +623,7 @@ class Metax:
         result = response.json()
         return len(result)
 
-    def get_dataset_files(self, dataset_id):
+    def get_dataset_files(self, dataset_id) -> list[MetaxFile]:
         """Get files metadata of dataset Metax.
 
         :param str dataset_id: id or identifier attribute of dataset
@@ -838,7 +838,7 @@ class Metax:
 
         return convert_directory_files_response(response.json())
 
-    def get_project_file(self, project, path):
+    def get_project_file(self, project, path) -> MetaxFile:
         """Get file of project by path.
 
         :param str project: project identifier of the file

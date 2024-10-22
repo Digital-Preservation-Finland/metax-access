@@ -1,7 +1,10 @@
 """Payload converter from Metax v2 to Metax v3."""
 
-from typing import Optional
 import copy
+from typing import Optional
+
+from metax_access.response import (MetaxFile, MetaxFileCharacteristics,
+                                   MetaxFileFormatVersion)
 
 
 def convert_contract(json):
@@ -197,7 +200,7 @@ def convert_dataset(json, metax=None):
     return _remove_none(dataset)
 
 
-def convert_file(json, research_dataset_file={}, v3_to_v2=False):
+def convert_file(json, research_dataset_file={}, v3_to_v2=False) -> MetaxFile:
     """Converts Metax V2 file to Metax V3 file. If a value is not
     defined in V2 payload, the value is not icluded in the output.
     Except the characteristics extension is alway added.
@@ -268,38 +271,43 @@ def convert_file(json, research_dataset_file={}, v3_to_v2=False):
             }
         )
 
-    file_metadata = _remove_none(
-        {
-            "id": json.get("identifier"),
-            "storage_identifier": json.get("file_storage", {}).get(
-                "identifier"
-            ),
-            "pathname": json.get("file_path"),
-            "filename": json.get("file_name"),
-            "size": json.get("byte_size"),
-            "checksum": _convert_checksum_v2_to_v3(json.get("checksum")),
-            "storage_service": (
-                "pas" if json.get("service_created") == "tpas"
-                else json.get("service_created")
-            ),
-            "csc_project": json.get("project_identifier"),
-            "frozen": json.get("file_frozen"),
-            "modified": json.get("file_modified"),
-            "removed": json.get("removed"),
-            "published": json.get("date_created"),
-            "dataset_metadata": {
-                "title": research_dataset_file.get("title"),
-                "file_type": research_dataset_file.get("file_type"),
-                "use_category": research_dataset_file.get("use_category"),
-            },
-            "characteristics": _convert_file_characteristics(
-                json.get("file_characteristics")
-            ),
-        }
-    )
+    file_metadata: MetaxFile = {
+        "id": json.get("identifier"),
+        "storage_identifier": json.get("file_storage", {}).get(
+            "identifier"
+        ),
+        "pathname": json.get("file_path"),
+        "filename": json.get("file_name"),
+        "size": json.get("byte_size"),
+        # FIXME: 'checksum' is required in both V2 and V3, and can never be
+        # None
+        "checksum": _convert_checksum_v2_to_v3(json.get("checksum")),
+        "storage_service": (
+            "pas" if json.get("service_created") == "tpas"
+            else json.get("service_created")
+        ),
+        "csc_project": json.get("project_identifier"),
+        "frozen": json.get("file_frozen"),
+        "modified": json.get("file_modified"),
+        "removed": json.get("removed"),
+        "published": json.get("date_created"),
+        "dataset_metadata": {
+            "title": research_dataset_file.get("title"),
+            "file_type": research_dataset_file.get("file_type"),
+            "use_category": research_dataset_file.get("use_category"),
+        },
+        "characteristics": _convert_file_characteristics(
+            json.get("file_characteristics")
+        ),
+        "characteristics_extension": None
+    }
+    file_metadata = _remove_none(file_metadata)
+    # Null fields are *not* stripped for "characteristics_extension"
+    # as it is entirely free-form
     file_metadata["characteristics_extension"] = json.get(
         "file_characteristics_extension"
     )
+
     return file_metadata
 
 
@@ -365,17 +373,18 @@ def _convert_fileset(research_dataset, metax, dataset_id):
     }
 
 
-def _convert_file_characteristics(file_characteristics):
+def _convert_file_characteristics(file_characteristics) -> \
+        Optional[MetaxFileCharacteristics]:
     if not file_characteristics:
         return None
 
-    file_format_version = {
+    file_format_version: MetaxFileFormatVersion = {
         "pref_label": file_characteristics.get("title"),
         "file_format": file_characteristics.get("file_format"),
         "format_version": file_characteristics.get("format_version"),
     }
 
-    return {
+    file_chars: MetaxFileCharacteristics = {
         "file_created": file_characteristics.get("file_created"),
         "encoding": file_characteristics.get("encoding"),
         "csv_has_header": file_characteristics.get("csv_has_header"),
@@ -388,6 +397,7 @@ def _convert_file_characteristics(file_characteristics):
             file_format_version if len(file_format_version) > 0 else None
         ),
     }
+    return file_chars
 
 
 def _convert_license(license: dict) -> dict:
