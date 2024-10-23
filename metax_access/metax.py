@@ -9,7 +9,7 @@ from metax_access.v2_to_v3_converter import (
     convert_directory_files_response,
     convert_contract,
 )
-
+import metax_access.v3_to_v2_converter as v3_to_v2_converter
 import requests
 from requests.auth import HTTPBasicAuth
 
@@ -322,7 +322,10 @@ class Metax:
                 data[key] = _update_nested_dict(original_data[key], data[key])
 
         url = f"{self.baseurl}/contracts/{contract_id}"
-        response = self.patch(url, json=data)
+        response = self.patch(
+            url, json=v3_to_v2_converter.convert_contract(data)
+        )
+
         return convert_contract(response.json())
 
     def get_dataset(self, dataset_id, include_user_metadata=True, v2=False):
@@ -789,8 +792,9 @@ class Metax:
         :returns: JSON response from Metax
         """
         url = f"{self.baseurl}/contracts/"
-        response = self.post(url, json=metadata)
-
+        response = self.post(
+            url, json=v3_to_v2_converter.convert_contract(metadata)
+        )
         return convert_contract(response.json())
 
     def delete_contract(self, contract_id):

@@ -1,0 +1,27 @@
+"""Payload converter from Metax v2 to Metax v3."""
+
+
+def convert_contract(json):
+    """Converts Metax V3 contract to Metax V2 contract.
+
+    :param dict json: Metax V3 contract as a JSON.
+    :returns: Metax V2 contract as a dictionary
+    """
+    return {
+        "date_modified": json.get("modified"),
+        "date_created": json.get("created"),
+        "service_created": json.get("service"),
+        "removed": json.get("removed"),
+        'contract_json': {
+            "quota": json.get('quota'),
+            "title": json.get('title', {}).get('und'),
+            "contact": json.get('contact'),
+            "created": json.get('created'),
+            "modified": json.get('modified'),
+            "validity": json.get('validity'),
+            "identifier": json.get('contract_identifier'),
+            "description": json.get('description', {}).get('und'),
+            "organization": json.get('organization'),
+            "related_service": json.get('related_service')
+        }
+    }
