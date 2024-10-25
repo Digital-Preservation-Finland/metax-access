@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 0.31 - 2024-10-25
+
+### Added
+
+- `get_directory_id`returns an identifier of a directory.
+- All methods, retrieving data from Metax, return Mtax V3 format data.
+
 ## 0.30 - 2024-09-27
 
 ### Changed
