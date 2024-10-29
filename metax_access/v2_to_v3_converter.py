@@ -350,8 +350,7 @@ def _convert_csc_project(json, metax, dataset_id):
         )
     if metax is not None and dataset_id is not None:
         for file in metax.get_dataset_files(dataset_id):
-            if project_id := file.get("project_identifier"):
-                return project_id
+            return file["csc_project"]
     return None
 
 
