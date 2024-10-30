@@ -210,7 +210,14 @@ def patch(metax_client, resource, identifier, filepath, output):
         "contract": metax_client.patch_contract
     }
     try:
-        response = funcs[resource](identifier, data)
+        if resource == 'dataset':
+            response = funcs[resource](
+                identifier, data,
+                overwrite_objects=False,
+                v2=True
+            )
+        else:
+            response = funcs[resource](identifier, data)
     except metax_access.ResourceNotAvailableError:
         response = {"code": 404, "message": "Not found"}
 

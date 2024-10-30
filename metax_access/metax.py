@@ -384,14 +384,20 @@ class Metax:
 
         return response.json()
 
-    def patch_dataset(self, dataset_id, data, overwrite_objects=False):
-        """Patch a dataset.
+    def patch_dataset(self,
+                      dataset_id,
+                      data,
+                      overwrite_objects=False,
+                      v2=False):
+        """Patch a dataset.S
 
         :param str dataset_id: id or identifier of the dataset
         :param dict data: A dataset dictionary that contains only the
                           key/value pairs that will be updated
         :returns: ``None``
         """
+        if not v2:
+            data = v3_to_v2_converter.convert_dataset(data)
         if not overwrite_objects:
             # The original data must be added to updated
             # objects since Metax patch

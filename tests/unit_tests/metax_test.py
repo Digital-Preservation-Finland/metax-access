@@ -239,7 +239,7 @@ def test_patch_dataset(requests_mock):
             'foo2': 'bar2'
         }
     }
-    METAX_CLIENT.patch_dataset('test_id', update)
+    METAX_CLIENT.patch_dataset('test_id', update, False, True)
     assert requests_mock.last_request.method == 'PATCH'
 
     request_body = requests_mock.last_request.json()

@@ -1,4 +1,4 @@
-"""Payload converter from Metax v2 to Metax v3."""
+"""Payload converter from Metax v3 to Metax v2."""
 
 
 def convert_contract(json):
@@ -23,5 +23,21 @@ def convert_contract(json):
             "description": json.get('description', {}).get('und'),
             "organization": json.get('organization'),
             "related_service": json.get('related_service')
+        }
+    }
+
+
+def convert_dataset(json):
+    """Converts V3 type dataset to V2 dataset.
+    Only contract id of the dataset is updated by the services so
+    this method only converts that to V2 format.
+    Other fields are not converted.
+
+    :param dict json: Metax V3 dataset as a JSON.
+    :returns: Metax V2 dataset as a dictionary
+    """
+    return {
+        "contract": {
+            "identifier": json.get('preservation', {}).get('contract')
         }
     }
