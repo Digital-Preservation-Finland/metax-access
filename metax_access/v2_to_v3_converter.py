@@ -6,6 +6,14 @@ from typing import Optional
 from metax_access.response import (MetaxFile, MetaxFileCharacteristics,
                                    MetaxFileFormatVersion)
 
+# We can also determine the storage service using `service_created`.
+# `file_storage.identifier` <-> `storage_service` mapping is recommended by the
+# Metax V3 migration guide, however.
+FILE_STORAGE_V2_TO_STORAGE_SERVICE_V3 = {
+    "urn:nbn:fi:att:file-storage-pas": "pas",
+    "urn:nbn:fi:att:file-storage-ida": "ida",
+}
+
 
 def convert_contract(json):
     """Converts Metax V2 contract to Metax V3 contract.
@@ -214,18 +222,14 @@ def convert_file(json, research_dataset_file={}) -> MetaxFile:
     """
     file_metadata: MetaxFile = {
         "id": json.get("identifier"),
-        "storage_identifier": json.get("file_storage", {}).get(
-            "identifier"
-        ),
         "pathname": json.get("file_path"),
         "filename": json.get("file_name"),
         "size": json.get("byte_size"),
         # FIXME: 'checksum' is required in both V2 and V3, and can never be
         # None
         "checksum": _convert_checksum_v2_to_v3(json.get("checksum")),
-        "storage_service": (
-            "pas" if json.get("service_created") == "tpas"
-            else json.get("service_created")
+        "storage_service": FILE_STORAGE_V2_TO_STORAGE_SERVICE_V3.get(
+            json.get("file_storage", {}).get("identifier")
         ),
         "csc_project": json.get("project_identifier"),
         "frozen": json.get("file_frozen"),

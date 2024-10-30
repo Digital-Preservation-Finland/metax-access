@@ -788,8 +788,7 @@ def test_get_files_dict(requests_mock):
     assert "/path/file1" in files
     assert "/path/file2" in files
     assert files["/path/file1"]['identifier'] == "file1_identifier"
-    assert files["/path/file1"]['storage_identifier'] ==\
-        "urn:nbn:fi:att:file-storage-pas"
+    assert files["/path/file1"]['storage_service'] == "pas"
 
 def test_get_project_directory(requests_mock):
     """Test get_project_directory function.

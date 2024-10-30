@@ -58,13 +58,14 @@ CONVERTED_FILEV2 = {
                 "stream_type": "text"
             }
         }
-    }
+    },
+    "service_created": "ida"
 }
 
 FILEV3 = {
     "id": "pid:urn:1",
     "pathname": "/path/to/file",
-    "storage_identifier": "urn:nbn:fi:att:file-storage-ida",
+    "storage_service": "ida",
     "checksum": "md5:58284d6cdd8deaffe082d063580a9df3",
     "csc_project": "test_project",
     'characteristics': {

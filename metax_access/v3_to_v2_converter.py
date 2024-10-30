@@ -1,5 +1,12 @@
 """Payload converter from Metax v3 to Metax v2."""
+from metax_access.v2_to_v3_converter import \
+    FILE_STORAGE_V2_TO_STORAGE_SERVICE_V3
 
+
+# Invert the `storage_service` <-> `file_storage_identifier` dict
+STORAGE_SERVICE_V3_TO_FILE_STORAGE_V2 = {
+    value: key for key, value in FILE_STORAGE_V2_TO_STORAGE_SERVICE_V3.items()
+}
 
 def _remove_none(json):
     """Removes ``None`` values from the converted fields.
@@ -74,7 +81,9 @@ def convert_file(json):
         {
             "identifier": json.get("id"),
             "file_storage": {
-                "identifier": json.get("storage_identifier")
+                "identifier": STORAGE_SERVICE_V3_TO_FILE_STORAGE_V2.get(
+                    json.get("storage_service")
+                )
             },
             "file_path": json.get("pathname"),
             "file_name": json.get("filename"),
@@ -85,7 +94,13 @@ def convert_file(json):
                 .upper(),
                 "value": json.get("checksum", "").split(":")[-1],
             },
-            "service_created": json.get("storage_service"),
+            # Assume the service who created the Metax file metadata is the
+            # same as the service. The only exception appears to be Metax's own
+            # test data, which shouldn't matter here.
+            "service_created": (
+                "tpas" if json.get("storage_service") == "pas"
+                else json.get("storage_service")
+            ),
             "project_identifier": json.get("csc_project"),
             "file_frozen": json.get("frozen"),
             "file_modified": json.get("modified"),

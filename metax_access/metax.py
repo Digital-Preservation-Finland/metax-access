@@ -479,7 +479,7 @@ class Metax:
         for _file in files:
             file_dict[_file["pathname"]] = {
                 "identifier": _file["id"],
-                "storage_identifier": _file["storage_identifier"],
+                "storage_service": _file["storage_service"],
             }
 
         return file_dict
