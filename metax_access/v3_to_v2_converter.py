@@ -2,7 +2,6 @@
 from metax_access.v2_to_v3_converter import \
     FILE_STORAGE_V2_TO_STORAGE_SERVICE_V3
 
-
 # Invert the `storage_service` <-> `file_storage_identifier` dict
 STORAGE_SERVICE_V3_TO_FILE_STORAGE_V2 = {
     value: key for key, value in FILE_STORAGE_V2_TO_STORAGE_SERVICE_V3.items()
@@ -27,7 +26,6 @@ def _remove_none(json):
         else:
             processed_json[k] = v
     return {k: v for k, v in processed_json.items() if v != {}}
-
 
 
 def convert_contract(json):
@@ -77,6 +75,15 @@ def convert_file(json):
     Convert Metax file from V3 to V2. This is necessary for data submission
     (eg. POST and PATCH) to Metax during the transition period
     """
+    checksum = None
+    if json.get("checksum"):
+        checksum = {
+            "algorithm": json.get("checksum", "")
+            .split(":")[0]
+            .upper(),
+            "value": json.get("checksum", "").split(":")[-1]
+        }
+
     return _remove_none(
         {
             "identifier": json.get("id"),
@@ -87,13 +94,8 @@ def convert_file(json):
             },
             "file_path": json.get("pathname"),
             "file_name": json.get("filename"),
-     "byte_size": json.get("size"),
-            "checksum": {
-                "algorithm": json.get("checksum", "")
-                .split(":")[0]
-                .upper(),
-                "value": json.get("checksum", "").split(":")[-1],
-            },
+            "byte_size": json.get("size"),
+            "checksum": checksum,
             # Assume the service who created the Metax file metadata is the
             # same as the service. The only exception appears to be Metax's own
             # test data, which shouldn't matter here.
@@ -138,3 +140,5 @@ def convert_file(json):
             ),
         }
     )
+
+

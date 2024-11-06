@@ -3,6 +3,7 @@
 import copy
 import logging
 import re
+from typing import Union
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -566,7 +567,8 @@ class Metax:
         """
         # The original data must be added to updated objects since Metax patch
         # request will just overwrite them
-        original_data = self.get_file(file_id, True)
+        original_data = self.get_file(file_id, v2=True)
+        data = v3_to_v2_converter.convert_file(data)
         for key in data:
             if isinstance(data[key], dict) and key in original_data:
                 data[key] = _update_nested_dict(original_data[key], data[key])
@@ -727,15 +729,27 @@ class Metax:
         url = f"{self.baseurl}/datasets/{dataset_id}"
         self.delete(url)
 
-    def post_file(self, metadata):
+    def post_file(self, metadata: Union[MetaxFile, list[MetaxFile]]):
         """Post file metadata.
 
-        :param metadata: file metadata dictionary
+        :param metadata: file metadata dictionary or list of files
         :returns: JSON response from Metax
         """
         url = f"{self.baseurl}/files/"
+
+        if isinstance(metadata, list):
+            # List of files
+            metadata = [
+                v3_to_v2_converter.convert_file(metadata_)
+                for metadata_ in metadata
+            ]
+        else:
+            # Single file
+            metadata = v3_to_v2_converter.convert_file(metadata)
+
         response = self.post(
-            url, json=metadata, allowed_status_codes=[400, 404]
+            url, json=metadata,
+            allowed_status_codes=[400, 404]
         )
 
         if response.status_code == 404:
@@ -778,6 +792,9 @@ class Metax:
             # Raise HTTPError for unknown "bad request error"
             response.raise_for_status()
 
+        # We don't seem to process this response in any way, so
+        # no normalization needs to be done for this. Chances are any would-be
+        # users will just print it directly.
         return response.json()
 
     def post_dataset(self, metadata):

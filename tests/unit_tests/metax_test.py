@@ -360,7 +360,7 @@ def test_patch_file(requests_mock):
 
     Metadata in Metax is modified by sending HTTP PATCH request with modified
     metadata in JSON format. This test checks that correct HTTP request is sent
-    to Metax, and that patch_file returns JSON response from Metax.
+    to Metax in V2 format, and that patch_file returns JSON response from Metax.
 
     :returns: None
     """
@@ -370,6 +370,8 @@ def test_patch_file(requests_mock):
 
     # Patch a file
     sample_data = {
+        "id": "42",
+        "checksum": "sha256:212f954060735c8aea7af705e0b268723148d37898339f21014c24dc5cf6736b",
         "file_characteristics": {
             "file_format": "text/plain",
             "format_version": "1.0",
@@ -378,9 +380,16 @@ def test_patch_file(requests_mock):
     }
     assert METAX_CLIENT.patch_file('test_id', sample_data) == {'foo': 'bar'}
 
-    # Check the body of last HTTP request
-    request_body = requests_mock.last_request.json()
-    assert request_body == sample_data
+    # Check that the JSON was converted to V2
+    file_v2 = requests_mock.last_request.json()
+
+    assert file_v2 == {
+        "identifier": "42",
+        "checksum": {
+            "algorithm": "SHA256",
+            "value": "212f954060735c8aea7af705e0b268723148d37898339f21014c24dc5cf6736b"
+        }
+    }
 
     # Check the method of last HTTP request
     assert requests_mock.last_request.method == 'PATCH'
@@ -432,13 +441,13 @@ def test_post_file(requests_mock):
 @pytest.mark.parametrize(
     ('response', 'expected_exception'),
     [
-        # Trying to post file, path already exists
+        # V2: Trying to post file, path already exists
         (
             {"file_path": ["a file with path /foo already exists in"
                            " project bar"]},
             ResourceAlreadyExistsError("Some of the files already exist.")
         ),
-        # Trying to post file, path and identifier already exist
+        # V2: Trying to post file, path and identifier already exist
         (
             {"file_path": ["a file with path /foo already exists in"
                            " project bar"],
@@ -525,7 +534,7 @@ def test_post_file_bad_request(requests_mock, response, expected_exception):
 @pytest.mark.parametrize(
     ('status_code', 'reason', 'response', 'expectation'),
     [
-        # Success
+        # V2: Success
         (
             200,
             None,
@@ -539,7 +548,7 @@ def test_post_file_bad_request(requests_mock, response, expected_exception):
             },
             does_not_raise()
         ),
-        # Some files already exist
+        # V2: Some files already exist
         (
             400,
             'Bad Request',
@@ -564,7 +573,7 @@ def test_post_file_bad_request(requests_mock, response, expected_exception):
                 match="Some of the files already exist."
             )
         ),
-        # Other errors occur
+        # V2: Other errors occur
         (
             400,
             'Bad Request',
@@ -584,7 +593,7 @@ def test_post_file_bad_request(requests_mock, response, expected_exception):
                           match='400 Client Error: Bad Request for url: '
                           'https://foobar/rest/v2/files/')
         ),
-        # Some files already exist, also other errors occur
+        # V2: Some files already exist, also other errors occur
         (
             400,
             'Bad Request',
@@ -606,6 +615,37 @@ def test_post_file_bad_request(requests_mock, response, expected_exception):
                           match='400 Client Error: Bad Request for url: '
                           'https://foobar/rest/v2/files/')
         ),
+        # V3: Some files already exist
+        (
+            400,
+            'Bad Request',
+            {
+                "success": [
+                    {"object": {"pathname": "/foo1"}},
+                ],
+                "failed": [
+
+                    {
+                        "object": {'id': 'foo2', "pathname": "/foo2"},
+                        "errors": {
+                            "pathname": [
+                                "a file with path /foo2.png "
+                                "already exists in project testproject"
+                            ]
+                        }
+                    },
+                    {"object": {'id': 'foo3', "pathname": "/foo3"},
+                     "errors": {"pathname": ["a file with path /foo3.png "
+                                              "already exists in project "
+                                              "testproject"]}},
+                ]
+            },
+            pytest.raises(
+                ResourceAlreadyExistsError,
+                match="Some of the files already exist."
+            )
+        ),
+
     ]
 )
 def test_post_multiple_files(requests_mock, status_code, reason, response,
@@ -629,15 +669,18 @@ def test_post_multiple_files(requests_mock, status_code, reason, response,
 
     with expectation as exception_info:
         METAX_CLIENT.post_file([
-            {'identifier': '1',
-             'file_path': '/foo1',
-             'project_identifier': 'testproject'},
-            {'identifier': '2',
-             'file_path': '/foo2',
-             'project_identifier': 'testproject'},
-            {'identifier': '3',
-             'file_path': '/foo3',
-             'project_identifier': 'testproject'},
+            {'id': '1',
+             'pathname': '/foo1',
+             'filename': 'foo1',
+             'csc_project': 'testproject'},
+            {'id': '2',
+             'pathname': '/foo2',
+             'filename': 'foo2',
+             'csc_project': 'testproject'},
+            {'id': '3',
+             'pathname': '/foo3',
+             'filename': 'foo3',
+             'csc_project': 'testproject'},
         ])
 
     if not isinstance(exception_info, does_not_raise):
