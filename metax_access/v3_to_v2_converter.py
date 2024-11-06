@@ -81,7 +81,10 @@ def convert_file(json):
             "algorithm": json.get("checksum", "")
             .split(":")[0]
             .upper(),
-            "value": json.get("checksum", "").split(":")[-1]
+            "value": json.get("checksum", "").split(":")[-1],
+            # 'checked' field does not exist in Metax V3. Just spitball
+            # a valid timestamp here.
+            "checked": json.get("modified")
         }
 
     return _remove_none(
@@ -138,7 +141,9 @@ def convert_file(json):
             "file_characteristics_extension": json.get(
                 "characteristics_extension"
             ),
+            # TODO: File creation date field does not exist in Metax V3.
+            # '_file_created' field is used during transition period and should
+            # be removed after the migration is complete.
+            "file_uploaded": json.get("_file_uploaded")
         }
     )
-
-

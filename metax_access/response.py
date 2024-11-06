@@ -60,3 +60,7 @@ class MetaxFile(TypedDict, total=False):
     dataset_metadata: Optional[MetaxFileDatasetMetadata]
     characteristics: Optional[MetaxFileCharacteristics]
     characteristics_extension: Optional[dict]  # Free-form contents
+
+    # TODO: Temporary field used during V2-V3 transition. Metax V3 has no
+    # file creation date field, but this is still required for V2.
+    _file_uploaded: Optional[str]

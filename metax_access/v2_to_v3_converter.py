@@ -220,6 +220,18 @@ def convert_file(json, research_dataset_file={}) -> MetaxFile:
     relevant file information for the FDPAS services it is included here.
     :returns: Metax V3 file
     """
+    # Metax V2 has two places for the file format:
+    # * `file_format`
+    # * `file_characteristics.file_format`
+    #
+    # The first one can always be set.
+    # The second one can only be set if
+    # `file_characteristics.format_version` has a valid value.
+    #
+    # Metax V3 only has `file_characteristics.file_format`. Therefore, remove
+    # `file_format` in V3 -> V2 conversion as we can't meaningfully derive
+    # it from V3 data.
+
     file_metadata: MetaxFile = {
         "id": json.get("identifier"),
         "pathname": json.get("file_path"),
