@@ -200,77 +200,18 @@ def convert_dataset(json, metax=None):
     return _remove_none(dataset)
 
 
-def convert_file(json, research_dataset_file={}, v3_to_v2=False) -> MetaxFile:
+def convert_file(json, research_dataset_file={}) -> MetaxFile:
     """Converts Metax V2 file to Metax V3 file. If a value is not
     defined in V2 payload, the value is not icluded in the output.
     Except the characteristics extension is alway added.
-
-    TODO: Includes a conversion from V3 to V2. Should be removed here
-    and can be used as an inspiration.
 
     :param dict json: Metax V2 file as a JSON
     :param dict research_dataset_file: V2 dataset has research_dataset
     field which has information about files. Then information is in V3
     included to the file datatype. If the research dataset contains some
     relevant file information for the FDPAS services it is included here.
-    :param v3_to_v2 bool: Not used.
     :returns: Metax V3 file
     """
-    if v3_to_v2:
-        return _remove_none(
-            {
-                "identifier": json.get("id"),
-                "file_storage": {
-                    "identifier": json.get("storage_identifier")
-                },
-                "file_path": json.get("pathname"),
-                "file_name": json.get("filename"),
-                "byte_size": json.get("size"),
-                "checksum": {
-                    "algorithm": json.get("checksum", "")
-                    .split(":")[0]
-                    .upper(),
-                    "value": json.get("checksum", "").split(":")[-1],
-                },
-                "service_created": json.get("storage_service"),
-                "project_identifier": json.get("csc_project"),
-                "file_frozen": json.get("frozen"),
-                "file_modified": json.get("modified"),
-                "removed": json.get("removed"),
-                "date_created": json.get("published"),
-                "file_format": json.get("file_format"),
-                "file_characteristics": {
-                    "encoding": json.get("characteristics", {}).get(
-                        "encoding"
-                    ),
-                    "csv_has_header": json.get("characteristics", {}).get(
-                        "csv_has_header"
-                    ),
-                    "csv_quoting_char": json.get("characteristics", {}).get(
-                        "csv_quoting_char"
-                    ),
-                    "csv_delimiter": json.get("characteristics", {}).get(
-                        "csv_delimiter"
-                    ),
-                    "csv_record_separator": json.get(
-                        "characteristics", {}
-                    ).get("csv_record_separator"),
-                    "title": json.get("characteristics", {})
-                    .get("file_format_version", {})
-                    .get("pref_label"),
-                    "file_format": json.get("characteristics", {})
-                    .get("file_format_version", {})
-                    .get("file_format"),
-                    "format_version": json.get("characteristics", {})
-                    .get("file_format_version", {})
-                    .get("format_version"),
-                },
-                "file_characteristics_extension": json.get(
-                    "characteristics_extension"
-                ),
-            }
-        )
-
     file_metadata: MetaxFile = {
         "id": json.get("identifier"),
         "storage_identifier": json.get("file_storage", {}).get(

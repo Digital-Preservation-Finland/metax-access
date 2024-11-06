@@ -1,7 +1,10 @@
 # pylint: disable=no-member
-"""Tests for ``metax_access.v2_to_v3_converter`` module."""
+"""
+Tests for ``metax_access.v2_to_v3_converter``
+and ``metax_access.v3_to_v2_converter`` modules.
+"""
 
-import metax_access.v2_to_v3_converter as converter
+from metax_access import v2_to_v3_converter, v3_to_v2_converter
 import copy
 
 PAS_CATALOG_IDENTIFIER = "urn:nbn:fi:att:data-catalog-pas"
@@ -84,11 +87,11 @@ FILEV3 = {
 
 
 def test_convert_file_v2_to_v3():
-    result = converter.convert_file(FILEV2)
+    result = v2_to_v3_converter.convert_file(FILEV2)
     assert result == FILEV3
 
 def test_convert_file_v3_to_v2():
-    result = converter.convert_file(FILEV3, None, True)
+    result = v3_to_v2_converter.convert_file(FILEV3)
     assert result == CONVERTED_FILEV2
 
 
@@ -117,7 +120,7 @@ def test_convert_file_v2_to_v3_with_research_dataset():
             "details": {"project_identifier": "project_identifier"}
         }
 
-    result = converter.convert_file(FILEV2, research_dataset_info)
+    result = v2_to_v3_converter.convert_file(FILEV2, research_dataset_info)
     file = copy.deepcopy(FILEV3)
     del research_dataset_info['details']
     del research_dataset_info['identifier']
@@ -138,7 +141,7 @@ V3_LICENSE = {
     "description": "license description"
 }
 def test_convert_license_v2_to_v3():
-    assert converter._convert_license(V2_LICENSE) == V3_LICENSE
+    assert v2_to_v3_converter._convert_license(V2_LICENSE) == V3_LICENSE
 
 
 BASE_DATASETV2 = {
@@ -169,7 +172,7 @@ BASE_DATASETV3 = {
 
 
 def test_convert_base_dataset_v2_to_v3():
-    result = converter.convert_dataset(BASE_DATASETV2)
+    result = v2_to_v3_converter.convert_dataset(BASE_DATASETV2)
     assert result == BASE_DATASETV3
 
 
@@ -547,7 +550,7 @@ DATASETV3 = {
 
 
 def test_convert_dataset_v2_to_v3():
-    result = converter.convert_dataset(DATASETV2)
+    result = v2_to_v3_converter.convert_dataset(DATASETV2)
     assert DATASETV3 == result
 
 CONTRACTV2 = {
@@ -572,7 +575,7 @@ CONTRACTV3 = {
     }
 
 def test_contract_v2_to_v3():
-    result = converter.convert_contract(CONTRACTV2)
+    result = v2_to_v3_converter.convert_contract(CONTRACTV2)
     assert result == CONTRACTV3
 
 DIRECTORYV2 = {
@@ -632,5 +635,5 @@ DIRECTORYV3 = {
 }
 
 def test_directory_files_response_v2_to_v3():
-    result = converter.convert_directory_files_response(DIRECTORYV2)
+    result = v2_to_v3_converter.convert_directory_files_response(DIRECTORYV2)
     assert result == DIRECTORYV3
