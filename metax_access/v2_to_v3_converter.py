@@ -5,6 +5,7 @@ from typing import Optional
 
 from metax_access.response import (MetaxFile, MetaxFileCharacteristics,
                                    MetaxFileFormatVersion)
+from metax_access.utils import remove_none
 
 # We can also determine the storage service using `service_created`.
 # `file_storage.identifier` <-> `storage_service` mapping is recommended by the
@@ -44,7 +45,7 @@ def convert_contract(json):
         "contact": contract_json.get('contact'),
         "related_service": contract_json.get('related_service')
     }
-    return _remove_none(contract)
+    return remove_none(contract)
 
 
 def convert_directory_files_response(json):
@@ -81,7 +82,7 @@ def convert_directory_files_response(json):
         "count": None,
         "next": None,
         "previous": None,
-        "results": _remove_none({
+        "results": remove_none({
             "directory": directory,
             "directories": directories,
             "files": files,
@@ -205,7 +206,7 @@ def convert_dataset(json, metax=None):
     ]
     for k in optional_research_dataset_keys & research_dataset.keys():
         dataset[k] = research_dataset[k]
-    return _remove_none(dataset)
+    return remove_none(dataset)
 
 
 def convert_file(json, research_dataset_file={}) -> MetaxFile:
@@ -258,7 +259,7 @@ def convert_file(json, research_dataset_file={}) -> MetaxFile:
         ),
         "characteristics_extension": None
     }
-    file_metadata = _remove_none(file_metadata)
+    file_metadata = remove_none(file_metadata)
     # Null fields are *not* stripped for "characteristics_extension"
     # as it is entirely free-form
     file_metadata["characteristics_extension"] = json.get(
@@ -266,27 +267,6 @@ def convert_file(json, research_dataset_file={}) -> MetaxFile:
     )
 
     return file_metadata
-
-
-def _remove_none(json):
-    """Removes ``None`` values from the converted fields.
-    If a fields gets a `Ǹone`` value it was not defined in source and is
-    removed from the output.
-    :param dict json:
-    :returns: dict without ``None`` values.
-    """
-    processed_json = {k: v for k, v in json.items() if v is not None}
-    for k, v in processed_json.items():
-        if type(v) is dict:
-            processed_json[k] = _remove_none(v)
-        elif type(v) is list:
-            processed_json[k] = [
-                _remove_none(item) if type(item) is dict else item
-                for item in v
-            ]
-        else:
-            processed_json[k] = v
-    return {k: v for k, v in processed_json.items() if v != {}}
 
 
 def _convert_preservation(json):

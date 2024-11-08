@@ -1,31 +1,12 @@
 """Payload converter from Metax v3 to Metax v2."""
 from metax_access.v2_to_v3_converter import \
     FILE_STORAGE_V2_TO_STORAGE_SERVICE_V3
+from metax_access.utils import remove_none
 
 # Invert the `storage_service` <-> `file_storage_identifier` dict
 STORAGE_SERVICE_V3_TO_FILE_STORAGE_V2 = {
     value: key for key, value in FILE_STORAGE_V2_TO_STORAGE_SERVICE_V3.items()
 }
-
-def _remove_none(json):
-    """Removes ``None`` values from the converted fields.
-    If a fields gets a `Ǹone`` value it was not defined in source and is
-    removed from the output.
-    :param dict json:
-    :returns: dict without ``None`` values.
-    """
-    processed_json = {k: v for k, v in json.items() if v is not None}
-    for k, v in processed_json.items():
-        if type(v) is dict:
-            processed_json[k] = _remove_none(v)
-        elif type(v) is list:
-            processed_json[k] = [
-                _remove_none(item) if type(item) is dict else item
-                for item in v
-            ]
-        else:
-            processed_json[k] = v
-    return {k: v for k, v in processed_json.items() if v != {}}
 
 
 def convert_contract(json):
@@ -87,7 +68,7 @@ def convert_file(json):
             "checked": json.get("modified")
         }
 
-    return _remove_none(
+    return remove_none(
         {
             "identifier": json.get("id"),
             "file_storage": {
