@@ -5,7 +5,6 @@ from typing import Optional
 
 from metax_access.response import (MetaxFile, MetaxFileCharacteristics,
                                    MetaxFileFormatVersion)
-from metax_access.utils import remove_none
 
 # We can also determine the storage service using `service_created`.
 # `file_storage.identifier` <-> `storage_service` mapping is recommended by the
@@ -45,7 +44,7 @@ def convert_contract(json):
         "contact": contract_json.get('contact'),
         "related_service": contract_json.get('related_service')
     }
-    return remove_none(contract)
+    return contract
 
 
 def convert_directory_files_response(json):
@@ -82,11 +81,11 @@ def convert_directory_files_response(json):
         "count": None,
         "next": None,
         "previous": None,
-        "results": remove_none({
+        "results": {
             "directory": directory,
             "directories": directories,
             "files": files,
-        }),
+        },
     }
 
 
@@ -206,7 +205,7 @@ def convert_dataset(json, metax=None):
     ]
     for k in optional_research_dataset_keys & research_dataset.keys():
         dataset[k] = research_dataset[k]
-    return remove_none(dataset)
+    return dataset
 
 
 def convert_file(json, research_dataset_file={}) -> MetaxFile:
@@ -260,9 +259,7 @@ def convert_file(json, research_dataset_file={}) -> MetaxFile:
         ),
         "characteristics_extension": None
     }
-    file_metadata = remove_none(file_metadata)
-    # Null fields are *not* stripped for "characteristics_extension"
-    # as it is entirely free-form
+    
     file_metadata["characteristics_extension"] = json.get(
         "file_characteristics_extension"
     )

@@ -16,15 +16,15 @@ from metax_access.metax import (
     DataCatalogNotAvailableError,
     DataciteGenerationError,
     ResourceAlreadyExistsError,
-    FileNotAvailableError
+    FileNotAvailableError,
 )
 
-METAX_URL = 'https://foobar'
-METAX_REST_ROOT_URL = f'{METAX_URL}/rest'
-METAX_REST_URL = f'{METAX_URL}/rest/v2'
-METAX_RPC_URL = f'{METAX_URL}/rpc/v2'
-METAX_USER = 'tpas'
-METAX_PASSWORD = 'password'
+METAX_URL = "https://foobar"
+METAX_REST_ROOT_URL = f"{METAX_URL}/rest"
+METAX_REST_URL = f"{METAX_URL}/rest/v2"
+METAX_RPC_URL = f"{METAX_URL}/rpc/v2"
+METAX_USER = "tpas"
+METAX_PASSWORD = "password"
 METAX_CLIENT = Metax(METAX_URL, METAX_USER, METAX_PASSWORD, verify=False)
 
 
@@ -47,39 +47,41 @@ def test_get_datasets(requests_mock, caplog):
     :returns: None
     """
     metax_mock = requests_mock.get(
-        METAX_REST_URL + "/datasets/foo/files",
-        json={}
+        METAX_REST_URL + "/datasets/foo/files", json={}
     )
     metax_mock = requests_mock.get(
-        METAX_REST_URL + "/datasets/bar/files",
-        json={}
+        METAX_REST_URL + "/datasets/bar/files", json={}
     )
     metax_mock = requests_mock.get(
-        METAX_REST_URL + "/datasets/foo?include_user_metadata=true&file_details=true",
-        json={}
+        METAX_REST_URL
+        + "/datasets/foo?include_user_metadata=true&file_details=true",
+        json={},
     )
     metax_mock = requests_mock.get(
-        METAX_REST_URL + "/datasets/bar?include_user_metadata=true&file_details=true",
-        json={}
+        METAX_REST_URL
+        + "/datasets/bar?include_user_metadata=true&file_details=true",
+        json={},
     )
     metax_mock = requests_mock.get(
         METAX_REST_URL + "/datasets",
-        json={"results": [{"identifier": "foo"}, {"identifier": "bar"}]}
+        json={"results": [{"identifier": "foo"}, {"identifier": "bar"}]},
     )
-    
+
     datasets = METAX_CLIENT.get_datasets()
     assert len(datasets["results"]) == 2
 
     # Check that correct query parameter were used
     query_string = metax_mock.last_request.qs
-    assert query_string['preservation_state'][0] \
-        == '0,10,20,30,40,50,60,65,70,75,80,90,100,110,120,130,140'
-    assert query_string['limit'][0] == '1000000'
-    assert query_string['offset'][0] == '0'
-    assert query_string['include_user_metadata'][0] == 'true'
+    assert (
+        query_string["preservation_state"][0]
+        == "0,10,20,30,40,50,60,65,70,75,80,90,100,110,120,130,140"
+    )
+    assert query_string["limit"][0] == "1000000"
+    assert query_string["offset"][0] == "0"
+    assert query_string["include_user_metadata"][0] == "true"
 
     # No errors should be logged
-    logged_errors = [r for r in caplog.records if r.levelname == 'ERROR']
+    logged_errors = [r for r in caplog.records if r.levelname == "ERROR"]
     assert not logged_errors
 
 
@@ -93,21 +95,21 @@ def test_get_datasets_with_parameters(requests_mock):
         states="states-param",
         limit="limit-param",
         offset="offset-param",
-        pas_filter='pas-filter-param',
-        metadata_owner_org='owner-org-param',
-        metadata_provider_user='provider-user-param',
-        ordering='ordering-param',
-        include_user_metadata=False
+        pas_filter="pas-filter-param",
+        metadata_owner_org="owner-org-param",
+        metadata_provider_user="provider-user-param",
+        ordering="ordering-param",
+        include_user_metadata=False,
     )
     query_string = metax_mock.last_request.qs
-    assert query_string['preservation_state'][0] == 'states-param'
-    assert query_string['limit'][0] == 'limit-param'
-    assert query_string['offset'][0] == 'offset-param'
-    assert query_string['pas_filter'][0] == 'pas-filter-param'
-    assert query_string['metadata_owner_org'][0] == 'owner-org-param'
-    assert query_string['metadata_provider_user'][0] == 'provider-user-param'
-    assert query_string['ordering'][0] == 'ordering-param'
-    assert 'include_user_metadata' not in query_string
+    assert query_string["preservation_state"][0] == "states-param"
+    assert query_string["limit"][0] == "limit-param"
+    assert query_string["offset"][0] == "offset-param"
+    assert query_string["pas_filter"][0] == "pas-filter-param"
+    assert query_string["metadata_owner_org"][0] == "owner-org-param"
+    assert query_string["metadata_provider_user"][0] == "provider-user-param"
+    assert query_string["ordering"][0] == "ordering-param"
+    assert "include_user_metadata" not in query_string
 
 
 def test_get_dataset(requests_mock):
@@ -118,19 +120,22 @@ def test_get_dataset(requests_mock):
 
     :returns: None
     """
-    requests_mock.get(METAX_REST_URL + "/datasets/test_id?include_user_metadata=true&file_details=true",
-                      json={"identifier": "123"})
     requests_mock.get(
-        METAX_REST_URL + "/datasets/123?include_user_metadata=true&file_details=true",
-        json={}
+        METAX_REST_URL
+        + "/datasets/test_id?include_user_metadata=true&file_details=true",
+        json={"identifier": "123"},
     )
     requests_mock.get(
-        METAX_REST_URL + "/datasets/123/files",
-        json={}
+        METAX_REST_URL
+        + "/datasets/123?include_user_metadata=true&file_details=true",
+        json={},
     )
+    requests_mock.get(METAX_REST_URL + "/datasets/123/files", json={})
     dataset = METAX_CLIENT.get_dataset("test_id")
 
-    assert dataset["id"] == "123" #fixed to metax normalization. normalization does not support extra fields currently
+    assert (
+        dataset["id"] == "123"
+    )  # fixed to metax normalization. normalization does not support extra fields currently
 
 
 def test_get_contracts(requests_mock):
@@ -143,10 +148,10 @@ def test_get_contracts(requests_mock):
     """
     requests_mock.get(
         METAX_REST_URL + "/contracts",
-        json={"results": [{"identifier": "foo"}, {"identifier": "bar"}]}
+        json={"results": [{"identifier": "foo"}, {"identifier": "bar"}]},
     )
     contracts = METAX_CLIENT.get_contracts()
-    assert len(contracts['results']) == 2
+    assert len(contracts["results"]) == 2
 
 
 def test_get_contract(requests_mock):
@@ -157,12 +162,12 @@ def test_get_contract(requests_mock):
 
     :returns: None
     """
-    requests_mock.get(METAX_REST_URL + "/contracts/test_id",
-                      json={"contract_json":
-                                {"identifier": "bar"}
-                            })
-    contract = METAX_CLIENT.get_contract('test_id')
-    assert contract['contract_identifier'] == "bar"
+    requests_mock.get(
+        METAX_REST_URL + "/contracts/test_id",
+        json={"contract_json": {"identifier": "bar"}},
+    )
+    contract = METAX_CLIENT.get_contract("test_id")
+    assert contract["contract_identifier"] == "bar"
 
 
 def test_get_datacatalog(requests_mock):
@@ -173,31 +178,25 @@ def test_get_datacatalog(requests_mock):
 
     :returns: ``None``
     """
-    requests_mock.get(METAX_REST_URL + "/datacatalogs/test_catalog",
-                      json={"catalog_json": {"identifier": 'foo'}})
+    requests_mock.get(
+        METAX_REST_URL + "/datacatalogs/test_catalog",
+        json={"catalog_json": {"identifier": "foo"}},
+    )
 
-    catalog = METAX_CLIENT.get_datacatalog('test_catalog')
-    assert catalog['catalog_json']['identifier'] == 'foo'
+    catalog = METAX_CLIENT.get_datacatalog("test_catalog")
+    assert catalog["catalog_json"]["identifier"] == "foo"
+
 
 def test_get_dataset_file_count(requests_mock):
     """Test retrieving the total file count for a dataset"""
+
     def _request_has_correct_params(req):
         return req.qs["file_fields"] == ["id"]
 
     requests_mock.get(
         f"{METAX_REST_URL}/datasets/fake-dataset/files",
         additional_matcher=_request_has_correct_params,
-        json=[
-            {
-                "id": 1
-            },
-            {
-                "id": 3
-            },
-            {
-                "id": 10
-            }
-        ]
+        json=[{"id": 1}, {"id": 3}, {"id": 10}],
     )
 
     file_count = METAX_CLIENT.get_dataset_file_count("fake-dataset")
@@ -212,7 +211,7 @@ def test_get_dataset_file_count_not_found(requests_mock):
     requests_mock.get(
         f"{METAX_REST_URL}/datasets/does-not-exist/files",
         additional_matcher=lambda req: req.qs["file_fields"] == ["id"],
-        status_code=404
+        status_code=404,
     )
 
     with pytest.raises(DatasetNotAvailableError):
@@ -227,25 +226,25 @@ def test_patch_dataset(requests_mock):
 
     :returns: ``None``
     """
-    requests_mock.patch(METAX_REST_URL + '/datasets/test_id', json={})
+    requests_mock.patch(METAX_REST_URL + "/datasets/test_id", json={})
     requests_mock.get(
-        METAX_REST_URL + '/datasets/test_id',
-        json={'research_dataset': {"provenance": [{'foo':'bar'}, {'fiz':'buz'}]}}
+        METAX_REST_URL + "/datasets/test_id",
+        json={
+            "research_dataset": {
+                "provenance": [{"foo": "bar"}, {"fiz": "buz"}]
+            }
+        },
     )
 
-    update = {
-        'foo1': 'bar1',
-        'research_dataset': {
-            'foo2': 'bar2'
-        }
-    }
-    METAX_CLIENT.patch_dataset('test_id', update, False, True)
-    assert requests_mock.last_request.method == 'PATCH'
+    update = {"foo1": "bar1", "research_dataset": {"foo2": "bar2"}}
+    METAX_CLIENT.patch_dataset("test_id", update, False, True)
+    assert requests_mock.last_request.method == "PATCH"
 
     request_body = requests_mock.last_request.json()
-    assert isinstance(request_body['research_dataset']['provenance'], list)
-    assert request_body['research_dataset']['foo2'] == 'bar2'
-    assert request_body['foo1'] == 'bar1'
+    assert isinstance(request_body["research_dataset"]["provenance"], list)
+    assert request_body["research_dataset"]["foo2"] == "bar2"
+    assert request_body["foo1"] == "bar1"
+
 
 def test_get_datacite(requests_mock):
     """Test ``get_datacite`` function.
@@ -255,24 +254,26 @@ def test_get_datacite(requests_mock):
     :returns: ``None``
     """
     # Read sample datacite from file and create mocked HTTP response
-    datacite = lxml.etree.parse('tests/data/datacite_sample.xml')
+    datacite = lxml.etree.parse("tests/data/datacite_sample.xml")
     requests_mock.get(
-        METAX_REST_URL +
-        '/datasets/test_id?dataset_format=datacite&dummy_doi=false',
+        METAX_REST_URL
+        + "/datasets/test_id?dataset_format=datacite&dummy_doi=false",
         complete_qs=True,
-        content=lxml.etree.tostring(datacite)
+        content=lxml.etree.tostring(datacite),
     )
 
-    requests_mock.get(METAX_REST_URL + "/datasets/test_id",
-                      complete_qs=True,
-                      json={'identifier': 'test_id'})
+    requests_mock.get(
+        METAX_REST_URL + "/datasets/test_id",
+        complete_qs=True,
+        json={"identifier": "test_id"},
+    )
 
     xml = lxml.etree.fromstring(METAX_CLIENT.get_datacite("test_id"))
 
     # Read field "creatorName" from xml file
-    ns_string = 'http://datacite.org/schema/kernel-4'
-    xpath_str = '/ns:resource/ns:creators/ns:creator/ns:creatorName'
-    creatorname = xml.xpath(xpath_str, namespaces={'ns': ns_string})[0].text
+    ns_string = "http://datacite.org/schema/kernel-4"
+    xpath_str = "/ns:resource/ns:creators/ns:creator/ns:creatorName"
+    creatorname = xml.xpath(xpath_str, namespaces={"ns": ns_string})[0].text
 
     # Check that "creatorName" is same as in the original XML file
     assert creatorname == "Puupää, Pekka"
@@ -286,21 +287,19 @@ def test_get_datacite_fails(requests_mock):
     # Mock metax dataset request response. Response body contains simplified
     # dataset metadata.
     requests_mock.get(
-        METAX_REST_URL + '/datasets/foo',
-        json={"identifier": "foo"}
+        METAX_REST_URL + "/datasets/foo", json={"identifier": "foo"}
     )
 
     # Mock datacite request response. Mocked response has status code 400, and
     # response body contains error information.
-    response = \
-        {
-            "detail": "Foobar.",
-            "error_identifier": "2019-03-28T12:39:01-f0a7e3ae"
-        }
+    response = {
+        "detail": "Foobar.",
+        "error_identifier": "2019-03-28T12:39:01-f0a7e3ae",
+    }
     requests_mock.get(
-        METAX_REST_URL + '/datasets/foo?dataset_format=datacite',
+        METAX_REST_URL + "/datasets/foo?dataset_format=datacite",
         json=response,
-        status_code=400
+        status_code=400,
     )
 
     with pytest.raises(DataciteGenerationError) as exception:
@@ -318,24 +317,27 @@ def test_set_preservation_state(requests_mock):
 
     :returns: ``None``
     """
-    requests_mock.get(METAX_REST_URL + '/datasets/test_id', json={})
-    requests_mock.patch(METAX_REST_URL + '/datasets/test_id')
+    requests_mock.get(METAX_REST_URL + "/datasets/test_id", json={})
+    requests_mock.patch(METAX_REST_URL + "/datasets/test_id")
 
     METAX_CLIENT.set_preservation_state(
         "test_id",
         DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
-        'Accepted to preservation'
+        "Accepted to preservation",
     )
 
     # Check the body of last HTTP request
     request_body = requests_mock.last_request.json()
-    assert request_body["preservation_state"] ==\
-        DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE
-    assert request_body["preservation_description"] \
-        == "Accepted to preservation"
+    assert (
+        request_body["preservation_state"]
+        == DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE
+    )
+    assert (
+        request_body["preservation_description"] == "Accepted to preservation"
+    )
 
     # Check the method of last HTTP request
-    assert requests_mock.last_request.method == 'PATCH'
+    assert requests_mock.last_request.method == "PATCH"
 
 
 def test_set_preservation_reason(requests_mock):
@@ -345,14 +347,15 @@ def test_set_preservation_reason(requests_mock):
 
     :returns: ``None``
     """
-    requests_mock.patch(METAX_REST_URL + '/datasets/test_id')
+    requests_mock.patch(METAX_REST_URL + "/datasets/test_id")
 
-    METAX_CLIENT.set_preservation_reason("test_id", 'The reason.')
+    METAX_CLIENT.set_preservation_reason("test_id", "The reason.")
 
     # Check the method of last HTTP request
-    assert requests_mock.last_request.method == 'PATCH'
-    assert requests_mock.last_request.json() \
-        == {'preservation_reason_description': 'The reason.'}
+    assert requests_mock.last_request.method == "PATCH"
+    assert requests_mock.last_request.json() == {
+        "preservation_reason_description": "The reason."
+    }
 
 
 def test_patch_file(requests_mock):
@@ -365,8 +368,8 @@ def test_patch_file(requests_mock):
     :returns: None
     """
     # Mock Metax
-    requests_mock.get(METAX_REST_URL + '/files/test_id', json={})
-    requests_mock.patch(METAX_REST_URL + '/files/test_id', json={'foo': 'bar'})
+    requests_mock.get(METAX_REST_URL + "/files/test_id", json={})
+    requests_mock.patch(METAX_REST_URL + "/files/test_id", json={"foo": "bar"})
 
     # Patch a file
     sample_data = {
@@ -375,25 +378,48 @@ def test_patch_file(requests_mock):
         "file_characteristics": {
             "file_format": "text/plain",
             "format_version": "1.0",
-            "encoding": "UTF-8"
-        }
+            "encoding": "UTF-8",
+        },
     }
-    assert METAX_CLIENT.patch_file('test_id', sample_data) == {'foo': 'bar'}
+    assert METAX_CLIENT.patch_file("test_id", sample_data) == {"foo": "bar"}
 
     # Check that the JSON was converted to V2
     file_v2 = requests_mock.last_request.json()
-
     assert file_v2 == {
         "id": "42",
         "identifier": "42",
+        "file_storage": {"identifier": None},
+        "file_path": None,
+        "file_name": None,
+        "byte_size": None,
         "checksum": {
             "algorithm": "SHA256",
-            "value": "212f954060735c8aea7af705e0b268723148d37898339f21014c24dc5cf6736b"
-        }
+            "value": "212f954060735c8aea7af705e0b268723148d37898339f21014c24dc5cf6736b",
+            "checked": None,
+        },
+        "service_created": None,
+        "project_identifier": None,
+        "file_frozen": None,
+        "file_modified": None,
+        "removed": None,
+        "date_created": None,
+        "file_format": None,
+        "file_characteristics": {
+            "encoding": None,
+            "csv_has_header": None,
+            "csv_quoting_char": None,
+            "csv_delimiter": None,
+            "csv_record_separator": None,
+            "title": None,
+            "file_format": None,
+            "format_version": None,
+        },
+        "file_characteristics_extension": None,
+        "file_uploaded": None,
     }
 
     # Check the method of last HTTP request
-    assert requests_mock.last_request.method == 'PATCH'
+    assert requests_mock.last_request.method == "PATCH"
 
 
 def test_delete_file(requests_mock):
@@ -401,14 +427,15 @@ def test_delete_file(requests_mock):
 
     Test that HTTP DELETE request is sent to correct url.
     """
-    requests_mock.delete(METAX_REST_URL + "/files/file1",
-                         json={"deleted_files_count": 1})
+    requests_mock.delete(
+        METAX_REST_URL + "/files/file1", json={"deleted_files_count": 1}
+    )
 
-    METAX_CLIENT.delete_file('file1')
+    METAX_CLIENT.delete_file("file1")
 
     assert requests_mock.last_request.method == "DELETE"
-    assert requests_mock.last_request.hostname == 'foobar'
-    assert requests_mock.last_request.path == '/rest/v2/files/file1'
+    assert requests_mock.last_request.hostname == "foobar"
+    assert requests_mock.last_request.path == "/rest/v2/files/file1"
 
 
 def test_delete_dataset(requests_mock):
@@ -418,11 +445,11 @@ def test_delete_dataset(requests_mock):
     """
     requests_mock.delete(METAX_REST_URL + "/datasets/dataset1")
 
-    METAX_CLIENT.delete_dataset('dataset1')
+    METAX_CLIENT.delete_dataset("dataset1")
 
     assert requests_mock.last_request.method == "DELETE"
-    assert requests_mock.last_request.hostname == 'foobar'
-    assert requests_mock.last_request.path == '/rest/v2/datasets/dataset1'
+    assert requests_mock.last_request.hostname == "foobar"
+    assert requests_mock.last_request.path == "/rest/v2/datasets/dataset1"
 
 
 def test_post_file(requests_mock):
@@ -430,86 +457,92 @@ def test_post_file(requests_mock):
 
     Test that HTTP POST request is sent to correct url.
     """
-    requests_mock.post(METAX_REST_URL + '/files/', json={'identifier': '1'})
+    requests_mock.post(METAX_REST_URL + "/files/", json={"identifier": "1"})
 
-    METAX_CLIENT.post_file({'identifier': '1'})
+    METAX_CLIENT.post_file({"identifier": "1"})
 
     assert requests_mock.last_request.method == "POST"
-    assert requests_mock.last_request.hostname == 'foobar'
-    assert requests_mock.last_request.path == '/rest/v2/files/'
+    assert requests_mock.last_request.hostname == "foobar"
+    assert requests_mock.last_request.path == "/rest/v2/files/"
 
 
 @pytest.mark.parametrize(
-    ('response', 'expected_exception'),
+    ("response", "expected_exception"),
     [
         # V2: Trying to post file, path already exists
         (
-            {"file_path": ["a file with path /foo already exists in"
-                           " project bar"]},
-            ResourceAlreadyExistsError("Some of the files already exist.")
+            {
+                "file_path": [
+                    "a file with path /foo already exists in" " project bar"
+                ]
+            },
+            ResourceAlreadyExistsError("Some of the files already exist."),
         ),
         # V2: Trying to post file, path and identifier already exist
         (
-            {"file_path": ["a file with path /foo already exists in"
-                           " project bar"],
-             "identifier": ["a file with given identifier already exists"]},
-            ResourceAlreadyExistsError("Some of the files already exist.")
+            {
+                "file_path": [
+                    "a file with path /foo already exists in" " project bar"
+                ],
+                "identifier": ["a file with given identifier already exists"],
+            },
+            ResourceAlreadyExistsError("Some of the files already exist."),
         ),
         # Unknown error
         (
             {"file_path": ["Some other error in file path"]},
-            requests.HTTPError('400 Client Error: Bad Request for url: '
-                               'https://foobar/rest/v2/files/')
+            requests.HTTPError(
+                "400 Client Error: Bad Request for url: "
+                "https://foobar/rest/v2/files/"
+            ),
         ),
         # Multiple files that already exist
         (
             {
-                'failed': [
+                "failed": [
                     {
-                        'object': {
-                            'identifier': 'foo1',
-                            'file_path': '/foo1'
+                        "object": {"identifier": "foo1", "file_path": "/foo1"},
+                        "errors": {
+                            "file_path": [
+                                "a file with path /foo1 already "
+                                "exists in project bar"
+                            ]
                         },
-                        'errors': {
-                            "file_path": ["a file with path /foo1 already "
-                                          "exists in project bar"]
-                        }
                     },
                     {
-                        'object': {
-                            'identifier': 'foo2',
-                            'file_path': '/foo2'
+                        "object": {"identifier": "foo2", "file_path": "/foo2"},
+                        "errors": {
+                            "file_path": [
+                                "a file with path /foo2 already "
+                                "exists in project bar"
+                            ]
                         },
-                        'errors': {
-                            "file_path": ["a file with path /foo2 already "
-                                          "exists in project bar"]
-                        }
-                    }
+                    },
                 ]
             },
-            ResourceAlreadyExistsError("Some of the files already exist.")
+            ResourceAlreadyExistsError("Some of the files already exist."),
         ),
         # Multiple files, one already exists, one has other error
         (
             {
-                'failed': [
+                "failed": [
                     {
-                        'errors': {
-                            "file_path": ["a file with path /foo1 already "
-                                          "exists in project bar"]
+                        "errors": {
+                            "file_path": [
+                                "a file with path /foo1 already "
+                                "exists in project bar"
+                            ]
                         }
                     },
-                    {
-                        'errors': {
-                            "file_path": ["Other error"]
-                        }
-                    }
+                    {"errors": {"file_path": ["Other error"]}},
                 ]
             },
-            requests.HTTPError('400 Client Error: Bad Request for url: '
-                               'https://foobar/rest/v2/files/')
+            requests.HTTPError(
+                "400 Client Error: Bad Request for url: "
+                "https://foobar/rest/v2/files/"
+            ),
         ),
-    ]
+    ],
 )
 def test_post_file_bad_request(requests_mock, response, expected_exception):
     """Test post file failures.
@@ -520,20 +553,27 @@ def test_post_file_bad_request(requests_mock, response, expected_exception):
     :param response: Mocked response from Metax
     :param expected_exception: expected exception
     """
-    requests_mock.post(METAX_REST_URL + '/files/',
-                       status_code=400,
-                       json=response,
-                       reason='Bad Request')
+    requests_mock.post(
+        METAX_REST_URL + "/files/",
+        status_code=400,
+        json=response,
+        reason="Bad Request",
+    )
 
-    with pytest.raises(expected_exception.__class__,
-                       match=str(expected_exception)):
-        METAX_CLIENT.post_file({'identifier': '1',
-                                'file_path': '/foo',
-                                'project_identifier': 'bar'})
+    with pytest.raises(
+        expected_exception.__class__, match=str(expected_exception)
+    ):
+        METAX_CLIENT.post_file(
+            {
+                "identifier": "1",
+                "file_path": "/foo",
+                "project_identifier": "bar",
+            }
+        )
 
 
 @pytest.mark.parametrize(
-    ('status_code', 'reason', 'response', 'expectation'),
+    ("status_code", "reason", "response", "expectation"),
     [
         # V2: Success
         (
@@ -545,112 +585,142 @@ def test_post_file_bad_request(requests_mock, response, expected_exception):
                     {"object": {"file_path": "/foo2"}},
                     {"object": {"file_path": "/foo3"}},
                 ],
-                "failed": []
+                "failed": [],
             },
-            does_not_raise()
+            does_not_raise(),
         ),
         # V2: Some files already exist
         (
             400,
-            'Bad Request',
+            "Bad Request",
             {
                 "success": [
                     {"object": {"file_path": "/foo1"}},
                 ],
                 "failed": [
-
-                    {"object": {'identifier': 'foo2', "file_path": "/foo2"},
-                     "errors": {"file_path": ["a file with path /foo2.png "
-                                              "already exists in project "
-                                              "testproject"]}},
-                    {"object": {'identifier': 'foo3', "file_path": "/foo3"},
-                     "errors": {"file_path": ["a file with path /foo3.png "
-                                              "already exists in project "
-                                              "testproject"]}},
-                ]
+                    {
+                        "object": {"identifier": "foo2", "file_path": "/foo2"},
+                        "errors": {
+                            "file_path": [
+                                "a file with path /foo2.png "
+                                "already exists in project "
+                                "testproject"
+                            ]
+                        },
+                    },
+                    {
+                        "object": {"identifier": "foo3", "file_path": "/foo3"},
+                        "errors": {
+                            "file_path": [
+                                "a file with path /foo3.png "
+                                "already exists in project "
+                                "testproject"
+                            ]
+                        },
+                    },
+                ],
             },
             pytest.raises(
                 ResourceAlreadyExistsError,
-                match="Some of the files already exist."
-            )
+                match="Some of the files already exist.",
+            ),
         ),
         # V2: Other errors occur
         (
             400,
-            'Bad Request',
+            "Bad Request",
             {
                 "success": [
                     {"object": {"file_path": "/foo1"}},
                 ],
                 "failed": [
-
-                    {"object": {"file_path": "/foo2"},
-                     "errors": {"file_path": ["Unknown error"]}},
-                    {"object": {"file_path": "/foo3"},
-                     "errors": {"file_path": ["Unknown error"]}},
-                ]
+                    {
+                        "object": {"file_path": "/foo2"},
+                        "errors": {"file_path": ["Unknown error"]},
+                    },
+                    {
+                        "object": {"file_path": "/foo3"},
+                        "errors": {"file_path": ["Unknown error"]},
+                    },
+                ],
             },
-            pytest.raises(requests.HTTPError,
-                          match='400 Client Error: Bad Request for url: '
-                          'https://foobar/rest/v2/files/')
+            pytest.raises(
+                requests.HTTPError,
+                match="400 Client Error: Bad Request for url: "
+                "https://foobar/rest/v2/files/",
+            ),
         ),
         # V2: Some files already exist, also other errors occur
         (
             400,
-            'Bad Request',
+            "Bad Request",
             {
                 "success": [
                     {"object": {"file_path": "/foo1"}},
                 ],
                 "failed": [
-
-                    {"object": {"file_path": "/foo2"},
-                     "errors": {"file_path": ["a file with path /foo2.png "
-                                              "already exists in project "
-                                              "testproject"]}},
-                    {"object": {"file_path": "/foo3"},
-                     "errors": {"file_path": ["Unknown error"]}},
-                ]
+                    {
+                        "object": {"file_path": "/foo2"},
+                        "errors": {
+                            "file_path": [
+                                "a file with path /foo2.png "
+                                "already exists in project "
+                                "testproject"
+                            ]
+                        },
+                    },
+                    {
+                        "object": {"file_path": "/foo3"},
+                        "errors": {"file_path": ["Unknown error"]},
+                    },
+                ],
             },
-            pytest.raises(requests.HTTPError,
-                          match='400 Client Error: Bad Request for url: '
-                          'https://foobar/rest/v2/files/')
+            pytest.raises(
+                requests.HTTPError,
+                match="400 Client Error: Bad Request for url: "
+                "https://foobar/rest/v2/files/",
+            ),
         ),
         # V3: Some files already exist
         (
             400,
-            'Bad Request',
+            "Bad Request",
             {
                 "success": [
                     {"object": {"pathname": "/foo1"}},
                 ],
                 "failed": [
-
                     {
-                        "object": {'id': 'foo2', "pathname": "/foo2"},
+                        "object": {"id": "foo2", "pathname": "/foo2"},
                         "errors": {
                             "pathname": [
                                 "a file with path /foo2.png "
                                 "already exists in project testproject"
                             ]
-                        }
+                        },
                     },
-                    {"object": {'id': 'foo3', "pathname": "/foo3"},
-                     "errors": {"pathname": ["a file with path /foo3.png "
-                                              "already exists in project "
-                                              "testproject"]}},
-                ]
+                    {
+                        "object": {"id": "foo3", "pathname": "/foo3"},
+                        "errors": {
+                            "pathname": [
+                                "a file with path /foo3.png "
+                                "already exists in project "
+                                "testproject"
+                            ]
+                        },
+                    },
+                ],
             },
             pytest.raises(
                 ResourceAlreadyExistsError,
-                match="Some of the files already exist."
-            )
+                match="Some of the files already exist.",
+            ),
         ),
-
-    ]
+    ],
 )
-def test_post_multiple_files(requests_mock, status_code, reason, response,
-                             expectation):
+def test_post_multiple_files(
+    requests_mock, status_code, reason, response, expectation
+):
     """Test posting multiple files to Metax.
 
     If Metax responds with HTTP 400 "Bad request" error, an exception
@@ -663,26 +733,36 @@ def test_post_multiple_files(requests_mock, status_code, reason, response,
     :param response: JSON content of Mocked Metax response
     :param expectation: expected context
     """
-    requests_mock.post(METAX_REST_URL + '/files/',
-                       status_code=status_code,
-                       json=response,
-                       reason=reason)
+    requests_mock.post(
+        METAX_REST_URL + "/files/",
+        status_code=status_code,
+        json=response,
+        reason=reason,
+    )
 
     with expectation as exception_info:
-        METAX_CLIENT.post_file([
-            {'id': '1',
-             'pathname': '/foo1',
-             'filename': 'foo1',
-             'csc_project': 'testproject'},
-            {'id': '2',
-             'pathname': '/foo2',
-             'filename': 'foo2',
-             'csc_project': 'testproject'},
-            {'id': '3',
-             'pathname': '/foo3',
-             'filename': 'foo3',
-             'csc_project': 'testproject'},
-        ])
+        METAX_CLIENT.post_file(
+            [
+                {
+                    "id": "1",
+                    "pathname": "/foo1",
+                    "filename": "foo1",
+                    "csc_project": "testproject",
+                },
+                {
+                    "id": "2",
+                    "pathname": "/foo2",
+                    "filename": "foo2",
+                    "csc_project": "testproject",
+                },
+                {
+                    "id": "3",
+                    "pathname": "/foo3",
+                    "filename": "foo3",
+                    "csc_project": "testproject",
+                },
+            ]
+        )
 
     if not isinstance(exception_info, does_not_raise):
         assert exception_info.value.response.json() == response
@@ -693,13 +773,13 @@ def test_post_dataset(requests_mock):
 
     Test that HTTP POST request is sent to correct url.
     """
-    requests_mock.post(METAX_REST_URL + '/datasets/', json={'identifier': '1'})
+    requests_mock.post(METAX_REST_URL + "/datasets/", json={"identifier": "1"})
 
-    METAX_CLIENT.post_dataset({'identifier': '1'})
+    METAX_CLIENT.post_dataset({"identifier": "1"})
 
     assert requests_mock.last_request.method == "POST"
-    assert requests_mock.last_request.hostname == 'foobar'
-    assert requests_mock.last_request.path == '/rest/v2/datasets/'
+    assert requests_mock.last_request.hostname == "foobar"
+    assert requests_mock.last_request.path == "/rest/v2/datasets/"
 
 
 def test_query_datasets(requests_mock):
@@ -712,17 +792,15 @@ def test_query_datasets(requests_mock):
     """
     requests_mock.get(
         METAX_REST_URL + "/datasets?preferred_identifier=foobar",
-        json={"results": [{"identifier": "foo"}]}
+        json={"results": [{"identifier": "foo"}]},
     )
+    requests_mock.get(METAX_REST_URL + "/datasets/foo/files", json={})
     requests_mock.get(
-        METAX_REST_URL + "/datasets/foo/files",
-        json={}
+        METAX_REST_URL
+        + "/datasets/foo?include_user_metadata=true&file_details=true",
+        json={},
     )
-    requests_mock.get(
-        METAX_REST_URL + "/datasets/foo?include_user_metadata=true&file_details=true",
-        json={}
-    )
-    datasets = METAX_CLIENT.query_datasets({'preferred_identifier': 'foobar'})
+    datasets = METAX_CLIENT.query_datasets({"preferred_identifier": "foobar"})
     assert len(datasets["results"]) == 1
 
 
@@ -743,15 +821,15 @@ def test_get_dataset_by_ids(requests_mock):
                 {
                     "id": 1,
                     "project_identifier": "blah",
-                    "research_dataset": {"title": "Dataset 1"}
+                    "research_dataset": {"title": "Dataset 1"},
                 },
                 {
                     "id": 3,
                     "project_identifier": "bleh",
-                    "research_dataset": {"title": "Dataset 3"}
-                }
-            ]
-        }
+                    "research_dataset": {"title": "Dataset 3"},
+                },
+            ],
+        },
     )
     requests_mock.post(
         f"{METAX_REST_ROOT_URL}/datasets/list"
@@ -762,16 +840,10 @@ def test_get_dataset_by_ids(requests_mock):
             "next": None,
             "previous": None,
             "results": [
-                {
-                    "id": 1,
-                    "project_identifier": "blah"
-                },
-                {
-                    "id": 3,
-                    "project_identifier": "bleh"
-                }
-            ]
-        }
+                {"id": 1, "project_identifier": "blah"},
+                {"id": 3, "project_identifier": "bleh"},
+            ],
+        },
     )
 
     response = METAX_CLIENT.get_datasets_by_ids([1, 3])
@@ -782,7 +854,7 @@ def test_get_dataset_by_ids(requests_mock):
     response = METAX_CLIENT.get_datasets_by_ids(
         [1, 3], fields=["id", "project_identifier"]
     )
-    assert "title" not in response["results"][0]
+    assert response["results"][0]["title"] is None
 
 
 def test_get_files_dict(requests_mock):
@@ -800,11 +872,11 @@ def test_get_files_dict(requests_mock):
                 "file_path": "/path/file1",
                 "file_storage": {
                     "id": 1,
-                    "identifier": "urn:nbn:fi:att:file-storage-pas"
+                    "identifier": "urn:nbn:fi:att:file-storage-pas",
                 },
-                "identifier": "file1_identifier"
+                "identifier": "file1_identifier",
             }
-        ]
+        ],
     }
     second_response = {
         "next": None,
@@ -814,25 +886,23 @@ def test_get_files_dict(requests_mock):
                 "file_path": "/path/file2",
                 "file_storage": {
                     "id": 1,
-                    "identifier": "urn:nbn:fi:att:file-storage-pas"
+                    "identifier": "urn:nbn:fi:att:file-storage-pas",
                 },
-                "identifier": "file2_identifier"
+                "identifier": "file2_identifier",
             }
-        ]
+        ],
     }
     requests_mock.get(
         METAX_REST_URL + "/files?limit=10000&project_identifier=test",
-        json=first_response
+        json=first_response,
     )
-    requests_mock.get(
-        "https://next.url",
-        json=second_response
-    )
+    requests_mock.get("https://next.url", json=second_response)
     files = METAX_CLIENT.get_files_dict("test")
     assert "/path/file1" in files
     assert "/path/file2" in files
-    assert files["/path/file1"]['identifier'] == "file1_identifier"
-    assert files["/path/file1"]['storage_service'] == "pas"
+    assert files["/path/file1"]["identifier"] == "file1_identifier"
+    assert files["/path/file1"]["storage_service"] == "pas"
+
 
 def test_get_project_directory(requests_mock):
     """Test get_project_directory function.
@@ -840,54 +910,65 @@ def test_get_project_directory(requests_mock):
     :param requets_mock: HTTP request mocker
     """
     metadata = {
-        'directories': [{"directory_path": "/testdir/bar"}],
-        'files': [{'identifier': 'file1'}],
-        "directory_path" : "/testdir"
+        "directories": [{"directory_path": "/testdir/bar"}],
+        "files": [{"identifier": "file1"}],
+        "directory_path": "/testdir",
     }
     metadataV3 = {
-        'directories': [{"pathname": "/testdir/bar"}],
-        'files': [{'id': 'file1'}],
-        'directory': {"pathname": "/testdir"}
+        "directory": {"pathname": "/testdir"},
+        "directories": [
+            {
+                "name": None,
+                "size": None,
+                "file_count": None,
+                "pathname": "/testdir/bar",
+            }
+        ],
+        "files": [{"id": "file1", "filename": None, "size": None}],
     }
     requests_mock.get(METAX_REST_URL + "/directories/files", json=metadata)
-    assert METAX_CLIENT.get_project_directory('foo', '/testdir')['results'] \
+    assert (
+        METAX_CLIENT.get_project_directory("foo", "/testdir")["results"]
         == metadataV3
-    assert requests_mock.last_request.qs['project'] == ['foo']
-    assert requests_mock.last_request.qs['path'] == ['/testdir']
+    )
+    assert requests_mock.last_request.qs["project"] == ["foo"]
+    assert requests_mock.last_request.qs["path"] == ["/testdir"]
+
 
 def test_get_directory_id(requests_mock):
     """Test get_directory_id function.
 
     :param requets_mock: HTTP request mocker
     """
-    metadata = {
-        "identifier": "dir:id:1"
-    }
+    metadata = {"identifier": "dir:id:1"}
     requests_mock.get(METAX_REST_URL + "/directories/files", json=metadata)
-    assert METAX_CLIENT.get_directory_id('foo', '/testdir') == metadata['identifier']
-    assert requests_mock.last_request.qs['project'] == ['foo']
-    assert requests_mock.last_request.qs['path'] == ['/testdir']
+    assert (
+        METAX_CLIENT.get_directory_id("foo", "/testdir")
+        == metadata["identifier"]
+    )
+    assert requests_mock.last_request.qs["project"] == ["foo"]
+    assert requests_mock.last_request.qs["path"] == ["/testdir"]
 
 
 @pytest.mark.parametrize(
-    'file_path,results',
+    "file_path,results",
     [
         # Only one matching file in Metax
         (
-            '/dir/file',
+            "/dir/file",
             [{"file_path": "/dir/file"}],
         ),
         # Two matching files in Metax. First one is not exact match.
         (
-            '/dir/file',
-            [{"file_path": "/dir/file/foo"}, {"file_path": "/dir/file"}]
+            "/dir/file",
+            [{"file_path": "/dir/file/foo"}, {"file_path": "/dir/file"}],
         ),
         # file_path without leading '/' should work as well
         (
-            'dir/file',
+            "dir/file",
             [{"file_path": "/dir/file"}],
-        )
-    ]
+        ),
+    ],
 )
 def test_get_project_file(file_path, results, requests_mock):
     """Test get_project_file function.
@@ -898,29 +979,24 @@ def test_get_project_file(file_path, results, requests_mock):
     """
     requests_mock.get(
         METAX_REST_URL + "/files",
-        json={
-            "count": 1,
-            "next": None,
-            "previous": None,
-            "results": results
-        }
+        json={"count": 1, "next": None, "previous": None, "results": results},
     )
-    assert METAX_CLIENT.get_project_file("foo", file_path)["pathname"] \
+    assert (
+        METAX_CLIENT.get_project_file("foo", file_path)["pathname"]
         == "/dir/file"
-    assert requests_mock.last_request.qs['project_identifier'] == ['foo']
-    assert requests_mock.last_request.qs['file_path'] == [file_path]
+    )
+    assert requests_mock.last_request.qs["project_identifier"] == ["foo"]
+    assert requests_mock.last_request.qs["file_path"] == [file_path]
 
 
 @pytest.mark.parametrize(
-    'results',
+    "results",
     (
         # One match is found, but it is not exact match
-        [
-            {"file_path": "/testdir/testfile/foo", "identifier": "foo"}
-        ],
+        [{"file_path": "/testdir/testfile/foo", "identifier": "foo"}],
         # No matches found
-        []
-    )
+        [],
+    ),
 )
 def test_get_project_file_not_found(results, requests_mock):
     """Test searching file_path that is not available.
@@ -930,26 +1006,21 @@ def test_get_project_file_not_found(results, requests_mock):
     """
     requests_mock.get(
         METAX_REST_URL + "/files",
-        json={
-            "count": 1,
-            "next": None,
-            "previous": None,
-            "results": results
-        }
+        json={"count": 1, "next": None, "previous": None, "results": results},
     )
     with pytest.raises(FileNotAvailableError):
-        METAX_CLIENT.get_project_file('foo', '/testdir/testfile')
+        METAX_CLIENT.get_project_file("foo", "/testdir/testfile")
 
 
 @pytest.mark.parametrize(
-    ['method', 'parameters', 'url'],
+    ["method", "parameters", "url"],
     [
         (
             METAX_CLIENT.get_project_directory,
-            ['foo', 'bar'],
-            '/directories/files'
+            ["foo", "bar"],
+            "/directories/files",
         ),
-    ]
+    ],
 )
 def test_directory_not_found(requests_mock, method, parameters, url):
     """Test error handling for missing directories.
@@ -965,8 +1036,9 @@ def test_directory_not_found(requests_mock, method, parameters, url):
 
     requests_mock.get(METAX_REST_URL + url, status_code=404)
 
-    with pytest.raises(DirectoryNotAvailableError,
-                       match='Directory not found'):
+    with pytest.raises(
+        DirectoryNotAvailableError, match="Directory not found"
+    ):
         method(*parameters)
 
 
@@ -980,7 +1052,7 @@ def test_get_file2dataset_dict(requests_mock):
         f"{METAX_REST_URL}/files/datasets",
         json={"161bc25962da8fed6d2f59922fb642": ["urn:dataset:aaffaaff"]},
         # Ensure the request body has the requested file IDs
-        additional_matcher=lambda req: req.json() == [10, 20]
+        additional_matcher=lambda req: req.json() == [10, 20],
     )
     result = METAX_CLIENT.get_file2dataset_dict([10, 20])
 
@@ -989,11 +1061,9 @@ def test_get_file2dataset_dict(requests_mock):
 
 
 def test_get_file2dataset_dict_empty(requests_mock):
-    """Test Metax.get_file2dataset dict with an empty list of file identifiers
-    """
+    """Test Metax.get_file2dataset dict with an empty list of file identifiers"""
     mocked_req = requests_mock.post(
-        f"{METAX_REST_URL}/files/datasets",
-        status_code=400
+        f"{METAX_REST_URL}/files/datasets", status_code=400
     )
     result = METAX_CLIENT.get_file2dataset_dict([])
 
@@ -1004,19 +1074,34 @@ def test_get_file2dataset_dict_empty(requests_mock):
 
 
 @pytest.mark.parametrize(
-    ('url', 'method', 'parameters', 'expected_error'),
+    ("url", "method", "parameters", "expected_error"),
     (
-        ('/datasets', METAX_CLIENT.get_datasets, [],
-         DatasetNotAvailableError),
-        ('/contracts', METAX_CLIENT.get_contracts, [],
-         ContractNotAvailableError),
-        ('/contracts/foo', METAX_CLIENT.get_contract, ['foo'],
-         ContractNotAvailableError),
-        ('/datacatalogs/foo', METAX_CLIENT.get_datacatalog, ['foo'],
-         DataCatalogNotAvailableError),
-        ('/datasets/foo/files', METAX_CLIENT.get_dataset_files, ['foo'],
-         DatasetNotAvailableError),
-    )
+        ("/datasets", METAX_CLIENT.get_datasets, [], DatasetNotAvailableError),
+        (
+            "/contracts",
+            METAX_CLIENT.get_contracts,
+            [],
+            ContractNotAvailableError,
+        ),
+        (
+            "/contracts/foo",
+            METAX_CLIENT.get_contract,
+            ["foo"],
+            ContractNotAvailableError,
+        ),
+        (
+            "/datacatalogs/foo",
+            METAX_CLIENT.get_datacatalog,
+            ["foo"],
+            DataCatalogNotAvailableError,
+        ),
+        (
+            "/datasets/foo/files",
+            METAX_CLIENT.get_dataset_files,
+            ["foo"],
+            DatasetNotAvailableError,
+        ),
+    ),
 )
 def test_get_http_404(requests_mock, url, method, parameters, expected_error):
     """Test a method when Metax responds with 404 "Not found" error.
@@ -1035,24 +1120,30 @@ def test_get_http_404(requests_mock, url, method, parameters, expected_error):
 
 
 @pytest.mark.parametrize(
-    ('url', 'method', 'parameters'),
+    ("url", "method", "parameters"),
     (
         (
-            f'/datasets?include_user_metadata=true&preservation_state='
+            f"/datasets?include_user_metadata=true&preservation_state="
             f'{quote("0,10,20,30,40,50,60,65,70,75,80,90,100,110,120,130,140")}'
-            f'&limit=1000000&offset=0',
+            f"&limit=1000000&offset=0",
             METAX_CLIENT.get_datasets,
-            []
+            [],
         ),
-        ('/contracts?limit=1000000&offset=0', METAX_CLIENT.get_contracts, []),
-        ('/contracts/foo', METAX_CLIENT.get_contract, ['foo']),
-        ('/datacatalogs/foo', METAX_CLIENT.get_datacatalog, ['foo']),
-        ('/datasets/foo?include_user_metadata=true&file_details=true',
-         METAX_CLIENT.get_dataset, ['foo']),
-        ('/datasets/foo?dataset_format=datacite&dummy_doi=false',
-         METAX_CLIENT.get_datacite, ['foo']),
-        ('/datasets/foo/files', METAX_CLIENT.get_dataset_files, ['foo']),
-    )
+        ("/contracts?limit=1000000&offset=0", METAX_CLIENT.get_contracts, []),
+        ("/contracts/foo", METAX_CLIENT.get_contract, ["foo"]),
+        ("/datacatalogs/foo", METAX_CLIENT.get_datacatalog, ["foo"]),
+        (
+            "/datasets/foo?include_user_metadata=true&file_details=true",
+            METAX_CLIENT.get_dataset,
+            ["foo"],
+        ),
+        (
+            "/datasets/foo?dataset_format=datacite&dummy_doi=false",
+            METAX_CLIENT.get_datacite,
+            ["foo"],
+        ),
+        ("/datasets/foo/files", METAX_CLIENT.get_dataset_files, ["foo"]),
+    ),
 )
 def test_get_http_503(requests_mock, caplog, url, method, parameters):
     """Test a method when Metax responds with 503 "Server error".
@@ -1066,10 +1157,12 @@ def test_get_http_503(requests_mock, caplog, url, method, parameters):
     :param method: Method to be tested
     :param parameters: Parameters for method call
     """
-    requests_mock.get(METAX_REST_URL + url,
-                      status_code=503,
-                      reason='Metax error',
-                      text='Metax failed to process request')
+    requests_mock.get(
+        METAX_REST_URL + url,
+        status_code=503,
+        reason="Metax error",
+        text="Metax failed to process request",
+    )
     with pytest.raises(requests.HTTPError) as error:
         method(*parameters)
     assert error.value.response.status_code == 503
@@ -1077,8 +1170,8 @@ def test_get_http_503(requests_mock, caplog, url, method, parameters):
     # Check logs
     logged_messages = [record.message for record in caplog.records]
     expected_message = (
-        f'HTTP request to {METAX_REST_URL}{url} failed. Response from '
-        'server was: Metax failed to process request'
+        f"HTTP request to {METAX_REST_URL}{url} failed. Response from "
+        "server was: Metax failed to process request"
     )
     assert expected_message in logged_messages
 
@@ -1089,17 +1182,17 @@ def test_set_preservation_state_http_503(requests_mock):
     ``set_preservation_state`` should throw a HTTPError when requests.patch()
     returns http 503 error.
     """
-    requests_mock.get(METAX_REST_URL + '/datasets/foobar', json={})
-    requests_mock.patch(METAX_REST_URL + '/datasets/foobar', status_code=503)
+    requests_mock.get(METAX_REST_URL + "/datasets/foobar", json={})
+    requests_mock.patch(METAX_REST_URL + "/datasets/foobar", status_code=503)
     with pytest.raises(requests.HTTPError) as error:
-        METAX_CLIENT.set_preservation_state('foobar', '10', 'foo')
+        METAX_CLIENT.set_preservation_state("foobar", "10", "foo")
     assert error.value.response.status_code == 503
 
 
 def test_get_dataset_template(requests_mock):
     """Test get_dataset_template function."""
     requests_mock.get(
-        METAX_RPC_URL + '/datasets/get_minimal_dataset_template',
-        json={'foo': 'bar'}
+        METAX_RPC_URL + "/datasets/get_minimal_dataset_template",
+        json={"foo": "bar"},
     )
-    assert METAX_CLIENT.get_dataset_template() == {'foo': 'bar'}
+    assert METAX_CLIENT.get_dataset_template() == {"foo": "bar"}

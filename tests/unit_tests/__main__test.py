@@ -99,8 +99,13 @@ def test_main(requests_mock, tmpdir, arguments, expected_requests, cli_invoke):
         ),
         (
             ['directory', 'baz', 'bar', '--content'],
-            {'files': [{'id': 'bar'}],
-             'directories': [{'name': 'dir'}]
+            {'files': [{'id': 'bar',
+                        'filename': None,
+                        'size': None}],
+             'directories': [{'name': 'dir',
+                              'size': None,
+                              'file_count': None,
+                              'pathname': None}]
              }
         )
     ]
@@ -117,11 +122,17 @@ def test_directory_command(requests_mock, cli_args, expected_output,
         'https://metax.localhost/rest/v2/directories/files?path=bar&project=baz&depth=1&include_parent=true',
         json={
                 'directories': [
-                        {'directory_name': 'dir'}
-                    ], 
+                        {'directory_name': 'dir',
+                         'byte_size': None,
+                         'file_count' : None,
+                         'directory_path': None
+                         }
+                    ],
                 'files': [
-                    {'identifier': 'bar'}
-                ], 
+                    {'identifier': 'bar',
+                     'file_name': None,
+                     'byte_size': None}
+                ],
                 'directory_path': '/bar'
             }
     )
@@ -135,23 +146,45 @@ def test_directory_command(requests_mock, cli_args, expected_output,
     "parameters,expected_result",
     [
         # Search file by identifier
-        (
-            ['fileid1'],
-            {
-                'id': 'fileid1',
-                'storage_identifier': 'fileid1',
-                'characteristics_extension': None
-            }
-        ),
+        (['fileid1'], {'id': 'fileid1', 
+                       'pathname': None, 
+                       'filename': None, 
+                       'size': None, 
+                       'checksum': None, 
+                       'storage_service': None, 
+                       'csc_project': None, 
+                       'frozen': None, 
+                       'modified': None, 
+                       'removed': None, 
+                       'published': None, 
+                       'dataset_metadata': {
+                           'title': None, 
+                           'file_type': None, 
+                           'use_category': None}, 
+                        'characteristics': None, 
+                        'characteristics_extension': None}),
         # Search file by path
-        (
-            ['project1:filepath2', '--by-path'],
+        (['project1:filepath2', '--by-path'],
+         {'id': 'fileid2',
+          'pathname': '/filepath2',
+          'filename': None,
+          'size': None,
+          'checksum': None,
+          'storage_service': None,
+          'csc_project': None,
+          'frozen': None,
+          'modified': None,
+          'removed': None,
+          'published': None,
+          'dataset_metadata':
             {
-                'pathname': '/filepath2',
-                'id': 'fileid2',
-                'storage_identifier': 'fileid2',
-                'characteristics_extension': None
-            }
+                'title': None,
+                'file_type': None, 
+                'use_category': None
+            },
+            'characteristics': None,
+            'characteristics_extension': None
+          }
         ),
         # Delete file by identifier
         (['fileid1', '--delete'], ''),
@@ -195,8 +228,10 @@ def test_file_datasets_command(requests_mock, cli_invoke, parameters,
     # Run command and check the result
     result = cli_invoke(['file'] + parameters)
     if isinstance(expected_result, dict):
+        print(json.loads(result.output))
         assert json.loads(result.output) == expected_result
     else:
+        print(result.output)
         assert result.output == expected_result
 
 

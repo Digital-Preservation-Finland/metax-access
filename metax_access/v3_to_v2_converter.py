@@ -1,7 +1,6 @@
 """Payload converter from Metax v3 to Metax v2."""
 from metax_access.v2_to_v3_converter import \
     FILE_STORAGE_V2_TO_STORAGE_SERVICE_V3
-from metax_access.utils import remove_none
 
 # Invert the `storage_service` <-> `file_storage_identifier` dict
 STORAGE_SERVICE_V3_TO_FILE_STORAGE_V2 = {
@@ -15,24 +14,26 @@ def convert_contract(json):
     :param dict json: Metax V3 contract as a JSON.
     :returns: Metax V2 contract as a dictionary
     """
-    return {
-        "date_modified": json.get("modified"),
-        "date_created": json.get("created"),
-        "service_created": json.get("service"),
-        "removed": json.get("removed"),
-        'contract_json': {
-            "quota": json.get('quota'),
-            "title": json.get('title', {}).get('und'),
-            "contact": json.get('contact'),
-            "created": json.get('created'),
-            "modified": json.get('modified'),
-            "validity": json.get('validity'),
-            "identifier": json.get('contract_identifier'),
-            "description": json.get('description', {}).get('und'),
-            "organization": json.get('organization'),
-            "related_service": json.get('related_service')
+    return remove_none(
+        {
+            "date_modified": json.get("modified"),
+            "date_created": json.get("created"),
+            "service_created": json.get("service"),
+            "removed": json.get("removed"),
+            "contract_json": {
+                "quota": json.get("quota"),
+                "title": json.get("title", {}).get("und"),
+                "contact": json.get("contact"),
+                "created": json.get("created"),
+                "modified": json.get("modified"),
+                "validity": json.get("validity"),
+                "identifier": json.get("contract_identifier"),
+                "description": json.get("description", {}).get("und"),
+                "organization": json.get("organization"),
+                "related_service": json.get("related_service"),
+            },
         }
-    }
+    )
 
 
 def convert_dataset(json):
@@ -68,17 +69,7 @@ def convert_file(json):
             "checked": json.get("modified")
         }
 
-    return remove_none(
-        {
-            "id": json.get("id"),
-            # Match 'storage_identifier' to 'identifier'.
-            # This does not match with the official Metax V3 migration guide,
-            # and is only meant to be used during V2 <-> V3 migration period
-            # due to being more convenient:
-            # Metax V2 accepts either `identifier` or `id` in endpoints,
-            # and `identifier` already uses UUIDs in V2 as opposed to `id` in
-            # V2 which uses integers.
-            "identifier": json.get("storage_identifier") or json.get("id"),
+    return {"identifier": json.get("id"),
             "file_storage": {
                 "identifier": STORAGE_SERVICE_V3_TO_FILE_STORAGE_V2.get(
                     json.get("storage_service")
@@ -135,4 +126,3 @@ def convert_file(json):
             # be removed after the migration is complete.
             "file_uploaded": json.get("_file_uploaded")
         }
-    )
