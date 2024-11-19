@@ -70,7 +70,15 @@ def convert_file(json):
 
     return remove_none(
         {
-            "identifier": json.get("id"),
+            "id": json.get("id"),
+            # Match 'storage_identifier' to 'identifier'.
+            # This does not match with the official Metax V3 migration guide,
+            # and is only meant to be used during V2 <-> V3 migration period
+            # due to being more convenient:
+            # Metax V2 accepts either `identifier` or `id` in endpoints,
+            # and `identifier` already uses UUIDs in V2 as opposed to `id` in
+            # V2 which uses integers.
+            "identifier": json.get("storage_identifier") or json.get("id"),
             "file_storage": {
                 "identifier": STORAGE_SERVICE_V3_TO_FILE_STORAGE_V2.get(
                     json.get("storage_service")

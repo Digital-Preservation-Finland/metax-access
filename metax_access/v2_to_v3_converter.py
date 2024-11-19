@@ -235,6 +235,7 @@ def convert_file(json, research_dataset_file={}) -> MetaxFile:
 
     file_metadata: MetaxFile = {
         "id": json.get("identifier"),
+        "storage_identifier": json.get("identifier"),
         "pathname": json.get("file_path"),
         "filename": json.get("file_name"),
         "size": json.get("byte_size"),

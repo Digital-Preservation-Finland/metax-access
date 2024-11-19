@@ -135,10 +135,24 @@ def test_directory_command(requests_mock, cli_args, expected_output,
     "parameters,expected_result",
     [
         # Search file by identifier
-        (['fileid1'], {'id': 'fileid1', 'characteristics_extension': None}),
+        (
+            ['fileid1'],
+            {
+                'id': 'fileid1',
+                'storage_identifier': 'fileid1',
+                'characteristics_extension': None
+            }
+        ),
         # Search file by path
-        (['project1:filepath2', '--by-path'],
-         {'pathname': '/filepath2', 'id': 'fileid2', 'characteristics_extension': None}),
+        (
+            ['project1:filepath2', '--by-path'],
+            {
+                'pathname': '/filepath2',
+                'id': 'fileid2',
+                'storage_identifier': 'fileid2',
+                'characteristics_extension': None
+            }
+        ),
         # Delete file by identifier
         (['fileid1', '--delete'], ''),
         # List datasets of file

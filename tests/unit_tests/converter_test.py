@@ -37,6 +37,7 @@ FILEV2 = {
 }
 
 CONVERTED_FILEV2 = {
+    "id": "pid:urn:1",
     "identifier": "pid:urn:1",
     "file_path": "/path/to/file",
     "file_storage": {
@@ -64,6 +65,7 @@ CONVERTED_FILEV2 = {
 
 FILEV3 = {
     "id": "pid:urn:1",
+    "storage_identifier": "pid:urn:1",
     "pathname": "/path/to/file",
     "storage_service": "ida",
     "checksum": "md5:58284d6cdd8deaffe082d063580a9df3",

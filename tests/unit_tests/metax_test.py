@@ -384,6 +384,7 @@ def test_patch_file(requests_mock):
     file_v2 = requests_mock.last_request.json()
 
     assert file_v2 == {
+        "id": "42",
         "identifier": "42",
         "checksum": {
             "algorithm": "SHA256",
