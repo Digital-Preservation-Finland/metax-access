@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 0.32 - 2024-11-26
+
+### Added
+
+- Normalize file inserts & updates to Metax V3 format
+- Add missing fields during V3 -> V2 normalization
+  - `checksum.checked`
+  - `file_uploaded`
+
+### Fixed
+
+- `storage_identifier` is normalized correctly as external file identifier instead of storage service identifier
+
 ## 0.31 - 2024-10-25
 
 ### Added
