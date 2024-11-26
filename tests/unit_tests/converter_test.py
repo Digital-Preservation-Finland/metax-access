@@ -3,9 +3,9 @@
 Tests for ``metax_access.v2_to_v3_converter``
 and ``metax_access.v3_to_v2_converter`` modules.
 """
+import copy
 
 from metax_access import v2_to_v3_converter, v3_to_v2_converter
-import copy
 
 PAS_CATALOG_IDENTIFIER = "urn:nbn:fi:att:data-catalog-pas"
 
@@ -109,8 +109,6 @@ def test_convert_file_v2_to_v3():
 
 def test_convert_file_v3_to_v2():
     result = v3_to_v2_converter.convert_file(FILEV3)
-    print("PLAA")
-    print(result)
     assert result == CONVERTED_FILEV2
 
 
@@ -178,7 +176,7 @@ BASE_DATASETV3 = {
     "cumulation_started": None,
     "cumulation_ended": None,
     "cumulative_state": None,
-    "created": None,
+    "created": "2024-11-27T06:32:47Z",
     "deprecated": None,
     "state": None,
     "last_cumulative_addition": None,
@@ -190,15 +188,34 @@ BASE_DATASETV3 = {
         "state": 0,
         "description": None,
         "reason_description": None,
-        "dataset_version": None,
+        "dataset_version": {
+            "id": None,
+            'persistent_identifier': None,
+            'preservation_state': -1
+        },
     },
-    "modified": None,
+    "modified": "2024-11-27T06:32:47Z",
     "persistent_identifier": None,
     "title": None,
     "description": None,
     "issued": None,
+    "keyword": [],
     "bibliographic_citation": None,
+    "actors": [],
+    "provenance": [],
+    "projects": [],
+    "field_of_science": [],
+    "theme": [],
+    "language": [],
+    "infrastructure": [],
+    "spatial": [],
+    "temporal": [],
+    "other_identifiers": [],
+    "relation": [],
+    "remote_resources": [],
     "fileset": {"csc_project": None, "total_files_size": None},
+    "version": None,
+    "access_rights": None,
 }
 
 
@@ -380,7 +397,7 @@ DATASETV3 = {
     "cumulation_started": None,
     "cumulation_ended": None,
     "cumulative_state": None,
-    "created": None,
+    "created": "2024-11-27T06:32:47Z",
     "deprecated": None,
     "state": None,
     "last_cumulative_addition": None,
@@ -393,12 +410,12 @@ DATASETV3 = {
         "description": "preservation_description",
         "reason_description": "preservation_reason_description",
         "dataset_version": {
-            "id": 2,
-            "identifier": "pas_version_identifier",
-            "preferred_identifier": "doi:pas_version_preferred_identifier",
+            "id": "pas_version_identifier",
+            'persistent_identifier': 'doi:pas_version_preferred_identifier',
+            'preservation_state': -1
         },
     },
-    "modified": None,
+    "modified": "2024-11-27T06:32:47Z",
     "persistent_identifier": "doi:preferred_identifier",
     "title": {"en": "Wonderful Title"},
     "description": {"en": "A descriptive description describing the content."},
@@ -420,6 +437,8 @@ DATASETV3 = {
                 },
                 "email": None,
                 "homepage": None,
+                'external_identifier': 'org_id_csc',
+                'parent': None,
                 "url": "org_id_csc",
             },
             "roles": ["creator"],
@@ -433,6 +452,8 @@ DATASETV3 = {
                 "email": None,
                 "homepage": None,
                 "url": "org_id_csc",
+                'external_identifier': 'org_id_csc',
+                'parent': None,
             },
             "roles": ["creator"],
         },
@@ -451,6 +472,8 @@ DATASETV3 = {
                 "email": None,
                 "homepage": None,
                 "url": "org_id_mysterious",
+                'external_identifier': 'org_id_mysterious',
+                'parent': None,
             },
             "roles": ["publisher"],
         },
@@ -511,6 +534,8 @@ DATASETV3 = {
                         "email": None,
                         "homepage": None,
                         "url": None,
+                        'external_identifier': None,
+                        'parent': None,
                     },
                 }
             ],
@@ -582,6 +607,12 @@ DATASETV3 = {
         "description": None,
         "available": None,
     },
+    "temporal": [],
+    "remote_resources": [],
+    "relation": [],
+    "projects": [],
+    "other_identifiers": [],
+    "infrastructure": [],
     "version": "version",
 }
 

@@ -111,7 +111,7 @@ def convert_dataset(json, metax=None):
         "cumulation_started": json.get("date_cumulation_started"),
         "cumulation_ended": json.get("date_cumulation_ended"),
         "cumulative_state": json.get("cumulative_state"),
-        "created": json.get("date_created"),
+        "created": json.get("date_created", '2024-11-27T06:32:47Z'),
         "deprecated": deprecated,
         "state": json.get("state"),
         "last_cumulative_addition": json.get(
@@ -120,13 +120,11 @@ def convert_dataset(json, metax=None):
         "id": json.get("identifier"),
         "api_version": json.get("api_meta", {}).get("version", 1),
         "preservation": _convert_preservation(json),
-        "modified": json.get('date_modified')
+        "modified": json.get('date_modified', '2024-11-27T06:32:47Z')
     }
 
     research_dataset = json.get("research_dataset", {})
     dataset |= {
-        k: v
-        for k, v in {
             "persistent_identifier": research_dataset.get(
                 "preferred_identifier"
             ),
@@ -187,24 +185,21 @@ def convert_dataset(json, metax=None):
                 metax,
                 json.get('identifier')
             ),
-        }.items()
-        if v != []
-    }
+            "version": research_dataset.get("version")
+        }
+
     if access_rights := research_dataset.get("access_rights"):
         dataset["access_rights"] = {
             "license": [
                     _convert_license(license)
                     for license in access_rights.get("license", [])
                 ],
-            "description": access_rights.get("description", None),
+            "description": access_rights.get("description"),
             "available": access_rights.get("available"),
         }
+    else:
+        dataset["access_rights"] = None
 
-    optional_research_dataset_keys = [
-        "version",
-    ]
-    for k in optional_research_dataset_keys & research_dataset.keys():
-        dataset[k] = research_dataset[k]
     return dataset
 
 
@@ -271,12 +266,16 @@ def _convert_preservation(json):
     return {
         "contract": json.get("contract", {}).get("identifier"),
         "id": json.get("preservation_identifier"),
-        "state": json.get("preservation_state"),
+        "state": json.get("preservation_state") if json.get("preservation_state") is not None else -1,
         "description": json.get("preservation_description"),
         "reason_description": json.get("preservation_reason_description"),
-        # TODO: currently this is not a field in a v3 output
-        # likely should be involved anyway
-        "dataset_version": json.get("preservation_dataset_version")
+        "dataset_version": { # TODO: preservation_status is missing from V3, it's probably added in near future
+            'id': json.get("preservation_dataset_version",{}).get("identifier"),
+            'persistent_identifier': json.get("preservation_dataset_version",{}).get("preferred_identifier"),
+            'preservation_state': json.get("preservation_dataset_version",{}).get("preservation_state")
+            if json.get("preservation_dataset_version",{}).get("preservation_state")
+            is not None else -1
+        }
     }
 
 
@@ -375,12 +374,18 @@ def _convert_organization(organization: dict) -> Optional[dict]:
         "pref_label": organization.get("name"),
         "email": organization.get("email"),
         "homepage": _convert_homepage(organization.get("homepage")),
+        # A duplicate definition because https://gitlab.ci.csc.fi/fairdata/
+        # fairdata-metax-v3/-/blob/master/src/apps/core/models/
+        # legacy_converter.py#L399 uses some conditional logic which I
+        # (Milla) didn't bother to add here. External id is supported
+        # because admin rest api uses it and when V3 is in use, and
+        # there is a possibility that this can be a useful field in V3.
         "url": organization.get("identifier"),
+        "external_identifier": organization.get("identifier"),
     }
-    parent = None
-    if parent_data := organization.get("is_part_of"):
-        parent = _convert_organization(parent_data)
-        val["parent"] = parent
+
+    parent = _convert_organization(organization.get("is_part_of"))
+    val["parent"] = parent
     return val
 
 

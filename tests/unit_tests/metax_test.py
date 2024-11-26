@@ -135,7 +135,7 @@ def test_get_dataset(requests_mock):
 
     assert (
         dataset["id"] == "123"
-    )  # fixed to metax normalization. normalization does not support extra fields currently
+    )
 
 
 def test_get_contracts(requests_mock):

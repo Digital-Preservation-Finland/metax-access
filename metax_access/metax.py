@@ -13,6 +13,7 @@ from metax_access.response import MetaxFile
 from metax_access.v2_to_v3_converter import (convert_contract, convert_dataset,
                                              convert_directory_files_response,
                                              convert_file)
+from metax_access.response_mapper import (map_dataset)
 
 logger = logging.getLogger(__name__)
 
@@ -215,7 +216,7 @@ class Metax:
         json = response.json()
         if "results" in json:
             json["results"] = [
-                convert_dataset(d, self) for d in json["results"]
+                map_dataset(convert_dataset(d, self)) for d in json["results"]
             ]
         return json
 
@@ -232,7 +233,7 @@ class Metax:
         json = response.json()
         if "results" in json:
             json["results"] = [
-                convert_dataset(d, self) for d in json["results"]
+                map_dataset(convert_dataset(d, self)) for d in json["results"]
             ]
         return json
 
@@ -261,7 +262,7 @@ class Metax:
         json = response.json()
         if "results" in json:
             json["results"] = [
-                convert_dataset(d, self) for d in json["results"]
+                map_dataset(convert_dataset(d, self)) for d in json["results"]
             ]
         return json
 
@@ -318,6 +319,7 @@ class Metax:
         # The original data must be added to updated objects since Metax patch
         # request will just overwrite them
         original_data = self.get_contract(contract_id)
+
         for key in data:
             if isinstance(data[key], dict) and key in original_data:
                 data[key] = _update_nested_dict(original_data[key], data[key])
@@ -353,9 +355,11 @@ class Metax:
         if response.status_code == 404:
             raise DatasetNotAvailableError
 
-        return convert_dataset(
-            response.json(), self
-        ) if not v2 else response.json()
+        return (
+            map_dataset(convert_dataset(response.json(), self))
+            if not v2
+            else response.json()
+        )
 
     def get_dataset_template(self):
         """Get minimal dataset template.
@@ -424,7 +428,7 @@ class Metax:
         response = self.get(url)
 
         return [
-            convert_dataset(dataset, self) for dataset in response.json()
+            map_dataset(convert_dataset(dataset, self)) for dataset in response.json()
         ]
 
     def get_file(self, file_id, v2=False) -> MetaxFile:
@@ -983,6 +987,9 @@ def _update_nested_dict(original, update):
     :returns: Updated dictionary
     """
     updated_dict = copy.deepcopy(original)
+
+    if original is None:
+        return update
 
     for key in update:
         if key in original and isinstance(update[key], dict):
