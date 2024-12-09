@@ -3,8 +3,11 @@
 import copy
 from typing import Optional
 
-from metax_access.response import (MetaxFile, MetaxFileCharacteristics,
-                                   MetaxFileFormatVersion)
+from metax_access.response import (
+    MetaxFile,
+    MetaxFileCharacteristics,
+    MetaxFileFormatVersion,
+)
 
 # We can also determine the storage service using `service_created`.
 # `file_storage.identifier` <-> `storage_service` mapping is recommended by the
@@ -31,18 +34,14 @@ def convert_contract(json):
     }
     contract_json = json.get("contract_json", {})
     contract |= {
-        "contract_identifier": contract_json.get('identifier'),
-        "title": {
-            "und": contract_json.get('title')
-        },
-        "description": {
-            "und": contract_json.get('description')
-        },
-        "quota": contract_json.get('quota'),
-        "organization": contract_json.get('organization'),
-        "validity": contract_json.get('validity'),
-        "contact": contract_json.get('contact'),
-        "related_service": contract_json.get('related_service')
+        "contract_identifier": contract_json.get("identifier"),
+        "title": {"und": contract_json.get("title")},
+        "description": {"und": contract_json.get("description")},
+        "quota": contract_json.get("quota"),
+        "organization": contract_json.get("organization"),
+        "validity": contract_json.get("validity"),
+        "contact": contract_json.get("contact"),
+        "related_service": contract_json.get("related_service"),
     }
     return contract
 
@@ -73,9 +72,7 @@ def convert_directory_files_response(json):
         for file in json.get("files", [])
     ]
 
-    directory = {
-        "pathname": json.get("directory_path")
-    }
+    directory = {"pathname": json.get("directory_path")}
 
     return {
         "count": None,
@@ -111,89 +108,79 @@ def convert_dataset(json, metax=None):
         "cumulation_started": json.get("date_cumulation_started"),
         "cumulation_ended": json.get("date_cumulation_ended"),
         "cumulative_state": json.get("cumulative_state"),
-        "created": json.get("date_created", '2024-11-27T06:32:47Z'),
+        "created": json.get("date_created", "2024-11-27T06:32:47Z"),
         "deprecated": deprecated,
         "state": json.get("state"),
-        "last_cumulative_addition": json.get(
-            "date_last_cumulative_addition"
-        ),
+        "last_cumulative_addition": json.get("date_last_cumulative_addition"),
         "id": json.get("identifier"),
         "api_version": json.get("api_meta", {}).get("version", 1),
         "preservation": _convert_preservation(json),
-        "modified": json.get('date_modified', '2024-11-27T06:32:47Z')
+        "modified": json.get("date_modified", "2024-11-27T06:32:47Z"),
     }
 
     research_dataset = json.get("research_dataset", {})
     dataset |= {
-            "persistent_identifier": research_dataset.get(
-                "preferred_identifier"
-            ),
-            "title": research_dataset.get("title"),
-            "description": research_dataset.get("description"),
-            "issued": research_dataset.get("issued"),
-            "keyword": research_dataset.get("keyword") or [],
-            "bibliographic_citation": research_dataset.get(
-                "bibliographic_citation"
-            ),
-            "actors": _convert_actors(research_dataset),
-            "provenance": [
-                _convert_provenance(v)
-                for v in research_dataset.get("provenance", [])
-            ],
-            "projects": [
-                _convert_project(v)
-                for v in research_dataset.get("is_output_of", [])
-            ],
-            "field_of_science": [
-                _convert_reference(v)
-                for v in research_dataset.get("field_of_science", [])
-            ],
-            "theme": [
-                _convert_reference(v)
-                for v in research_dataset.get("theme", [])
-            ],
-            "language": [
-                _convert_reference(v, preferred_label="title")
-                for v in research_dataset.get("language", [])
-            ],
-            "infrastructure": [
-                _convert_reference(v)
-                for v in research_dataset.get("infrastructure", [])
-            ],
-            "spatial": [
-                _convert_spatial(v)
-                for v in research_dataset.get("spatial", [])
-            ],
-            "temporal": [
-                _convert_temporal(v)
-                for v in research_dataset.get("temporal", [])
-            ],
-            "other_identifiers": [
-                _convert_other_identifier(v)
-                for v in research_dataset.get("other_identifier", [])
-            ],
-            "relation": [
-                _convert_relation(v)
-                for v in research_dataset.get("relation", [])
-            ],
-            "remote_resources": [
-                _convert_remote_resource(v)
-                for v in research_dataset.get("remote_resources", [])
-            ],
-            "fileset": _convert_fileset(
-                research_dataset,
-                metax,
-                json.get('identifier')
-            ),
-            "version": research_dataset.get("version")
-        }
+        "persistent_identifier": research_dataset.get("preferred_identifier"),
+        "title": research_dataset.get("title"),
+        "description": research_dataset.get("description"),
+        "issued": research_dataset.get("issued"),
+        "keyword": research_dataset.get("keyword") or [],
+        "bibliographic_citation": research_dataset.get(
+            "bibliographic_citation"
+        ),
+        "actors": _convert_actors(research_dataset),
+        "provenance": [
+            _convert_provenance(v)
+            for v in research_dataset.get("provenance", [])
+        ],
+        "projects": [
+            _convert_project(v)
+            for v in research_dataset.get("is_output_of", [])
+        ],
+        "field_of_science": [
+            _convert_reference(v)
+            for v in research_dataset.get("field_of_science", [])
+        ],
+        "theme": [
+            _convert_reference(v) for v in research_dataset.get("theme", [])
+        ],
+        "language": [
+            _convert_reference(v, preferred_label="title")
+            for v in research_dataset.get("language", [])
+        ],
+        "infrastructure": [
+            _convert_reference(v)
+            for v in research_dataset.get("infrastructure", [])
+        ],
+        "spatial": [
+            _convert_spatial(v) for v in research_dataset.get("spatial", [])
+        ],
+        "temporal": [
+            _convert_temporal(v) for v in research_dataset.get("temporal", [])
+        ],
+        "other_identifiers": [
+            _convert_other_identifier(v)
+            for v in research_dataset.get("other_identifier", [])
+        ],
+        "relation": [
+            _convert_relation(v) for v in research_dataset.get("relation", [])
+        ],
+        "remote_resources": [
+            _convert_remote_resource(v)
+            for v in research_dataset.get("remote_resources", [])
+        ],
+        "fileset": _convert_fileset(
+            research_dataset, metax, json.get("identifier")
+        ),
+        "version": research_dataset.get("version"),
+    }
 
     if access_rights := research_dataset.get("access_rights"):
         dataset["access_rights"] = {
             "license": [
-                    _convert_license(license)
-                    for license in access_rights.get("license", [])
-                ],
+                _convert_license(license)
+                for license in access_rights.get("license", [])
+            ],
             "description": access_rights.get("description"),
             "available": access_rights.get("available"),
         }
@@ -252,9 +239,9 @@ def convert_file(json, research_dataset_file={}) -> MetaxFile:
         "characteristics": _convert_file_characteristics(
             json.get("file_characteristics")
         ),
-        "characteristics_extension": None
+        "characteristics_extension": None,
     }
-    
+
     file_metadata["characteristics_extension"] = json.get(
         "file_characteristics_extension"
     )
@@ -266,30 +253,41 @@ def _convert_preservation(json):
     return {
         "contract": json.get("contract", {}).get("identifier"),
         "id": json.get("preservation_identifier"),
-        "state": json.get("preservation_state") if json.get("preservation_state") is not None else -1,
+        "state": (
+            json.get("preservation_state")
+            if json.get("preservation_state") is not None
+            else -1
+        ),
         "description": json.get("preservation_description"),
         "reason_description": json.get("preservation_reason_description"),
-        "dataset_version": { # TODO: preservation_status is missing from V3, it's probably added in near future
-            'id': json.get("preservation_dataset_version",{}).get("identifier"),
-            'persistent_identifier': json.get("preservation_dataset_version",{}).get("preferred_identifier"),
-            'preservation_state': json.get("preservation_dataset_version",{}).get("preservation_state")
-            if json.get("preservation_dataset_version",{}).get("preservation_state")
-            is not None else -1
-        }
+        "dataset_version": {
+            # TODO: preservation_status is missing from V3,
+            # it's probably added in near future
+            "id": json.get("preservation_dataset_version", {}).get(
+                "identifier"
+            ),
+            "persistent_identifier": json.get(
+                "preservation_dataset_version", {}
+            ).get("preferred_identifier"),
+            "preservation_state": (
+                json.get("preservation_dataset_version", {}).get(
+                    "preservation_state"
+                )
+                if json.get("preservation_dataset_version", {}).get(
+                    "preservation_state"
+                )
+                is not None
+                else -1
+            ),
+        },
     }
 
 
 def _convert_csc_project(json, metax, dataset_id):
     if files := json.get("files", []):
-        return (
-            files[0].get("details", {}).get("project_identifier")
-        )
+        return files[0].get("details", {}).get("project_identifier")
     if directories := json.get("directories", []):
-        return (
-            directories[0]
-            .get("details", {})
-            .get("project_identifier")
-        )
+        return directories[0].get("details", {}).get("project_identifier")
     if metax is not None and dataset_id is not None:
         for file in metax.get_dataset_files(dataset_id):
             return file["csc_project"]
@@ -299,16 +297,15 @@ def _convert_csc_project(json, metax, dataset_id):
 def _convert_fileset(research_dataset, metax, dataset_id):
     return {
         "csc_project": _convert_csc_project(
-            research_dataset,
-            metax,
-            dataset_id
+            research_dataset, metax, dataset_id
         ),
-        "total_files_size": research_dataset.get('total_files_byte_size')
+        "total_files_size": research_dataset.get("total_files_byte_size"),
     }
 
 
-def _convert_file_characteristics(file_characteristics) -> \
-        Optional[MetaxFileCharacteristics]:
+def _convert_file_characteristics(
+    file_characteristics,
+) -> Optional[MetaxFileCharacteristics]:
     if not file_characteristics:
         return None
 
@@ -360,10 +357,7 @@ def _convert_metadata_owner(json):
 def _convert_homepage(homepage):
     if not homepage:
         return None
-    return {
-        "title": homepage.get("title"),
-        "url": homepage.get("identifier")
-    }
+    return {"title": homepage.get("title"), "url": homepage.get("identifier")}
 
 
 def _convert_organization(organization: dict) -> Optional[dict]:
@@ -419,8 +413,7 @@ def _convert_actors(research_dataset) -> list:
     """Collect V2 actors from dataset and convert to V3 actor dicts."""
     actors_data = []  # list of dicts with actor as "actor"
     # and list of roles as "roles"
-    roles = ["creator", "publisher", "curator",
-             "contributor", "rights_holder"]
+    roles = ["creator", "publisher", "curator", "contributor", "rights_holder"]
     for role in roles:
         # Flatten actors list and add role data
         role_actors = research_dataset.get(role, [])

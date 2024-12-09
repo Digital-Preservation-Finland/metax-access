@@ -1,6 +1,9 @@
 """Payload converter from Metax v3 to Metax v2."""
-from metax_access.v2_to_v3_converter import \
-    FILE_STORAGE_V2_TO_STORAGE_SERVICE_V3
+
+from metax_access.v2_to_v3_converter import (
+    FILE_STORAGE_V2_TO_STORAGE_SERVICE_V3,
+)
+from metax_access.utils import remove_none
 
 # Invert the `storage_service` <-> `file_storage_identifier` dict
 STORAGE_SERVICE_V3_TO_FILE_STORAGE_V2 = {
@@ -47,7 +50,7 @@ def convert_dataset(json):
     """
     return {
         "contract": {
-            "identifier": json.get('preservation', {}).get('contract')
+            "identifier": json.get("preservation", {}).get("contract")
         }
     }
 
@@ -57,16 +60,22 @@ def convert_file(json):
     Convert Metax file from V3 to V2. This is necessary for data submission
     (eg. POST and PATCH) to Metax during the transition period
     """
+
+    checksum_algo_conversio = {
+        "sha256": "SHA-256",
+        "md5": "MD5",
+        "sha512": "SHA-512",
+    }
     checksum = None
     if json.get("checksum"):
         checksum = {
-            "algorithm": json.get("checksum", "")
-            .split(":")[0]
-            .upper(),
+            "algorithm": checksum_algo_conversio[
+                json.get("checksum").split(":")[0]
+            ],
             "value": json.get("checksum", "").split(":")[-1],
             # 'checked' field does not exist in Metax V3. Just spitball
             # a valid timestamp here.
-            "checked": json.get("modified")
+            "checked": json.get("modified"),
         }
 
     return {
@@ -131,7 +140,7 @@ def convert_file(json):
                 "characteristics_extension"
             ),
             # TODO: File creation date field does not exist in Metax V3.
-            # '_file_created' field is used during transition period and should
-            # be removed after the migration is complete.
-            "file_uploaded": json.get("_file_uploaded")
+            # '_file_created' field is used during transition period
+            # and should be removed after the migration is complete.
+            "file_uploaded": json.get("_file_uploaded"),
         }
