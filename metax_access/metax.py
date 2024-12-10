@@ -581,6 +581,22 @@ class Metax:
         response = self.patch(url, json=data)
         return response.json()
 
+    def patch_file_characteristics(self, file_id, file_characteristics):
+        """Patch file characteristics
+        TODO: documentation
+        """
+        original_data = self.get_file(file_id, v2=True).get(
+            "file_characteristics", {}
+        )
+        data = v3_to_v2_converter.convert_file(file_characteristics)
+        for key in data:
+            if isinstance(data[key], dict) and key in original_data:
+                data[key] = _update_nested_dict(original_data[key], data[key])
+
+        url = f"{self.baseurl}/files/{file_id}"
+        response = self.patch(url, json=data)
+        return response.json()
+
     def get_datacite(self, dataset_id, dummy_doi="false"):
         """Get descriptive metadata in datacite xml format.
 

@@ -34,34 +34,19 @@ CONVERTED_FILEV2 = {
     "identifier": "pid:urn:1",
     "file_storage": {"identifier": "urn:nbn:fi:att:file-storage-ida"},
     "file_path": "/path/to/file",
-    "file_name": None,
-    "byte_size": None,
     "checksum": {
         "algorithm": "MD5",
         "value": "58284d6cdd8deaffe082d063580a9df3",
-        "checked": None,
     },
     "service_created": "ida",
     "project_identifier": "test_project",
-    "file_frozen": None,
-    "file_modified": None,
-    "removed": None,
-    "date_created": None,
-    "file_format": None,
     "file_characteristics": {
         "encoding": "UTF-8",
-        "csv_has_header": None,
-        "csv_quoting_char": None,
-        "csv_delimiter": None,
-        "csv_record_separator": None,
-        "title": None,
         "file_format": "text/plain",
-        "format_version": None,
     },
     "file_characteristics_extension": {
         "streams": {0: {"mimetype": "text/plain", "stream_type": "text"}}
-    },
-    "file_uploaded": None,
+    }
 }
 
 

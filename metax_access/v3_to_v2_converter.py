@@ -78,7 +78,8 @@ def convert_file(json):
             "checked": json.get("modified"),
         }
 
-    return {
+    return remove_none(
+        {
             "id": json.get("id"),
             # Match 'storage_identifier' to 'identifier'.
             # This does not match with the official Metax V3 migration guide,
@@ -101,7 +102,8 @@ def convert_file(json):
             # same as the service. The only exception appears to be Metax's own
             # test data, which shouldn't matter here.
             "service_created": (
-                "tpas" if json.get("storage_service") == "pas"
+                "tpas"
+                if json.get("storage_service") == "pas"
                 else json.get("storage_service")
             ),
             "project_identifier": json.get("csc_project"),
@@ -111,9 +113,7 @@ def convert_file(json):
             "date_created": json.get("published"),
             "file_format": json.get("file_format"),
             "file_characteristics": {
-                "encoding": json.get("characteristics", {}).get(
-                    "encoding"
-                ),
+                "encoding": json.get("characteristics", {}).get("encoding"),
                 "csv_has_header": json.get("characteristics", {}).get(
                     "csv_has_header"
                 ),
@@ -123,9 +123,9 @@ def convert_file(json):
                 "csv_delimiter": json.get("characteristics", {}).get(
                     "csv_delimiter"
                 ),
-                "csv_record_separator": json.get(
-                    "characteristics", {}
-                ).get("csv_record_separator"),
+                "csv_record_separator": json.get("characteristics", {}).get(
+                    "csv_record_separator"
+                ),
                 "title": json.get("characteristics", {})
                 .get("file_format_version", {})
                 .get("pref_label"),
@@ -144,3 +144,4 @@ def convert_file(json):
             # and should be removed after the migration is complete.
             "file_uploaded": json.get("_file_uploaded"),
         }
+    )

@@ -388,34 +388,10 @@ def test_patch_file(requests_mock):
     assert file_v2 == {
         "id": "42",
         "identifier": "42",
-        "file_storage": {"identifier": None},
-        "file_path": None,
-        "file_name": None,
-        "byte_size": None,
         "checksum": {
-            "algorithm": "SHA256",
+            "algorithm": "SHA-256",
             "value": "212f954060735c8aea7af705e0b268723148d37898339f21014c24dc5cf6736b",
-            "checked": None,
-        },
-        "service_created": None,
-        "project_identifier": None,
-        "file_frozen": None,
-        "file_modified": None,
-        "removed": None,
-        "date_created": None,
-        "file_format": None,
-        "file_characteristics": {
-            "encoding": None,
-            "csv_has_header": None,
-            "csv_quoting_char": None,
-            "csv_delimiter": None,
-            "csv_record_separator": None,
-            "title": None,
-            "file_format": None,
-            "format_version": None,
-        },
-        "file_characteristics_extension": None,
-        "file_uploaded": None,
+        }
     }
 
     # Check the method of last HTTP request
