@@ -1,5 +1,24 @@
 """Mapper for Metax responses."""
 
+def map_contract(metax_contract):
+        """TODO: Documentation. Has pretty much a 1-1
+        mapping to the org contract.
+        """
+        return {
+             'contract_identifier': metax_contract['contract_identifier'],
+        'title': {
+             'und': metax_contract['title']['und']
+        },
+        'quota': metax_contract['quota'],
+        'organization': metax_contract["organization"],
+        'contact': metax_contract["contact"],
+        'related_service': metax_contract["related_service"],
+        'description': {
+             'und': metax_contract['description']['und']
+        },
+        'created': metax_contract['created'],
+        'validity': metax_contract['validity'],
+        }
 
 def map_dataset(metax_dataset):
     """TODO: Documentation"""

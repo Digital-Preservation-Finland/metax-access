@@ -13,7 +13,7 @@ from metax_access.response import MetaxFile
 from metax_access.v2_to_v3_converter import (convert_contract, convert_dataset,
                                              convert_directory_files_response,
                                              convert_file)
-from metax_access.response_mapper import (map_dataset)
+from metax_access.response_mapper import (map_dataset, map_contract)
 
 logger = logging.getLogger(__name__)
 
@@ -290,7 +290,7 @@ class Metax:
         json = response.json()
         json |= {
             "results": [
-                convert_contract(contract)
+                map_contract(convert_contract(contract))
                 for contract in json.get("results", [])
             ]
         }
@@ -306,7 +306,7 @@ class Metax:
         response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
             raise ContractNotAvailableError
-        return convert_contract(response.json())
+        return map_contract(convert_contract(response.json()))
 
     def patch_contract(self, contract_id, data):
         """Patch a contract.
@@ -329,7 +329,7 @@ class Metax:
             url, json=v3_to_v2_converter.convert_contract(data)
         )
 
-        return convert_contract(response.json())
+        return map_contract(convert_contract(response.json()))
 
     def get_dataset(self, dataset_id, include_user_metadata=True, v2=False):
         """Get dataset metadata from Metax.
