@@ -13,7 +13,8 @@ from metax_access.response import MetaxFile
 from metax_access.v2_to_v3_converter import (convert_contract, convert_dataset,
                                              convert_directory_files_response,
                                              convert_file)
-from metax_access.response_mapper import (map_dataset, map_contract, map_file)
+from metax_access.response_mapper import (map_dataset, map_contract, map_file,
+                                          map_directory_files)
 
 logger = logging.getLogger(__name__)
 
@@ -872,8 +873,11 @@ class Metax:
         response = self.get(url, allowed_status_codes=[404], params=params)
         if response.status_code == 404:
             raise DirectoryNotAvailableError
-
-        return convert_directory_files_response(response.json())
+        response_json = convert_directory_files_response(response.json()) 
+        response_json |= {
+            'results': map_directory_files(response_json['results'])
+        }
+        return response_json
 
     def get_project_file(self, project, path) -> MetaxFile:
         """Get file of project by path.
