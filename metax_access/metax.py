@@ -13,7 +13,7 @@ from metax_access.response import MetaxFile
 from metax_access.v2_to_v3_converter import (convert_contract, convert_dataset,
                                              convert_directory_files_response,
                                              convert_file)
-from metax_access.response_mapper import (map_dataset, map_contract)
+from metax_access.response_mapper import (map_dataset, map_contract, map_file)
 
 logger = logging.getLogger(__name__)
 
@@ -444,7 +444,7 @@ class Metax:
         if response.status_code == 404:
             raise FileNotAvailableError
 
-        return convert_file(response.json()) if not v2 else response.json()
+        return map_file(convert_file(response.json())) if not v2 else response.json()
 
     def get_files(self, project) -> list[MetaxFile]:
         """Get all files of a given project.
@@ -461,7 +461,7 @@ class Metax:
             url = response["next"]
             files.extend(response["results"])
 
-        return [convert_file(file) for file in files]
+        return [map_file(convert_file(file)) for file in files]
 
     def get_files_dict(self, project):
         """Get all the files of a given project.
@@ -667,11 +667,11 @@ class Metax:
         }
 
         return [
-            convert_file(
+            map_file(convert_file(
                 file, research_dataset_file_info.get(
                     file.get("identifier"), {}
                 )
-            )
+            ))
             for file in response.json()
         ]
 
@@ -889,7 +889,7 @@ class Metax:
 
         try:
             return next(
-                convert_file(file)
+                map_file(convert_file(file))
                 for file in response.json()["results"]
                 if file["file_path"].strip("/") == path.strip("/")
             )

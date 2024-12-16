@@ -147,41 +147,28 @@ def test_directory_command(requests_mock, cli_args, expected_output,
     [
         # Search file by identifier
         (['fileid1'], {'id': 'fileid1',
-                       'storage_identifier': 'fileid1',
                        'pathname': None, 
                        'filename': None, 
                        'size': None, 
                        'checksum': None, 
                        'storage_service': None, 
-                       'csc_project': None, 
-                       'frozen': None, 
-                       'modified': None, 
-                       'removed': None, 
-                       'published': None, 
+                       'csc_project': None,
                        'dataset_metadata': {
-                           'title': None, 
-                           'file_type': None, 
-                           'use_category': None}, 
+                           'use_category': None
+                        },
                         'characteristics': None, 
                         'characteristics_extension': None}),
         # Search file by path
         (['project1:filepath2', '--by-path'],
          {'id': 'fileid2',
           'pathname': '/filepath2',
-          'storage_identifier': 'fileid2',
           'filename': None,
           'size': None,
           'checksum': None,
           'storage_service': None,
           'csc_project': None,
-          'frozen': None,
-          'modified': None,
-          'removed': None,
-          'published': None,
           'dataset_metadata':
             {
-                'title': None,
-                'file_type': None, 
                 'use_category': None
             },
             'characteristics': None,
@@ -229,6 +216,8 @@ def test_file_datasets_command(requests_mock, cli_invoke, parameters,
 
     # Run command and check the result
     result = cli_invoke(['file'] + parameters)
+    print('output')
+    print(result.output)
     if isinstance(expected_result, dict):
         print(json.loads(result.output))
         assert json.loads(result.output) == expected_result

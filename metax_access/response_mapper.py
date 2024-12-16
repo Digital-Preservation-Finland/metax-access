@@ -1,8 +1,44 @@
 """Mapper for Metax responses."""
 
+def map_file(metax_file):
+     return {
+          "id": metax_file['id'],
+          "pathname": metax_file['pathname'],
+          "filename": metax_file['filename'],
+          "size": metax_file['size'],
+          "checksum": metax_file['checksum'],
+          "csc_project": metax_file['csc_project'],
+          "storage_service": metax_file["storage_service"],
+          # as of now 17.12.-24, the structure pf the dataset_metadata is not documented anywhere in V3
+          # so this is a guess.
+          "dataset_metadata": {
+               "use_category": {
+                    "identifier": metax_file["dataset_metadata"]["use_category"]["identifier"],
+                    "pref_label": metax_file["dataset_metadata"]["use_category"]["pref_label"]
+                    if "pref_label" in metax_file["dataset_metadata"]["use_category"].keys()
+                    else None
+               } if metax_file["dataset_metadata"]["use_category"] is not None else None
+          } if metax_file["dataset_metadata"] is not None else None,
+          "characteristics": {
+               # if something breaks (e.g. in the e2e tests) this field used to contain pref_label
+               # field. It was not needed in the UTs so it is not included anymore.
+               "file_format_version": {
+                    "file_format": metax_file['characteristics']['file_format_version']['file_format'],
+                    "format_version": metax_file['characteristics']['file_format_version']['format_version'],
+               } if metax_file['characteristics']['file_format_version'] is not None else None,
+               "encoding": metax_file['characteristics']['encoding'],
+               "csv_delimiter": metax_file['characteristics']['csv_delimiter'],
+               "csv_record_separator": metax_file['characteristics']['csv_record_separator'],
+               "csv_quoting_char": metax_file['characteristics']['csv_quoting_char'],
+               "csv_has_header": metax_file["characteristics"]['csv_has_header'],
+               "file_created": metax_file["characteristics"]['file_created']
+          } if metax_file['characteristics'] is not None else None,
+          "characteristics_extension": metax_file["characteristics_extension"]
+     }
+
 def map_contract(metax_contract):
         """TODO: Documentation. Has pretty much a 1-1
-        mapping to the org contract.
+        mapping to the original contract.
         """
         return {
              'contract_identifier': metax_contract['contract_identifier'],
