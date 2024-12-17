@@ -153,6 +153,8 @@ BASE_DATASETV2 = {
         "metadata_version_identifier": "1955e904-e3dd-4d7e-99f1-3fed446f96d1"
     },
     "preservation_state": 0,
+    "date_created": 'now',
+    'date_modified': 'now'
 }
 
 BASE_DATASETV3 = {
@@ -161,7 +163,7 @@ BASE_DATASETV3 = {
     "cumulation_started": None,
     "cumulation_ended": None,
     "cumulative_state": None,
-    "created": "2024-11-27T06:32:47Z",
+    "created": "now",
     "deprecated": None,
     "state": None,
     "last_cumulative_addition": None,
@@ -179,7 +181,7 @@ BASE_DATASETV3 = {
             'preservation_state': -1
         },
     },
-    "modified": "2024-11-27T06:32:47Z",
+    "modified": "now",
     "persistent_identifier": None,
     "title": None,
     "description": None,
@@ -374,6 +376,8 @@ DATASETV2 = {
         "identifier": "pas_version_identifier",
         "preferred_identifier": "doi:pas_version_preferred_identifier",
     },
+    'date_modified': 'now',
+    'date_created': 'now'
 }
 
 DATASETV3 = {
@@ -382,7 +386,7 @@ DATASETV3 = {
     "cumulation_started": None,
     "cumulation_ended": None,
     "cumulative_state": None,
-    "created": "2024-11-27T06:32:47Z",
+    "created": "now",
     "deprecated": None,
     "state": None,
     "last_cumulative_addition": None,
@@ -400,7 +404,7 @@ DATASETV3 = {
             'preservation_state': -1
         },
     },
-    "modified": "2024-11-27T06:32:47Z",
+    "modified": "now",
     "persistent_identifier": "doi:preferred_identifier",
     "title": {"en": "Wonderful Title"},
     "description": {"en": "A descriptive description describing the content."},
@@ -598,7 +602,7 @@ DATASETV3 = {
     "projects": [],
     "other_identifiers": [],
     "infrastructure": [],
-    "version": "version",
+    "version": "version"
 }
 
 

@@ -1,6 +1,7 @@
 """Payload converter from Metax v2 to Metax v3."""
 
 import copy
+from datetime import datetime
 from typing import Optional
 
 from metax_access.response import (
@@ -108,14 +109,18 @@ def convert_dataset(json, metax=None):
         "cumulation_started": json.get("date_cumulation_started"),
         "cumulation_ended": json.get("date_cumulation_ended"),
         "cumulative_state": json.get("cumulative_state"),
-        "created": json.get("date_created", "2024-11-27T06:32:47Z"),
+        "created": json.get(
+            "date_created", datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+        ),
         "deprecated": deprecated,
         "state": json.get("state"),
         "last_cumulative_addition": json.get("date_last_cumulative_addition"),
         "id": json.get("identifier"),
         "api_version": json.get("api_meta", {}).get("version", 1),
         "preservation": _convert_preservation(json),
-        "modified": json.get("date_modified", "2024-11-27T06:32:47Z"),
+        "modified": json.get(
+            "date_modified", datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+        ),
     }
 
     research_dataset = json.get("research_dataset", {})
@@ -239,7 +244,7 @@ def convert_file(json, research_dataset_file={}) -> MetaxFile:
         "characteristics": _convert_file_characteristics(
             json.get("file_characteristics")
         ),
-        "characteristics_extension": None,
+        "characteristics_extension": None
     }
 
     file_metadata["characteristics_extension"] = json.get(
@@ -368,7 +373,8 @@ def _convert_organization(organization: dict) -> Optional[dict]:
         "pref_label": organization.get("name"),
         "email": organization.get("email"),
         "homepage": _convert_homepage(organization.get("homepage")),
-        # A duplicate definition because https://gitlab.ci.csc.fi/fairdata/
+        # url and external_identifier are the same
+        # because https://gitlab.ci.csc.fi/fairdata/
         # fairdata-metax-v3/-/blob/master/src/apps/core/models/
         # legacy_converter.py#L399 uses some conditional logic which I
         # (Milla) didn't bother to add here. External id is supported
