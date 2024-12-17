@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 0.33 - 2025-01-14
+
+### Added
+
+- `response_mapper` module.
+
+### Changed
+
+- file, directory files, dataset and contract metadata responses from `metax-access` are formatted such that only fields used by services using metax-access are returned. The mapping is done in `response_mapper` module.
+
+- `null` values are included to the responses of the `metax-access`.
+
 ## 0.32 - 2024-11-26
 
 ### Added

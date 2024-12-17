@@ -2,6 +2,9 @@
 
 
 def map_directory_files(metax_directory_files):
+    """Maps a metax directory file response to a minimum response
+    required by the FDPAS services.
+    """
     return {
         "directory": (
             {"pathname": metax_directory_files["directory"]["pathname"]}
@@ -29,6 +32,9 @@ def map_directory_files(metax_directory_files):
 
 
 def map_file(metax_file):
+    """Maps a Metax file response to a minimum response
+    required by the FDPAS services.
+    """
     return {
         "id": metax_file["id"],
         "pathname": metax_file["pathname"],
@@ -108,8 +114,8 @@ def map_file(metax_file):
 
 
 def map_contract(metax_contract):
-    """TODO: Documentation. Has pretty much a 1-1
-    mapping to the original contract.
+    """Maps a Metax contract response to a minimum response
+    required by the FDPAS services.
     """
     return {
         "contract_identifier": metax_contract["contract_identifier"],
@@ -125,7 +131,9 @@ def map_contract(metax_contract):
 
 
 def map_dataset(metax_dataset):
-    """TODO: Documentation"""
+    """Maps a Metax dataset response to a minimum response
+    required by the FDPAS services.
+    """
     return {
         "id": metax_dataset["id"],
         "created": metax_dataset["created"],
@@ -247,10 +255,7 @@ def map_dataset(metax_dataset):
 
 
 def _map_actors(actors):
-    # TODO: Not working nicely with Nones/nulls.
-    # Something wrong with the normalization.
-    if actors == []:
-        return []
+    """A helper method for mapping actors in a dataset."""
     return [
         {
             "roles": actor["roles"] if actor.get("roles") else [],
@@ -262,7 +267,7 @@ def _map_actors(actors):
                     ],
                     "email": actor["person"]["email"],
                 }
-                if actor.get("person")
+                if actor.get("person") is not None
                 else None
             ),
             "organization": (
@@ -282,7 +287,7 @@ def _map_actors(actors):
                         else None
                     ),
                 }
-                if actor.get("organization")
+                if actor.get("organization") is not None
                 else None
             ),
         }

@@ -675,9 +675,9 @@ class Metax:
         return [
             map_file(
                 convert_file(
-                        file,
-                        research_dataset_file_info.get(
-                            file.get("identifier"), {}
+                    file,
+                    research_dataset_file_info.get(
+                        file.get("identifier"), {}
                     ),
                 )
             )
