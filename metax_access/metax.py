@@ -429,7 +429,8 @@ class Metax:
         response = self.get(url)
 
         return [
-            map_dataset(convert_dataset(dataset, self)) for dataset in response.json()
+            map_dataset(convert_dataset(dataset, self))
+            for dataset in response.json()
         ]
 
     def get_file(self, file_id, v2=False) -> MetaxFile:
@@ -445,7 +446,11 @@ class Metax:
         if response.status_code == 404:
             raise FileNotAvailableError
 
-        return map_file(convert_file(response.json())) if not v2 else response.json()
+        return (
+            map_file(convert_file(response.json()))
+            if not v2
+            else response.json()
+        )
 
     def get_files(self, project) -> list[MetaxFile]:
         """Get all files of a given project.
@@ -873,7 +878,7 @@ class Metax:
         response = self.get(url, allowed_status_codes=[404], params=params)
         if response.status_code == 404:
             raise DirectoryNotAvailableError
-        response_json = convert_directory_files_response(response.json()) 
+        response_json = convert_directory_files_response(response.json())
         response_json |= {
             'results': map_directory_files(response_json['results'])
         }
