@@ -30,7 +30,8 @@ def get_datasets(
     metadata_provider_user,
     ordering,
     include_user_metadata,
-    DatasetNotAvailableError
+    DatasetNotAvailableError,
+    DS_STATE_ALL_STATES
 ):
     """Get the metadata of datasets from Metax.
     :param str states: string containing dataset preservation state values
@@ -53,7 +54,7 @@ def get_datasets(
     :returns: datasets from Metax as json.
     """
     if states is None:
-        states = ",".join(str(state) for state in metax.DS_STATE_ALL_STATES)
+        states = ",".join(str(state) for state in DS_STATE_ALL_STATES)
     params = {}
     if pas_filter is not None:
         params["pas_filter"] = pas_filter
