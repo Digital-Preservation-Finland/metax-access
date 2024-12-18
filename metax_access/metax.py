@@ -15,6 +15,7 @@ from metax_access.v2_to_v3_converter import (convert_contract, convert_dataset,
                                              convert_file)
 from metax_access.response_mapper import (map_dataset, map_contract, map_file,
                                           map_directory_files)
+import metax_access.metax_v2 as metax_v2
 
 logger = logging.getLogger(__name__)
 
