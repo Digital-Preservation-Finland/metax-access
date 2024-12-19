@@ -264,10 +264,10 @@ def _convert_preservation(json):
             else -1
         ),
         "description": json.get("preservation_description"),
-        "reason_description": json.get("preservation_reason_description"),
+        "reason_description": json.get(
+            "preservation_reason_description"
+        ),
         "dataset_version": {
-            # TODO: preservation_status is missing from V3,
-            # it's probably added in near future
             "id": json.get("preservation_dataset_version", {}).get(
                 "identifier"
             ),
@@ -304,7 +304,7 @@ def _convert_fileset(research_dataset, metax, dataset_id):
         "csc_project": _convert_csc_project(
             research_dataset, metax, dataset_id
         ),
-        "total_files_size": research_dataset.get("total_files_byte_size"),
+        "total_files_size": research_dataset.get("total_files_byte_size", 0),
     }
 
 

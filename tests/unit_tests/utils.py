@@ -1,10 +1,36 @@
 from datetime import datetime
 
-# Minimum reponse from metax_access
+V3_FILE = {
+    "id": None,
+    "pathname": None,
+    "filename": None,
+    "size": None,
+    "checksum": None,
+    "csc_project": None,
+    "storage_service": None,
+    "dataset_metadata": {"use_category": None},
+    "characteristics": None,
+    "characteristics_extension": None,
+}
+
+V3_CONTRACT = {
+    "contract_identifier": None,
+    "title": {"und": None},
+    "quota": None,
+    "organization": None,
+    "contact": None,
+    "related_service": None,
+    "description": {"und": None},
+    "created": None,
+    "validity": None,
+}
+
+# Minimum reponse from metax_access according to Metax V3 documentation
+# Has some default values, which are not normalized in metax-access
 V3_MINIMUM_TEMPLATE_DATASET = {
-    "id": 123,
+    "id": None,
     "created": datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"), # a default value
-    "title": "The title of the Dataset",
+    "title": None, # non nullable
     "description": None,
     "modified": datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"), # a default value
     "fileset": 
@@ -15,10 +41,14 @@ V3_MINIMUM_TEMPLATE_DATASET = {
     "preservation": {
         "state": -1,
         "description": None,
-        "reason_description": "User-provided reason for rejecting or accepting a dataset in DPRES",
+        "reason_description": None,
         "dataset_version": {
-            "id": "123" #uuid
+                "id": None, #uuid
+                "persistent_identifier": None,
+                "preservation_state": -1
             },
+        "contract": None,
+        "id": None,
         },
     "access_rights": None,
     "version": None, #has a default value?

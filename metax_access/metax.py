@@ -892,7 +892,7 @@ class Metax:
 
         :param str project: project identifier of the file
         :param str path: path of the file
-        :returns: directory metadata
+        :returns: file metadata
         """
         url = f"{self.baseurl}/files"
         response = self.get(

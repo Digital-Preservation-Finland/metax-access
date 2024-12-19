@@ -168,20 +168,16 @@ def map_dataset(metax_dataset):
             "contract": metax_dataset["preservation"]["contract"],
             "id": metax_dataset["preservation"]["id"],
         },
-        "access_rights": {
-            "license": (
-                (
-                    [
-                        {"url": license["url"], "title": license["title"]}
-                        for license in metax_dataset["access_rights"][
-                            "license"
-                        ]
-                    ]
-                )
-                if metax_dataset["access_rights"] is not None
-                else None
-            )
-        },
+        "access_rights": (
+            {
+                "license": [
+                    {"url": license["url"], "title": license["title"]}
+                    for license in metax_dataset["access_rights"]["license"]
+                ]
+            }
+            if metax_dataset["access_rights"] is not None
+            else None
+        ),
         "version": metax_dataset["version"],
         "language": [
             {"url": language["url"]} for language in metax_dataset["language"]

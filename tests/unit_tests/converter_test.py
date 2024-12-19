@@ -200,7 +200,7 @@ BASE_DATASETV3 = {
     "other_identifiers": [],
     "relation": [],
     "remote_resources": [],
-    "fileset": {"csc_project": None, "total_files_size": None},
+    "fileset": {"csc_project": None, "total_files_size": 0},
     "version": None,
     "access_rights": None,
 }
