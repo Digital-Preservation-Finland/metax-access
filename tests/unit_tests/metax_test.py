@@ -303,6 +303,27 @@ def test_patch_dataset(requests_mock):
     assert request_body["research_dataset"]["foo2"] == "bar2"
     assert request_body["foo1"] == "bar1"
 
+def test_set_contract(requests_mock):
+    """Test ``set_contract`` function.
+
+    Patch the contract of a dataset and check that a correct
+    HTTP request was sent to Metax.
+
+    :returns: ``None``
+    """
+    requests_mock.patch(METAX_REST_URL + "/datasets/test_id", json={})
+    requests_mock.get(
+        METAX_REST_URL + "/datasets/test_id",
+        json={}
+    )
+
+    METAX_CLIENT.set_contract("test_id", 'new:contract:id')
+    assert requests_mock.last_request.method == "PATCH"
+
+    request_body = requests_mock.last_request.json()
+    assert isinstance(request_body["contract"], dict)
+    assert request_body["contract"]["identifier"] == "new:contract:id"
+
 
 def test_get_datacite(requests_mock):
     """Test ``get_datacite`` function.
