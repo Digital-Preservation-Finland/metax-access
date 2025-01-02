@@ -591,7 +591,6 @@ def _convert_relation(relation: dict) -> dict:
 def _convert_checksum_v2_to_v3(
     checksum: dict, value_key="value"
 ) -> Optional[str]:
-    # TODO: Should be asked why this format was chosen for checksum
     if not checksum:
         return None
     algorithm = checksum.get("algorithm", "").lower().replace("-", "")

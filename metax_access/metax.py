@@ -572,7 +572,7 @@ class Metax:
     def patch_file(self, file_id, data):
         """Patch file metadata.
 
-        :param str file_id: id or identifier of the file
+        :param str file_id: identifier of the file
         :param dict data: A file metadata dictionary that contains only the
                           key/value pairs that will be updated
         :returns: JSON response from Metax
@@ -590,8 +590,14 @@ class Metax:
         return response.json()
 
     def patch_file_characteristics(self, file_id, file_characteristics):
-        """Patch file characteristics
-        TODO: documentation
+        """Patch file characteristics ja file_characteristics_extension
+
+        :param str file_id: identifier of the file
+        :param dict file_characteristics: A dictionary including file
+                                    characteristics and file characteristics
+                                    extension fields. Only key/value pairs
+                                    that will be updated are required.
+        :returns: JSON response from Metax
         """
         original_data = self.get_file(file_id, v2=True).get(
             "file_characteristics", {}
