@@ -322,7 +322,7 @@ class Metax:
     def patch_dataset(
         self, dataset_id, data, overwrite_objects=False, v2=False
     ):
-        """Patch a dataset.S
+        """Patch a dataset.
 
         :param str dataset_id: id or identifier of the dataset
         :param dict data: A dataset dictionary that contains only the
@@ -333,6 +333,17 @@ class Metax:
             return metax_v2.patch_dataset(
                 self, dataset_id, data, overwrite_objects, v2
             )
+        raise NotImplementedError("Metax API V3 support not implemented")
+
+    def set_contract(self, dataset_id, contract_id):
+        """ Update the contract of a dataset.
+
+        :param str dataset_id: identifier of the dataset
+        :param str contract_if: the new contract id of the dataset
+        :returns: ``None``
+        """
+        if self.api_version == 'v2':
+            return metax_v2.set_contract(self, dataset_id, contract_id)
         raise NotImplementedError("Metax API V3 support not implemented")
 
     def get_contract_datasets(self, pid):

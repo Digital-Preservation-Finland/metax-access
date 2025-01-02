@@ -259,6 +259,17 @@ def patch_dataset(metax, dataset_id, data, overwrite_objects=False, v2=False):
     return response.json()
 
 
+def set_contract(metax, dataset_id, contract_id):
+    """Update the contract of a dataset.
+
+    :param str dataset_id: identifier of the dataset
+    :param str contract_if: the new contract id of the dataset
+    :returns: ``None``
+    """
+    data = {"preservation": {"contract": contract_id}}
+    return metax.patch_dataset(dataset_id, data, overwrite_objects=True)
+
+
 def get_contract_datasets(metax, pid):
     """Get the datasets of a contract from Metax.
     :param str pid: id or identifier attribute of contract
