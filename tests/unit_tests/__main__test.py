@@ -1,8 +1,14 @@
 """Tests for `metax_acces.__main__` module."""
 import json
 import shutil
+import copy
 
 import pytest
+from tests.unit_tests.utils import (V3_CONTRACT, V3_FILE,
+                                    V3_MINIMUM_TEMPLATE_DATASET)
+DATASET = copy.deepcopy(V3_MINIMUM_TEMPLATE_DATASET)
+del DATASET['created']
+del DATASET['modified']
 
 
 @pytest.fixture(autouse=True)

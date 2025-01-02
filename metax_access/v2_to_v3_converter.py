@@ -35,7 +35,7 @@ def convert_contract(json):
     }
     contract_json = json.get("contract_json", {})
     contract |= {
-        "contract_identifier": contract_json.get("identifier"),
+        "id": contract_json.get("identifier"),
         "title": {"und": contract_json.get("title")},
         "description": {"und": contract_json.get("description")},
         "quota": contract_json.get("quota"),
@@ -239,12 +239,23 @@ def convert_file(json, research_dataset_file={}) -> MetaxFile:
         "dataset_metadata": {
             "title": research_dataset_file.get("title"),
             "file_type": research_dataset_file.get("file_type"),
-            "use_category": research_dataset_file.get("use_category"),
+            "use_category": (
+                {
+                    "id": research_dataset_file.get("use_category").get(
+                        "identifier"
+                    ),
+                    "pref_label": research_dataset_file.get(
+                        "use_category"
+                    ).get("pref_label"),
+                }
+                if research_dataset_file.get("use_category") is not None
+                else None
+            ),
         },
         "characteristics": _convert_file_characteristics(
             json.get("file_characteristics")
         ),
-        "characteristics_extension": None
+        "characteristics_extension": None,
     }
 
     file_metadata["characteristics_extension"] = json.get(
@@ -264,27 +275,27 @@ def _convert_preservation(json):
             else -1
         ),
         "description": json.get("preservation_description"),
-        "reason_description": json.get(
-            "preservation_reason_description"
+        "reason_description": json.get("preservation_reason_description"),
+        "dataset_version": (
+            {
+                "id": json.get("preservation_dataset_version", {}).get(
+                    "identifier"
+                ),
+                "persistent_identifier": json.get(
+                    "preservation_dataset_version", {}
+                ).get("preferred_identifier"),
+                "preservation_state": (
+                    json.get("preservation_dataset_version", {}).get(
+                        "preservation_state"
+                    )
+                    if json.get("preservation_dataset_version", {}).get(
+                        "preservation_state"
+                    )
+                    is not None
+                    else -1
+                ),
+            }
         ),
-        "dataset_version": {
-            "id": json.get("preservation_dataset_version", {}).get(
-                "identifier"
-            ),
-            "persistent_identifier": json.get(
-                "preservation_dataset_version", {}
-            ).get("preferred_identifier"),
-            "preservation_state": (
-                json.get("preservation_dataset_version", {}).get(
-                    "preservation_state"
-                )
-                if json.get("preservation_dataset_version", {}).get(
-                    "preservation_state"
-                )
-                is not None
-                else -1
-            ),
-        },
     }
 
 

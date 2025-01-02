@@ -2,11 +2,14 @@
 
 import logging
 from typing import Union
+import re
 
 import requests
 from requests.auth import HTTPBasicAuth
 
 import metax_access.metax_v2 as metax_v2
+from metax_access.response_mapper import map_contract, map_dataset, map_file
+from metax_access.utils import update_nested_dict
 
 # These imports are used by other projects (eg. upload-rest-api)
 # pylint: disable=unused-import
@@ -59,8 +62,12 @@ class Metax:
         self.password = password
         self.token = token
         self.url = url
-        self.baseurl = f"{url}/rest/v2"
-        self.rpcurl = f"{url}/rpc/v2"
+        if api_version == 'v3':
+            self.baseurl = f"{url}/v3"
+            self.rpcurl = f"{url}/rpc/v2" # TODO: is this even needed?
+        else:
+            self.baseurl = f"{url}/rest/v2"
+            self.rpcurl = f"{url}/rpc/v2"
         self.verify = verify
         self.api_version = api_version
 
@@ -75,11 +82,16 @@ class Metax:
         metadata_provider_user=None,
         ordering=None,
         include_user_metadata=True,
+        # V3 params:
+        state=None,
+        search=None,
+        metadata_owner_user=None
+
     ):
         """Get the metadata of datasets from Metax.
 
-        :param str states: string containing dataset preservation state values
-        e.g "10,20" for filtering
+        :param str states: dataset preservation state value as a string
+        e.g "10" for filtering.
         :param str limit: max number of datasets to be returned
         :param str offset: offset for paging
         :param str pas_filter: string for filtering datasets, Used for the
@@ -109,7 +121,35 @@ class Metax:
                 ordering,
                 include_user_metadata,
             )
-        raise NotImplementedError("Metax API V3 support not implemented")
+
+        params = {}
+        if search is not None:
+            params["search"] = search
+        if metadata_owner_org is not None:
+            params["metadata_owner__organization"] = metadata_owner_org 
+        # V3 metadata_owner_user is same as metadata provider user in V2
+        if metadata_owner_user is not None:
+            params["metadata_owner__user"] = metadata_owner_user
+        if ordering is not None:
+            params["ordering"] = ordering
+        if isinstance(states, str) and state is None:
+            states = states.split(",")
+            state = states[0]
+        if state is not None:
+            params["preservation__state"] = state
+        params["limit"] = limit
+        params["offset"] = offset
+
+        url = f"{self.baseurl}/datasets"
+        response = self.get(url, allowed_status_codes=[404], params=params)
+        if response.status_code == 404:
+            raise DatasetNotAvailableError
+        json = response.json()
+        if "results" in json:
+            json["results"] = [
+                map_dataset(dataset) for dataset in json["results"]
+            ]
+        return json
 
     def query_datasets(self, param_dict):
         """Get datasets from metax based on query parameters.
@@ -138,7 +178,17 @@ class Metax:
             return metax_v2.get_datasets_by_ids(
                 self, dataset_ids, limit, offset, fields
             )
-        raise NotImplementedError("Metax API V3 support not implemented")
+        # TODO: Does not have a implementation in v3
+        # just look for the datasets seperately
+        params = {}
+        if fields is not None:
+            params["fields"] = fields
+        datasets = []
+        for dataset_id in dataset_ids:
+            url = f'{self.baseurl}/datasets/{dataset_id}'
+            response = self.get(url, params=params)
+            datasets.append(response.json())
+        return datasets
 
     def get_contracts(self, limit="1000000", offset="0", org_filter=None):
         """Get the data for contracts list from Metax.
@@ -154,7 +204,21 @@ class Metax:
             return metax_v2.get_contracts(
                 self, limit, offset, org_filter
             )
-        raise NotImplementedError("Metax API V3 support not implemented")
+        params = {}
+        params["limit"] = limit
+        params["offset"] = offset
+        url = f"{self.baseurl}/contracts"
+        response = self.get(url, allowed_status_codes=[404], params=params)
+        if response.status_code == 404:
+            raise ContractNotAvailableError
+        json = response.json()
+        json |= {
+            "results": [
+                map_contract(contract)
+                for contract in json.get("results", [])
+            ]
+        }
+        return json
 
     def get_contract(self, pid):
         """Get the contract data from Metax.
@@ -164,12 +228,12 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.get_contract(self, pid)
-        
-        url = f"{self.baseurl_v3}/contracts/{pid}"
+
+        url = f"{self.baseurl}/contracts/{pid}"
         response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
             raise ContractNotAvailableError
-        return response.json()
+        return map_contract(response.json())
 
     def patch_contract(self, contract_id, data):
         """Patch a contract.
@@ -181,7 +245,13 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.patch_contract(self, contract_id, data)
-        raise NotImplementedError("Metax API V3 support not implemented")
+        original_data = self.get_contract(contract_id)
+        for key in data:
+            if isinstance(data[key], dict) and key in original_data:
+                data[key] = update_nested_dict(original_data[key], data[key])
+        url = f"{self.baseurl}/contracts/{contract_id}"
+        response = self.patch(url, json=data)
+        return map_contract(response.json())
 
     def get_dataset(self, dataset_id, include_user_metadata=True, v2=False):
         """Get dataset metadata from Metax.
@@ -198,7 +268,14 @@ class Metax:
                 include_user_metadata,
                 v2,
             )
-        raise NotImplementedError("Metax API V3 support not implemented")
+        url = f"{self.baseurl}/datasets/{dataset_id}"
+        response = self.get(
+            url,
+            allowed_status_codes=[404],
+        )
+        if response.status_code == 404:
+            raise DatasetNotAvailableError
+        return map_dataset(response.json())
 
     def get_dataset_template(self):
         """Get minimal dataset template.
@@ -236,7 +313,10 @@ class Metax:
         """
         if self.api_version == 'v2':
             return metax_v2.set_contract(self, dataset_id, contract_id)
-        raise NotImplementedError("Metax API V3 support not implemented")
+        data = {"contract": contract_id}
+        url = f"{self.baseurl}/datasets/{dataset_id}/preservation"
+        response = self.patch(url, json=data)
+        return response.json()
 
     def get_contract_datasets(self, pid):
         """Get the datasets of a contract from Metax.
@@ -246,7 +326,15 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.get_contract_datasets(self, pid)
-        raise NotImplementedError("Metax API V3 support not implemented")
+        url = f"{self.baseurl}/datasets"
+        params = {
+            'preservation__contract': pid
+        }
+        response = self.get(url, params=params)
+        return [
+            map_dataset(dataset)
+            for dataset in response.json()['results']
+        ]
 
     def get_file(self, file_id, v2=False) -> MetaxFile:
         """Get file metadata from Metax.
@@ -256,7 +344,12 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.get_file(self, file_id, v2)
-        raise NotImplementedError("Metax API V3 support not implemented")
+
+        url = f"{self.baseurl}/files/{file_id}"
+        response = self.get(url, allowed_status_codes=[404])
+        if response.status_code == 404:
+            raise FileNotAvailableError
+        return map_file(response.json())
 
     def get_files_dict(self, project):
         """Get all the files of a given project.
@@ -275,7 +368,23 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.get_files_dict(self, project)
-        raise NotImplementedError("Metax API V3 support not implemented")
+        files = []
+        url = f"{self.baseurl}/files?limit=10000&csc_project={project}"
+        # GET 10000 files every iteration until all files are read
+        while url is not None:
+            response = self.get(url).json()
+            url = response["next"]
+            results = [map_file(file)
+                       for file in response["results"]]
+            files.extend(results)
+
+        file_dict = {}
+        for _file in files:
+            file_dict[_file["pathname"]] = {
+                "identifier": _file["id"],
+                "storage_service": _file["storage_service"],
+            }
+        return file_dict
 
     def get_directory_id(
         self,
@@ -329,7 +438,17 @@ class Metax:
             return metax_v2.set_preservation_state(
                 self, dataset_id, state, description
             )
-        raise NotImplementedError("Metax API V3 support not implemented")
+        url = f"{self.baseurl}/datasets/{dataset_id}/preservation"
+        # TODO: description has a language support, e.g. it expects
+        # a dictionary in format {'en': '<desc>', 'und':'<desc>, 'fi':....}
+        # such format is not currently used in services using this method.
+        # We seem to only use english description, so for now this is just
+        # coped in this method.
+        data = {
+            "state": state,
+            "description": {"en": description},
+        }
+        self.patch(url, json=data)
 
     def set_preservation_reason(self, dataset_id, reason):
         """Set preservation reason of dataset.
@@ -343,7 +462,8 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.set_preservation_reason(self, dataset_id, reason)
-        raise NotImplementedError("Metax API V3 support not implemented")
+        url = f"{self.baseurl}/datasets/{dataset_id}/preservation"
+        self.patch(url, json={"reason_description": reason})
 
     def patch_file(self, file_id, data):
         """Patch file metadata.
@@ -371,7 +491,11 @@ class Metax:
             return metax_v2.patch_file_characteristics(
                 self, file_id, file_characteristics
             )
-        raise NotImplementedError("Metax API V3 support not implemented")
+
+        characteristics_url = f"{self.baseurl}/files/{file_id}/characteristics"
+        extension_url = f"{self.baseurl}/files/{file_id}"
+        self.patch(characteristics_url, json=file_characteristics.get('characteristics', {}))
+        self.patch(extension_url, json = {"characteristics_extension": file_characteristics.get('characteristics_extension')})
 
     def get_datacite(self, dataset_id, dummy_doi="false"):
         """Get descriptive metadata in datacite xml format.
@@ -387,7 +511,17 @@ class Metax:
                 dataset_id,
                 dummy_doi,
             )
-        raise NotImplementedError("Metax API V3 support not implemented")
+        url = f"{self.baseurl}/datasets/{dataset_id}/metadata-download"
+        params = {"format": "datacite"}
+        response = self.get(url, allowed_status_codes=[400, 404], params=params)
+        if response.status_code == 400:
+            detail = response.json()["detail"]
+            raise DataciteGenerationError(f"Datacite generation failed: {detail}")
+        if response.status_code == 404:
+            raise DatasetNotAvailableError
+        # TODO: not sure how the actual content in V3 query is accessed
+        # pylint: disable=no-member
+        return response.content
 
     def get_dataset_file_count(self, dataset_id):
         """
@@ -403,7 +537,17 @@ class Metax:
             return metax_v2.get_dataset_file_count(
                 self, dataset_id
             )
-        raise NotImplementedError("Metax API V3 support not implemented")
+        url = f"{self.baseurl}/datasets/{dataset_id}"
+        response = self.get(
+            url, allowed_status_codes=[404]
+        )
+        if response.status_code == 404:
+            raise DatasetNotAvailableError
+        result = response.json()
+        if result['fileset'] is not None:
+            return result['fileset']['total_files_count']
+        else:
+            return 0
 
     def get_dataset_files(self, dataset_id) -> list[MetaxFile]:
         """Get files metadata of dataset Metax.
@@ -415,7 +559,12 @@ class Metax:
             return metax_v2.get_dataset_files(
                 self, dataset_id
             )
-        raise NotImplementedError("Metax API V3 support not implemented")
+        url = f"{self.baseurl}/datasets/{dataset_id}/files"
+        response = self.get(url, allowed_status_codes=[404])
+        if response.status_code == 404:
+            raise DatasetNotAvailableError
+
+        return [map_file(file) for file in response.json()['results']]
 
     def get_file_datasets(self, file_id):
         """Get a list of research datasets associated with file_id.
@@ -440,7 +589,14 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.get_file2dataset_dict(self, file_ids)
-        raise NotImplementedError("Metax API V3 support not implemented")
+        if not file_ids:
+        # Querying with an empty list of file IDs causes an error
+        # with Metax V2 and is silly anyway, since the result would be
+        # empty as well.
+            return {}
+        url = f"{self.baseurl}/files/datasets?relations=true"
+        response = self.post(url, json=file_ids)
+        return response.json()
 
     def delete_file(self, file_id):
         """Delete metadata of a file.
@@ -460,7 +616,14 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.delete_files(self, file_id_list)
-        raise NotImplementedError("Metax API V3 support not implemented")
+
+        url = f"{self.baseurl}/files/delete-many"
+        response = self.delete(
+            url,
+            json=[{"id": file_id} for file_id in file_id_list]
+        )
+
+        return response
 
     def delete_dataset(self, dataset_id):
         """Delete metadata of dataset.
@@ -483,7 +646,43 @@ class Metax:
                 self,
                 metadata,
             )
-        raise NotImplementedError("Metax API V3 support not implemented")
+        url = f"{self.baseurl}/files"
+        response = self.post(url, json=metadata, allowed_status_codes=[400, 404])
+        if response.status_code == 404:
+            raise FileNotAvailableError
+        if response.status_code == 400:
+            # Read the response and parse list of failed files
+            try:
+                failed_files = response.json()["failed"]
+            except KeyError:
+                # Most likely only one file was posted, so Metax
+                # response is formatted differently: just one error
+                # instead of list of errors
+                failed_files = [{"object": metadata, "errors": response.json()}]
+            # If all errors are caused by files that already exist,
+            # raise ResourceAlreadyExistsError.
+            all_errors = []
+            for file_ in failed_files:
+                for error_message in file_["errors"].values():
+                    all_errors.extend(error_message)
+            path_exists_pattern = (
+                "a file with path .* already exists in project .*"
+            )
+            identifier_exists_pattern = (
+                "a file with given identifier already exists"
+            )
+            if all(
+                re.search(path_exists_pattern, string)
+                or re.search(identifier_exists_pattern, string)
+                for string in all_errors
+            ):
+                raise ResourceAlreadyExistsError(
+                    "Some of the files already exist.", response=response
+                )
+            # Raise HTTPError for unknown "bad request error"
+            response.raise_for_status()
+
+        return response.json()
 
     def post_dataset(self, metadata):
         """Post dataset metadata.
@@ -503,7 +702,11 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.post_contract(self, metadata)
-        raise NotImplementedError("Metax API V3 support not implemented")
+        url = f"{self.baseurl}/contracts"
+        response = self.post(
+            url, json=metadata
+        )
+        return response.json()
 
     def delete_contract(self, contract_id):
         """Delete metadata of contract.
@@ -545,7 +748,18 @@ class Metax:
             return metax_v2.get_project_file(
                 self, project, path
             )
-        raise NotImplementedError("Metax API V3 support not implemented")
+        url = f"{self.baseurl}/files"
+        response = self.get(
+            url, params={"pathname": path, "csc_project": project}
+        )
+        try:
+            return next(
+                map_file(file)
+                for file in response.json()["results"]
+                if file["pathname"].strip("/") == path.strip("/")
+            )
+        except StopIteration:
+            raise FileNotAvailableError
 
     def request(self, method, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP request.
@@ -563,6 +777,12 @@ class Metax:
 
         if "verify" not in kwargs:
             kwargs["verify"] = self.verify
+
+        if self.api_version == 'v3':
+            if 'params' not in kwargs:
+                kwargs['params'] = {'include_nulls': True}
+            else:
+                kwargs['params']['include_nulls'] = True
 
         if self.token:
             if "headers" in kwargs:

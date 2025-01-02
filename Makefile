@@ -24,6 +24,11 @@ github:
 	    	cp include/etc/metax.cfg ~/.metax.cfg; \
 	    fi
 
+test:
+	${PYTHON} -m pytest tests/unit_tests -svvv --junitxml=junit.xml
+	${PYTHON} -m pytest tests/unit_tests -svvv --junitxml=junit_metax-api-v3.xml --v3
+
+
 clean: clean-rpm
 	find . -iname '*.pyc' -type f -delete
 	find . -iname '__pycache__' -exec rm -rf '{}' \; | true

@@ -14,7 +14,7 @@ V3_FILE = {
 }
 
 V3_CONTRACT = {
-    "contract_identifier": None,
+    "id": None,
     "title": {"und": None},
     "quota": None,
     "organization": None,
@@ -39,17 +39,17 @@ V3_MINIMUM_TEMPLATE_DATASET = {
             "total_files_size": 0 # what's the minimum files size
         },
     "preservation": {
-        "state": -1,
-        "description": None,
-        "reason_description": None,
-        "dataset_version": {
-                "id": None, #uuid
+            "state": -1,
+            "description": None,
+            "reason_description": None,
+            "dataset_version": {
+                "id": None,
                 "persistent_identifier": None,
                 "preservation_state": -1
             },
-        "contract": None,
-        "id": None,
-        },
+            "contract":None,
+            "id": None
+    },
     "access_rights": None,
     "version": None, #has a default value?
     "language": [], #default is an empty list
@@ -61,6 +61,8 @@ V3_MINIMUM_TEMPLATE_DATASET = {
     "spatial": [], #default is an empty list
     "field_of_science": [], # default is an empty list 
     "provenance": [], # default is an empty list
+    "metadata_owner": None,
+    "data_catalog": None
     }
 
 # Reponse without empty lists

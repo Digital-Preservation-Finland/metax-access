@@ -122,6 +122,9 @@ def test_convert_file_v2_to_v3_with_research_dataset():
     file = copy.deepcopy(FILEV3)
     del research_dataset_info["details"]
     del research_dataset_info["identifier"]
+    del research_dataset_info['use_category']["identifier"]
+    del research_dataset_info['use_category']["in_scheme"]
+    research_dataset_info['use_category']["id"] = "http://uri.suomi.fi/codelist/fairdata/use_category/code/source"
     file["dataset_metadata"] = research_dataset_info
     assert result == file
 
@@ -176,9 +179,9 @@ BASE_DATASETV3 = {
         "description": None,
         "reason_description": None,
         "dataset_version": {
-            "id": None,
+            'id': None,
             'persistent_identifier': None,
-            'preservation_state': -1
+            'preservation_state': -1,
         },
     },
     "modified": "now",
@@ -625,7 +628,7 @@ CONTRACTV3 = {
     "created": None,
     "service": None,
     "removed": None,
-    "contract_identifier": "agreement1",
+    "id": "agreement1",
     "title": {"und": None},
     "description": {"und": None},
     "quota": 111204,

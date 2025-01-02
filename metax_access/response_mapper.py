@@ -43,34 +43,30 @@ def map_file(metax_file):
         "checksum": metax_file["checksum"],
         "csc_project": metax_file["csc_project"],
         "storage_service": metax_file["storage_service"],
-        # as of now 17.12.-24, the structure of
-        # the dataset_metadata is not documented anywhere in V3
-        # so this is a guess.
+        # the dataset metadata field is problematic for the mapping
+        # as it does not seem to be nullable.
         "dataset_metadata": (
             {
                 "use_category": (
                     {
                         "identifier": metax_file["dataset_metadata"][
                             "use_category"
-                        ]["identifier"],
+                        ]["id"],
                         "pref_label": (
                             metax_file["dataset_metadata"]["use_category"][
                                 "pref_label"
                             ]
-                            if "pref_label"
-                            in metax_file["dataset_metadata"][
-                                "use_category"
-                            ].keys()
-                            else None
                         ),
                     }
-                    if metax_file["dataset_metadata"]["use_category"]
+                    if metax_file.get("dataset_metadata", {}).get(
+                        "use_category"
+                    )
                     is not None
                     else None
                 )
             }
-            if metax_file["dataset_metadata"] is not None
-            else None
+            if metax_file.get("dataset_metadata") is not None
+            else {"use_category": None}
         ),
         "characteristics": (
             {
@@ -104,7 +100,6 @@ def map_file(metax_file):
                 "csv_has_header": metax_file["characteristics"][
                     "csv_has_header"
                 ],
-                "file_created": metax_file["characteristics"]["file_created"],
             }
             if metax_file["characteristics"] is not None
             else None
@@ -118,13 +113,23 @@ def map_contract(metax_contract):
     required by the FDPAS services.
     """
     return {
-        "contract_identifier": metax_contract["contract_identifier"],
-        "title": {"und": metax_contract["title"]["und"]},
+        "contract_identifier": metax_contract["id"],
+        "title": {
+            "und": (
+                metax_contract["title"].get("und")
+                if metax_contract["title"] is not None
+                else {"und": None}
+            )
+        },
         "quota": metax_contract["quota"],
         "organization": metax_contract["organization"],
         "contact": metax_contract["contact"],
         "related_service": metax_contract["related_service"],
-        "description": {"und": metax_contract["description"]["und"]},
+        "description": (
+            {"und": metax_contract["description"]["und"]}
+            if metax_contract["description"] is not None
+            else {"und": None}
+        ),
         "created": metax_contract["created"],
         "validity": metax_contract["validity"],
     }
@@ -150,24 +155,50 @@ def map_dataset(metax_dataset):
             if metax_dataset["fileset"]
             else None
         ),
-        "preservation": {
-            "state": metax_dataset["preservation"]["state"],
-            "description": metax_dataset["preservation"]["description"],
-            "reason_description": metax_dataset["preservation"][
-                "reason_description"
-            ],
-            "dataset_version": {
-                "id": metax_dataset["preservation"]["dataset_version"]["id"],
-                "persistent_identifier": metax_dataset["preservation"][
-                    "dataset_version"
-                ]["persistent_identifier"],
-                "preservation_state": metax_dataset["preservation"][
-                    "dataset_version"
-                ]["preservation_state"],
-            },
-            "contract": metax_dataset["preservation"]["contract"],
-            "id": metax_dataset["preservation"]["id"],
-        },
+        "preservation": (
+            {
+                "state": metax_dataset["preservation"]["state"],
+                "description": metax_dataset["preservation"]["description"],
+                "reason_description": metax_dataset["preservation"][
+                    "reason_description"
+                ],
+                "dataset_version": (
+                    {
+                        "id": metax_dataset["preservation"]["dataset_version"][
+                            "id"
+                        ],
+                        "persistent_identifier": metax_dataset["preservation"][
+                            "dataset_version"
+                        ]["persistent_identifier"],
+                        "preservation_state": metax_dataset["preservation"][
+                            "dataset_version"
+                        ]["preservation_state"],
+                    }
+                    if "dataset_version" in metax_dataset["preservation"]
+                    and metax_dataset["preservation"]["dataset_version"]
+                    is not None
+                    else {
+                        "id": None,
+                        "persistent_identifier": None,
+                        "preservation_state": None,
+                    }
+                ),
+                "contract": metax_dataset["preservation"]["contract"],
+                "id": metax_dataset["preservation"]["id"],
+            }
+            if metax_dataset["preservation"] is not None
+            else {
+                "state": -1,
+                "description": None,
+                "reason_description": None,
+                "dataset_version": {
+                    "id": None,
+                    "persistent_identifier": None,
+                    "preservation_state": None,
+                },
+                "contract": None,
+            }
+        ),
         "access_rights": (
             {
                 "license": [
