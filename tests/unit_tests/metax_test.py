@@ -32,6 +32,18 @@ DATASET = copy.deepcopy(V3_MINIMUM_TEMPLATE_DATASET)
 del DATASET['created']
 del DATASET['modified']
 
+@pytest.fixture(autouse=True, scope='function')
+def metax(request):
+    """Choose which Metax implementation is used.
+
+    Use Metax V3 if --v3 option is used.
+    """
+    if request.config.getoption("--v3"):
+        return Metax(METAX_URL, token='token_foo', verify=False, api_version='v3')
+    else:
+        return Metax(METAX_URL, METAX_USER, METAX_PASSWORD, verify=False)
+
+
 def test_init():
     """Test init function.
 

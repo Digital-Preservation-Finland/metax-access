@@ -20,6 +20,10 @@ PROJECT_ROOT_PATH = os.path.abspath(
 )
 sys.path.insert(0, PROJECT_ROOT_PATH)
 
+def pytest_addoption(parser):
+    """Add --v3 option."""
+    parser.addoption('--v3', action='store_const', const=True)
+
 
 @pytest.fixture(scope="function")
 def testpath(request):
