@@ -19,6 +19,7 @@ from metax_access.response_mapper import (
 )
 from metax_access.utils import update_nested_dict
 
+
 # plint: disable=too-many-arguments
 def get_datasets(
     metax,
@@ -31,7 +32,7 @@ def get_datasets(
     ordering,
     include_user_metadata,
     DatasetNotAvailableError,
-    DS_STATE_ALL_STATES
+    DS_STATE_ALL_STATES,
 ):
     """Get the metadata of datasets from Metax.
     :param str states: string containing dataset preservation state values
@@ -182,7 +183,9 @@ def patch_contract(metax, contract_id, data):
     return map_contract(convert_contract(response.json()))
 
 
-def get_dataset(metax, dataset_id, include_user_metadata, v2, DatasetNotAvailableError):
+def get_dataset(
+    metax, dataset_id, include_user_metadata, v2, DatasetNotAvailableError
+):
     """Get dataset metadata from Metax.
     :param str dataset_id: id or identifier attribute of dataset
     :param bool include_user_metadata: Metax parameter for including
@@ -320,12 +323,7 @@ def get_files_dict(metax, project):
     return file_dict
 
 
-def get_directory_id(
-    metax,
-    project,
-    path,
-    DirectoryNotAvailableError
-):
+def get_directory_id(metax, project, path, DirectoryNotAvailableError):
     """Get the identifier of a direcotry with project and a path.
     The directory id will be deprecated in Metax V3 but the V2's
     directory identifier is available with this method.
@@ -425,7 +423,13 @@ def patch_file_characteristics(metax, file_id, file_characteristics):
     return response.json()
 
 
-def get_datacite(metax, dataset_id, dummy_doi, DataciteGenerationError, DatasetNotAvailableError):
+def get_datacite(
+    metax,
+    dataset_id,
+    dummy_doi,
+    DataciteGenerationError,
+    DatasetNotAvailableError,
+):
     """Get descriptive metadata in datacite xml format.
     :param dataset_id: id or identifier attribute of dataset
     :param dummy_doi: "false" or "true". "true" asks Metax to use
@@ -462,7 +466,9 @@ def get_dataset_file_count(metax, dataset_id, DatasetNotAvailableError):
     return len(result)
 
 
-def get_dataset_files(metax, dataset_id, DatasetNotAvailableError) -> list[MetaxFile]:
+def get_dataset_files(
+    metax, dataset_id, DatasetNotAvailableError
+) -> list[MetaxFile]:
     """Get files metadata of dataset Metax.
     :param str dataset_id: id or identifier attribute of dataset
     :returns: metadata of dataset files as json
@@ -557,7 +563,12 @@ def delete_dataset(metax, dataset_id):
     metax.delete(url)
 
 
-def post_file(metax, metadata: Union[MetaxFile, list[MetaxFile]], FileNotAvailableError, ResourceAlreadyExistsError):
+def post_file(
+    metax,
+    metadata: Union[MetaxFile, list[MetaxFile]],
+    FileNotAvailableError,
+    ResourceAlreadyExistsError,
+):
     """Post file metadata.
     :param metadata: file metadata dictionary or list of files
     :returns: JSON response from Metax
@@ -643,7 +654,9 @@ def delete_contract(metax, contract_id):
     metax.delete(url)
 
 
-def get_project_directory(metax, project, path, dataset_identifier, DirectoryNotAvailableError):
+def get_project_directory(
+    metax, project, path, dataset_identifier, DirectoryNotAvailableError
+):
     """Get directory metadata, directories, and files of project by path.
     :param str project: project identifier of the directory
     :param str path: path of the directory
