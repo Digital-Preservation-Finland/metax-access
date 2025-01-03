@@ -321,7 +321,16 @@ def get_files_dict(metax, project):
     :param project: project id
     :returns: Dict of all the files of a given project
     """
-    files = metax.get_files(project)
+    files = []
+    url = f"{metax.baseurl}/files?limit=10000&project_identifier={project}"
+    # GET 10000 files every iteration until all files are read
+    while url is not None:
+        response = metax.get(url).json()
+        url = response["next"]
+        results = [map_file(convert_file(file))
+                   for file in response["results"]]
+        files.extend(results)
+
     file_dict = {}
     for _file in files:
         file_dict[_file["pathname"]] = {

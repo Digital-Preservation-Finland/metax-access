@@ -164,7 +164,12 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.get_contract(self, pid)
-        raise NotImplementedError("Metax API V3 support not implemented")
+        
+        url = f"{self.baseurl_v3}/contracts/{pid}"
+        response = self.get(url, allowed_status_codes=[404])
+        if response.status_code == 404:
+            raise ContractNotAvailableError
+        return response.json()
 
     def patch_contract(self, contract_id, data):
         """Patch a contract.
@@ -204,24 +209,12 @@ class Metax:
             return metax_v2.get_dataset_template(self)
         raise NotImplementedError("Metax API V3 support not implemented")
 
-    def get_datacatalog(self, catalog_id):
-        """Get the metadata of a datacatalog from Metax.
-
-        TODO: Only used by metax access, not normalized
-
-        :param str catalog_id: id or identifier attribute of the datacatalog
-        :returns: The datacatalog as json.
-        """
-        if self.api_version == "v2":
-            return metax_v2.get_datacatalog(
-                self, catalog_id
-            )
-        raise NotImplementedError("Metax API V3 support not implemented")
-
-    def patch_dataset(
-        self, dataset_id, data, overwrite_objects=False, v2=False
-    ):
-        """Patch a dataset.
+    def patch_dataset(self,
+                      dataset_id,
+                      data,
+                      overwrite_objects=False,
+                      v2=False):
+        """Patch a dataset.S
 
         :param str dataset_id: id or identifier of the dataset
         :param dict data: A dataset dictionary that contains only the
@@ -263,16 +256,6 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.get_file(self, file_id, v2)
-        raise NotImplementedError("Metax API V3 support not implemented")
-
-    def get_files(self, project) -> list[MetaxFile]:
-        """Get all files of a given project.
-
-        :param project: project id
-        :returns: list of files
-        """
-        if self.api_version == "v2":
-            return metax_v2.get_files(self, project)
         raise NotImplementedError("Metax API V3 support not implemented")
 
     def get_files_dict(self, project):

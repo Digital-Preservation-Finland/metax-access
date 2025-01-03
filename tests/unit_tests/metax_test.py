@@ -53,23 +53,6 @@ def test_init():
         Metax(METAX_URL)
     assert str(exception.value) == "Metax user or access token is required."
 
-def test_get_files(requests_mock):
-    """File metadata is retrived with ``get_file`` method and
-    the output is comared to the expected output.
-    """
-    file_ids = ['id_foo', 'id_bar']
-    project = 'test_project'
-    requests_mock.get(
-        f"{METAX_REST_URL}/files?limit=10000&project_identifier={project}",
-        json={
-            'next': None,
-            'results': 
-            [{'identifier': file_id} for file_id in file_ids]
-        }
-    )
-    expected_files = [_update_dict(V3_FILE, {'id': id}) for id in file_ids]
-    files = METAX_CLIENT.get_files(project)
-    assert expected_files == files
 
 def test_get_file(requests_mock):
     """File metadata is retrived with ``get_file`` method and
@@ -236,23 +219,6 @@ def test_get_contract(requests_mock):
         'contract_identifier': contract_id
     }
     assert expected_contract == contract
-
-
-def test_get_datacatalog(requests_mock):
-    """Test ``get_datacatalog`` function.
-
-    Mocks HTTP response to return simple JSON and checks that returned dict
-    contains the correct values.
-
-    :returns: ``None``
-    """
-    requests_mock.get(
-        METAX_REST_URL + "/datacatalogs/test_catalog",
-        json={"catalog_json": {"identifier": "foo"}},
-    )
-
-    catalog = METAX_CLIENT.get_datacatalog("test_catalog")
-    assert catalog["catalog_json"]["identifier"] == "foo"
 
 
 def test_get_dataset_file_count(requests_mock):
@@ -1217,12 +1183,6 @@ def test_get_file2dataset_dict_empty(requests_mock):
             ContractNotAvailableError,
         ),
         (
-            "/datacatalogs/foo",
-            METAX_CLIENT.get_datacatalog,
-            ["foo"],
-            DataCatalogNotAvailableError,
-        ),
-        (
             "/datasets/foo/files",
             METAX_CLIENT.get_dataset_files,
             ["foo"],
@@ -1258,7 +1218,6 @@ def test_get_http_404(requests_mock, url, method, parameters, expected_error):
         ),
         ("/contracts?limit=1000000&offset=0", METAX_CLIENT.get_contracts, []),
         ("/contracts/foo", METAX_CLIENT.get_contract, ["foo"]),
-        ("/datacatalogs/foo", METAX_CLIENT.get_datacatalog, ["foo"]),
         (
             "/datasets/foo?include_user_metadata=true&file_details=true",
             METAX_CLIENT.get_dataset,
