@@ -6,128 +6,30 @@ from typing import Union
 import requests
 from requests.auth import HTTPBasicAuth
 
-from metax_access.response import MetaxFile
 import metax_access.metax_v2 as metax_v2
 
-logger = logging.getLogger(__name__)
-
-DS_STATE_NONE = -1  # Default in Metax V3
-DS_STATE_INITIALIZED = 0
-DS_STATE_GENERATING_METADATA = 10
-DS_STATE_TECHNICAL_METADATA_GENERATED = 20
-DS_STATE_TECHNICAL_METADATA_GENERATION_FAILED = 30
-DS_STATE_INVALID_METADATA = 40
-DS_STATE_METADATA_VALIDATION_FAILED = 50
-DS_STATE_VALIDATED_METADATA_UPDATED = 60
-DS_STATE_VALIDATING_METADATA = 65
-DS_STATE_REJECTED_BY_USER = 70
-DS_STATE_METADATA_CONFIRMED = 75
-DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION = 80
-DS_STATE_IN_PACKAGING_SERVICE = 90
-DS_STATE_PACKAGING_FAILED = 100
-DS_STATE_SIP_SENT_TO_INGESTION_IN_DPRES_SERVICE = 110
-DS_STATE_IN_DIGITAL_PRESERVATION = 120
-DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE = 130
-DS_STATE_IN_DISSEMINATION = 140
-
-DS_STATE_ALL_STATES = (
-    DS_STATE_NONE,
-    DS_STATE_INITIALIZED,
-    DS_STATE_GENERATING_METADATA,
+# These imports are used by other projects (eg. upload-rest-api)
+# pylint: disable=unused-import
+from metax_access import (  # noqa: F401
+    DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION,
+    DS_STATE_ALL_STATES, DS_STATE_GENERATING_METADATA,
+    DS_STATE_IN_DIGITAL_PRESERVATION,
+    DS_STATE_IN_DISSEMINATION,
+    DS_STATE_IN_PACKAGING_SERVICE, DS_STATE_INITIALIZED,
+    DS_STATE_INVALID_METADATA,
+    DS_STATE_METADATA_CONFIRMED,
+    DS_STATE_METADATA_VALIDATION_FAILED, DS_STATE_NONE,
+    DS_STATE_PACKAGING_FAILED, DS_STATE_REJECTED_BY_USER,
+    DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
+    DS_STATE_SIP_SENT_TO_INGESTION_IN_DPRES_SERVICE,
     DS_STATE_TECHNICAL_METADATA_GENERATED,
     DS_STATE_TECHNICAL_METADATA_GENERATION_FAILED,
-    DS_STATE_INVALID_METADATA,
-    DS_STATE_METADATA_VALIDATION_FAILED,
     DS_STATE_VALIDATED_METADATA_UPDATED,
-    DS_STATE_VALIDATING_METADATA,
-    DS_STATE_REJECTED_BY_USER,
-    DS_STATE_METADATA_CONFIRMED,
-    DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION,
-    DS_STATE_IN_PACKAGING_SERVICE,
-    DS_STATE_PACKAGING_FAILED,
-    DS_STATE_SIP_SENT_TO_INGESTION_IN_DPRES_SERVICE,
-    DS_STATE_IN_DIGITAL_PRESERVATION,
-    DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
-    DS_STATE_IN_DISSEMINATION,
-)
+    DS_STATE_VALIDATING_METADATA)
+from metax_access.error import *  # noqa: F403, F401
+from metax_access.response import MetaxFile
 
-
-class MetaxError(Exception):
-    """Generic invalid usage Exception."""
-
-    def __init__(self, message="Metax error", response=None):
-        """Init MetaxError."""
-        super().__init__(message)
-        self.message = message
-        self.response = response
-
-
-class ResourceNotAvailableError(MetaxError):
-    """Exception raised when resource is not found from metax."""
-
-    def __init__(self, message="Resource not found"):
-        """Init ResourceNotAvailableError."""
-        super().__init__(message)
-
-
-class ResourceAlreadyExistsError(MetaxError):
-    """Exception raised when resource to be created already exists."""
-
-    def __init__(self, message="Resource already exists.", response=None):
-        """Init ResourceAlreadyExistsError.
-
-        :param message: error message
-        :param dict errors: Key-value pairs that caused the exception
-        """
-        super().__init__(message, response=response)
-
-
-class FileNotAvailableError(ResourceNotAvailableError):
-    """Exception raised when file is not found from metax."""
-
-    def __init__(self):
-        """Init FileNotAvailableError."""
-        super().__init__("File not found")
-
-
-class DatasetNotAvailableError(ResourceNotAvailableError):
-    """Exception raised when dataset is not found from metax."""
-
-    def __init__(self):
-        """Init DatasetNotAvailableError."""
-        super().__init__("Dataset not found")
-
-
-class ContractNotAvailableError(ResourceNotAvailableError):
-    """Exception raised when contract is not found from metax."""
-
-    def __init__(self):
-        """Init ContractNotAvailableError."""
-        super().__init__("Contract not found")
-
-
-class DataCatalogNotAvailableError(ResourceNotAvailableError):
-    """Exception raised when contract is not found from metax."""
-
-    def __init__(self):
-        """Init DataCatalogNotAvailableError."""
-        super().__init__("Datacatalog not found")
-
-
-class DirectoryNotAvailableError(ResourceNotAvailableError):
-    """Exception raised when directory is not found from metax."""
-
-    def __init__(self):
-        """Init DirectoryNotAvailableError."""
-        super().__init__("Directory not found")
-
-
-class DataciteGenerationError(MetaxError):
-    """Exception raised when Metax returned 400 for datacite."""
-
-    def __init__(self, message="Datacite generation failed in Metax"):
-        """Init DataciteGenerationError."""
-        super().__init__(message)
+logger = logging.getLogger(__name__)
 
 
 # pylint: disable=too-many-public-methods
@@ -206,8 +108,6 @@ class Metax:
                 metadata_provider_user,
                 ordering,
                 include_user_metadata,
-                DatasetNotAvailableError,
-                DS_STATE_ALL_STATES,
             )
         raise NotImplementedError("Metax API V3 support not implemented")
 
@@ -252,7 +152,7 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.get_contracts(
-                self, limit, offset, org_filter, ContractNotAvailableError
+                self, limit, offset, org_filter
             )
         raise NotImplementedError("Metax API V3 support not implemented")
 
@@ -263,7 +163,7 @@ class Metax:
         :returns: The contract from Metax as json.
         """
         if self.api_version == "v2":
-            return metax_v2.get_contract(self, pid, ContractNotAvailableError)
+            return metax_v2.get_contract(self, pid)
         raise NotImplementedError("Metax API V3 support not implemented")
 
     def patch_contract(self, contract_id, data):
@@ -292,7 +192,6 @@ class Metax:
                 dataset_id,
                 include_user_metadata,
                 v2,
-                DatasetNotAvailableError,
             )
         raise NotImplementedError("Metax API V3 support not implemented")
 
@@ -315,7 +214,7 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.get_datacatalog(
-                self, catalog_id, DataCatalogNotAvailableError
+                self, catalog_id
             )
         raise NotImplementedError("Metax API V3 support not implemented")
 
@@ -363,7 +262,7 @@ class Metax:
         :returns: file metadata as json
         """
         if self.api_version == "v2":
-            return metax_v2.get_file(self, file_id, v2, FileNotAvailableError)
+            return metax_v2.get_file(self, file_id, v2)
         raise NotImplementedError("Metax API V3 support not implemented")
 
     def get_files(self, project) -> list[MetaxFile]:
@@ -411,7 +310,7 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.get_directory_id(
-                self, project, path, DirectoryNotAvailableError
+                self, project, path
             )
         raise NotImplementedError("Metax API V3 support not implemented")
 
@@ -504,8 +403,6 @@ class Metax:
                 self,
                 dataset_id,
                 dummy_doi,
-                DataciteGenerationError,
-                DatasetNotAvailableError,
             )
         raise NotImplementedError("Metax API V3 support not implemented")
 
@@ -521,7 +418,7 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.get_dataset_file_count(
-                self, dataset_id, DatasetNotAvailableError
+                self, dataset_id
             )
         raise NotImplementedError("Metax API V3 support not implemented")
 
@@ -533,7 +430,7 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.get_dataset_files(
-                self, dataset_id, DatasetNotAvailableError
+                self, dataset_id
             )
         raise NotImplementedError("Metax API V3 support not implemented")
 
@@ -545,7 +442,7 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.get_file_datasets(
-                self, file_id, FileNotAvailableError
+                self, file_id
             )
         # V3 endpoint
         # 'https://metax.fd-test.csc.fi/v3/files/datasets?relations=false'
@@ -602,8 +499,6 @@ class Metax:
             return metax_v2.post_file(
                 self,
                 metadata,
-                FileNotAvailableError,
-                ResourceAlreadyExistsError,
             )
         raise NotImplementedError("Metax API V3 support not implemented")
 
@@ -653,7 +548,6 @@ class Metax:
                 project,
                 path,
                 dataset_identifier,
-                DirectoryNotAvailableError,
             )
         raise NotImplementedError("Metax API V3 support not implemented")
 
@@ -666,7 +560,7 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.get_project_file(
-                self, project, path, FileNotAvailableError
+                self, project, path
             )
         raise NotImplementedError("Metax API V3 support not implemented")
 

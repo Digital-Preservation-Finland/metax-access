@@ -1,26 +1,24 @@
 # pylint: disable=no-member
 """Tests for ``metax_access.metax`` module."""
+import copy
 from contextlib import ExitStack as does_not_raise
 from urllib.parse import quote
-import copy
 
 import lxml.etree
 import pytest
 import requests
 
-from metax_access.metax import (
-    Metax,
-    DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
-    DatasetNotAvailableError,
-    ContractNotAvailableError,
-    DirectoryNotAvailableError,
-    DataCatalogNotAvailableError,
-    DataciteGenerationError,
-    ResourceAlreadyExistsError,
-    FileNotAvailableError,
-)
-
-from tests.unit_tests.utils import V3_MINIMUM_TEMPLATE_DATASET, V3_CONTRACT, V3_FILE
+from metax_access import (DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
+                          Metax)
+from metax_access.error import (ContractNotAvailableError,
+                                DataCatalogNotAvailableError,
+                                DataciteGenerationError,
+                                DatasetNotAvailableError,
+                                DirectoryNotAvailableError,
+                                FileNotAvailableError,
+                                ResourceAlreadyExistsError)
+from tests.unit_tests.utils import (V3_CONTRACT, V3_FILE,
+                                    V3_MINIMUM_TEMPLATE_DATASET)
 
 METAX_URL = "https://foobar"
 METAX_REST_ROOT_URL = f"{METAX_URL}/rest"

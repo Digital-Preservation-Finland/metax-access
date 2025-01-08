@@ -4,20 +4,21 @@ import re
 from typing import Union
 
 import metax_access.v3_to_v2_converter as v3_to_v2_converter
+from metax_access.error import (ContractNotAvailableError,
+                                DataCatalogNotAvailableError,
+                                DataciteGenerationError,
+                                DatasetNotAvailableError,
+                                DirectoryNotAvailableError,
+                                FileNotAvailableError,
+                                ResourceAlreadyExistsError)
+from metax_access import DS_STATE_ALL_STATES
 from metax_access.response import MetaxFile
-from metax_access.v2_to_v3_converter import (
-    convert_contract,
-    convert_dataset,
-    convert_directory_files_response,
-    convert_file,
-)
-from metax_access.response_mapper import (
-    map_dataset,
-    map_contract,
-    map_file,
-    map_directory_files,
-)
+from metax_access.response_mapper import (map_contract, map_dataset,
+                                          map_directory_files, map_file)
 from metax_access.utils import update_nested_dict
+from metax_access.v2_to_v3_converter import (convert_contract, convert_dataset,
+                                             convert_directory_files_response,
+                                             convert_file)
 
 
 # plint: disable=too-many-arguments
@@ -30,9 +31,7 @@ def get_datasets(
     metadata_owner_org,
     metadata_provider_user,
     ordering,
-    include_user_metadata,
-    DatasetNotAvailableError,
-    DS_STATE_ALL_STATES,
+    include_user_metadata
 ):
     """Get the metadata of datasets from Metax.
     :param str states: string containing dataset preservation state values
@@ -125,7 +124,7 @@ def get_datasets_by_ids(
     return json
 
 
-def get_contracts(metax, limit, offset, org_filter, ContractNotAvailableError):
+def get_contracts(metax, limit, offset, org_filter):
     """Get the data for contracts list from Metax.
     :param str limit: max number of contracts to be returned
     :param str offset: offset for paging
@@ -153,7 +152,7 @@ def get_contracts(metax, limit, offset, org_filter, ContractNotAvailableError):
     return json
 
 
-def get_contract(metax, pid, ContractNotAvailableError):
+def get_contract(metax, pid):
     """Get the contract data from Metax.
     :param str pid: id or ientifier attribute of contract
     :returns: The contract from Metax as json.
@@ -183,9 +182,7 @@ def patch_contract(metax, contract_id, data):
     return map_contract(convert_contract(response.json()))
 
 
-def get_dataset(
-    metax, dataset_id, include_user_metadata, v2, DatasetNotAvailableError
-):
+def get_dataset(metax, dataset_id, include_user_metadata, v2):
     """Get dataset metadata from Metax.
     :param str dataset_id: id or identifier attribute of dataset
     :param bool include_user_metadata: Metax parameter for including
@@ -224,7 +221,7 @@ def get_dataset_template(metax):
     return template
 
 
-def get_datacatalog(metax, catalog_id, DataCatalogNotAvailableError):
+def get_datacatalog(metax, catalog_id):
     """Get the metadata of a datacatalog from Metax.
     TODO: Only used by metax access, not normalized
     :param str catalog_id: id or identifier attribute of the datacatalog
@@ -283,7 +280,7 @@ def get_contract_datasets(metax, pid):
     ]
 
 
-def get_file(metax, file_id, v2, FileNotAvailableError) -> MetaxFile:
+def get_file(metax, file_id, v2) -> MetaxFile:
     """Get file metadata from Metax.
     :param str file_id: id or identifier attribute of file
     :returns: file metadata as json
@@ -334,7 +331,7 @@ def get_files_dict(metax, project):
     return file_dict
 
 
-def get_directory_id(metax, project, path, DirectoryNotAvailableError):
+def get_directory_id(metax, project, path):
     """Get the identifier of a direcotry with project and a path.
     The directory id will be deprecated in Metax V3 but the V2's
     directory identifier is available with this method.
@@ -438,8 +435,6 @@ def get_datacite(
     metax,
     dataset_id,
     dummy_doi,
-    DataciteGenerationError,
-    DatasetNotAvailableError,
 ):
     """Get descriptive metadata in datacite xml format.
     :param dataset_id: id or identifier attribute of dataset
@@ -459,7 +454,7 @@ def get_datacite(
     return response.content
 
 
-def get_dataset_file_count(metax, dataset_id, DatasetNotAvailableError):
+def get_dataset_file_count(metax, dataset_id):
     """
     Get total file count for a dataset in Metax, including those
     in directories.
@@ -477,9 +472,7 @@ def get_dataset_file_count(metax, dataset_id, DatasetNotAvailableError):
     return len(result)
 
 
-def get_dataset_files(
-    metax, dataset_id, DatasetNotAvailableError
-) -> list[MetaxFile]:
+def get_dataset_files(metax, dataset_id) -> list[MetaxFile]:
     """Get files metadata of dataset Metax.
     :param str dataset_id: id or identifier attribute of dataset
     :returns: metadata of dataset files as json
@@ -506,7 +499,7 @@ def get_dataset_files(
     ]
 
 
-def get_file_datasets(metax, file_id, FileNotAvailableError):
+def get_file_datasets(metax, file_id):
     """Get a list of research datasets associated with file_id.
     :param file_id: File identifier
     :returns: List of datasets associated with file_id
@@ -577,8 +570,6 @@ def delete_dataset(metax, dataset_id):
 def post_file(
     metax,
     metadata: Union[MetaxFile, list[MetaxFile]],
-    FileNotAvailableError,
-    ResourceAlreadyExistsError,
 ):
     """Post file metadata.
     :param metadata: file metadata dictionary or list of files
@@ -666,7 +657,7 @@ def delete_contract(metax, contract_id):
 
 
 def get_project_directory(
-    metax, project, path, dataset_identifier, DirectoryNotAvailableError
+    metax, project, path, dataset_identifier
 ):
     """Get directory metadata, directories, and files of project by path.
     :param str project: project identifier of the directory
@@ -693,7 +684,7 @@ def get_project_directory(
     return response_json
 
 
-def get_project_file(metax, project, path, FileNotAvailableError) -> MetaxFile:
+def get_project_file(metax, project, path) -> MetaxFile:
     """Get file of project by path.
     :param str project: project identifier of the file
     :param str path: path of the file
