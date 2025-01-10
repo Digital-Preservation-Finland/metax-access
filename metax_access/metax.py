@@ -769,6 +769,77 @@ class Metax:
         except StopIteration:
             raise FileNotAvailableError  # noqa: F405
 
+    def lock_dataset(self, dataset_id: str):
+        """Lock the dataset's files and the dataset.
+
+        This will prevent the dataset and its file metadata from being updated.
+
+        :param dataset_id: Dataset identifier
+        """
+        if self.api_version == "v2":
+            raise ValueError(
+                "Dataset locking not available for Metax V2"
+            )
+
+        # Lock the dataset first; this should hopefully prevent files
+        # from being added/removed, which is probably the lesser evil.
+        self.request(
+            "PATCH",
+            f"{self.baseurl}/datasets/{dataset_id}/preservation",
+            json={"pas_process_running": True}
+        )
+
+        # TODO: Metax V3 does not allow retrieving only selected fields
+        # for files (yet); retrieving only 'id' would be far more efficient.
+        files = self.get_dataset_files(dataset_id)
+
+        self.post(
+            f"{self.baseurl}/files/patch-many",
+            json=[
+                {
+                    "id": file_["id"],
+                    "pas_process_running": True
+                }
+                for file_ in files
+            ]
+        )
+
+    def unlock_dataset(self, dataset_id: str):
+        """Unlock dataset.
+
+        This will allow the dataset and its file metadata to be updated.
+
+        :param dataset_id: Dataset identifier
+        """
+        if self.api_version == "v2":
+            raise ValueError(
+                "Dataset locking not available for Metax V2"
+            )
+
+        # Unlock files first; if we unlock the dataset first there is a small
+        # chance that files could be removed from the dataset, meaning they
+        # won't be unlocked.
+        # TODO: Metax V3 does not allow retrieving only selected fields
+        # for files (yet); retrieving only 'id' would be far more efficient.
+        files = self.get_dataset_files(dataset_id)
+
+        self.post(
+            f"{self.baseurl}/files/patch-many",
+            json=[
+                {
+                    "id": file_["id"],
+                    "pas_process_running": False
+                }
+                for file_ in files
+            ]
+        )
+
+        self.request(
+            "PATCH",
+            f"{self.baseurl}/datasets/{dataset_id}/preservation",
+            json={"pas_process_running": False}
+        )
+
     def request(self, method, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP request.
 
