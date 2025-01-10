@@ -95,6 +95,7 @@ def cli(ctx, config, **kwargs):
     # Init metax client
     ctx.obj = metax_access.Metax(
         url=metax_config.pop('url', None),
+        api_version=metax_config.pop('api_version', 'v2'),
         user=metax_config.pop('user', None),
         password=metax_config.pop('password', None),
         token=metax_config.pop('token', None),

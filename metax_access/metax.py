@@ -63,6 +63,9 @@ class Metax:
         """
         if not user and not token:
             raise ValueError("Metax user or access token is required.")
+        if api_version not in ("v2", "v3"):
+            raise ValueError(f"API version '{api_version}' is invalid.")
+
         self.username = user
         self.password = password
         self.token = token
