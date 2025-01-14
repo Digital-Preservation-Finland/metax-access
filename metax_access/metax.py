@@ -785,10 +785,13 @@ class Metax:
                 kwargs['params']['include_nulls'] = True
 
         if self.token:
-            if "headers" in kwargs:
-                kwargs["headers"]["Authorization"] = f"Bearer {self.token}"
-            else:
-                kwargs["headers"] = {"Authorization": f"Bearer {self.token}"}
+            if self.api_version == 'v2':
+                if "headers" in kwargs:
+                    kwargs["headers"]["Authorization"] = f"Bearer {self.token}"
+                else:
+                    kwargs["headers"] = {"Authorization": f"Bearer {self.token}"}
+            if self.api_version == 'v3':
+                kwargs["headers"] = {"Authorization": f"Token {self.token}"}
         else:
             kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
 
