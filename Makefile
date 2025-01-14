@@ -28,6 +28,11 @@ test:
 	${PYTHON} -m pytest tests/unit_tests -svvv --junitxml=junit.xml
 	${PYTHON} -m pytest tests/unit_tests -svvv --junitxml=junit_metax-api-v3.xml --v3
 
+coverage:
+	${PYTHON} -m pytest tests --cov=metax_access --cov-fail-under=70 --cov-report=html
+	coverage report -m
+	coverage html
+	coverage xml
 
 clean: clean-rpm
 	find . -iname '*.pyc' -type f -delete
