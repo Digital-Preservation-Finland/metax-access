@@ -18,7 +18,8 @@ from metax_access.error import (ContractNotAvailableError,
                                 FileNotAvailableError,
                                 ResourceAlreadyExistsError)
 from tests.unit_tests.utils import (V3_CONTRACT, V3_FILE,
-                                    V3_MINIMUM_TEMPLATE_DATASET)
+                                    V3_MINIMUM_TEMPLATE_DATASET,
+                                    create_test_file)
 
 METAX_URL = "https://foobar"
 METAX_REST_ROOT_URL = f"{METAX_URL}/rest"
@@ -1473,6 +1474,64 @@ def test_set_preservation_state_http_503(requests_mock, metax):
     with pytest.raises(requests.HTTPError) as error:
         metax.set_preservation_state("foobar", "10", "foo")
     assert error.value.response.status_code == 503
+
+
+@pytest.mark.parametrize("action", ["lock", "unlock"])
+def test_lock_dataset(requests_mock, metax_v3, action):
+    """Test locking/unlocking a dataset
+
+    `pas_process_running` will be set to True or False for the dataset and its
+    files, depending on whether the dataset is being locked or unlocked
+    """
+    requests_mock.patch(
+        f"{METAX_URL}/v3/datasets/foobar/preservation?include_nulls=true",
+        json={}
+    )
+    requests_mock.get(
+        f"{METAX_URL}/v3/datasets/foobar/files?include_nulls=true&limit=10000",
+        json={
+            "results": [
+                create_test_file(id="file_1"),
+                create_test_file(id="file_2")
+            ],
+            "next": \
+                f"{METAX_URL}/v3/datasets/foobar/files"
+                "?include_nulls=true&page=2&limit=10000"
+        }
+    )
+    requests_mock.get(
+        f"{METAX_URL}/v3/datasets/foobar/files?include_nulls=true&page=2&limit=10000",
+        json={
+            "results": [
+                create_test_file(id="file_3")
+            ],
+            "next": None
+        }
+    )
+    files_patch = requests_mock.post(
+        f"{METAX_URL}/v3/files/patch-many?include_nulls=true",
+        json={}
+    )
+    dataset_patch = requests_mock.patch(
+        f"{METAX_URL}/v3/datasets/foobar/preservation", json={}
+    )
+
+    if action == "lock":
+        metax_v3.lock_dataset("foobar")
+        expected_status = True
+    elif action == "unlock":
+        metax_v3.unlock_dataset("foobar")
+        expected_status = False
+
+    # Files were patched to set the status
+    assert files_patch.request_history[0].json() == [
+        {"id": "file_1", "pas_process_running": expected_status},
+        {"id": "file_2", "pas_process_running": expected_status},
+        {"id": "file_3", "pas_process_running": expected_status},
+    ]
+    assert dataset_patch.request_history[0].json() == {
+        "pas_process_running": expected_status
+    }
 
 
 def test_get_dataset_template(requests_mock):

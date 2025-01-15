@@ -1,3 +1,4 @@
+import copy
 from datetime import datetime
 
 V3_FILE = {
@@ -137,3 +138,9 @@ V3_TEMPLATE_DATASET = {
         }
     ],
 }
+
+
+def create_test_file(**kwargs):
+    file_ = copy.deepcopy(V3_FILE)
+    file_.update(kwargs)
+    return file_

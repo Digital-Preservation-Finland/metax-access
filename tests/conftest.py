@@ -5,10 +5,11 @@ import shutil
 import sys
 import tempfile
 
-from click.testing import CliRunner
 import pytest
+from click.testing import CliRunner
 
 import metax_access.__main__
+from metax_access import Metax
 
 # Print debug messages to stdout
 logging.basicConfig(level=logging.DEBUG)
@@ -55,3 +56,14 @@ def cli_invoke():
         return result
 
     return wrapper
+
+
+@pytest.fixture(scope="function")
+def metax_v3():
+    """Return Metax client configured for Metax V3"""
+    return Metax(
+        "https://foobar",
+        user="tpas", password="password",
+        api_version="v3",
+        verify=False
+    )
