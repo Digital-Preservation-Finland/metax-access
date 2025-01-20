@@ -184,7 +184,6 @@ def map_dataset(metax_dataset):
                     }
                 ),
                 "contract": metax_dataset["preservation"]["contract"],
-                "id": metax_dataset["preservation"]["id"],
             }
             if metax_dataset["preservation"] is not None
             else {

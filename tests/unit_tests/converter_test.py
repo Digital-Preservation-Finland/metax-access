@@ -150,10 +150,11 @@ def test_convert_license_v2_to_v3():
 BASE_DATASETV2 = {
     "identifier": "dataset_identifier",
     "data_catalog": {"identifier": "urn:nbn:fi:att:data-catalog-pas"},
-    "preservation_identifier": "doi:test",
+    "preservation_identifier": "this-will-not-be-converted",
     "contract": {"identifier": "contract_identifier"},
     "research_dataset": {
-        "metadata_version_identifier": "1955e904-e3dd-4d7e-99f1-3fed446f96d1"
+        "metadata_version_identifier": "1955e904-e3dd-4d7e-99f1-3fed446f96d1",
+        "preferred_identifier": "doi:test",
     },
     "preservation_state": 0,
     "date_created": 'now',
@@ -174,7 +175,6 @@ BASE_DATASETV3 = {
     "api_version": 1,
     "preservation": {
         "contract": "contract_identifier",
-        "id": "doi:test",
         "state": 0,
         "description": None,
         "reason_description": None,
@@ -185,7 +185,7 @@ BASE_DATASETV3 = {
         },
     },
     "modified": "now",
-    "persistent_identifier": None,
+    "persistent_identifier": "doi:test",
     "title": None,
     "description": None,
     "issued": None,
@@ -397,7 +397,6 @@ DATASETV3 = {
     "api_version": 1,
     "preservation": {
         "contract": "agreement:identifier1",
-        "id": "preservation_identifier",
         "state": "preservation_state",
         "description": "preservation_description",
         "reason_description": "preservation_reason_description",

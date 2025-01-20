@@ -268,7 +268,6 @@ def convert_file(json, research_dataset_file={}) -> MetaxFile:
 def _convert_preservation(json):
     return {
         "contract": json.get("contract", {}).get("identifier"),
-        "id": json.get("preservation_identifier"),
         "state": (
             json.get("preservation_state")
             if json.get("preservation_state") is not None

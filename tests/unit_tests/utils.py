@@ -47,8 +47,7 @@ V3_MINIMUM_TEMPLATE_DATASET = {
                 "persistent_identifier": None,
                 "preservation_state": -1
             },
-            "contract":None,
-            "id": None
+            "contract":None
     },
     "access_rights": None,
     "version": None, #has a default value?

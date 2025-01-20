@@ -986,7 +986,6 @@ def test_query_datasets(requests_mock):
     expected_dataset['preservation'] = {
         'contract': None,
         'description': None,
-        'id': 1234,
         'reason_description': None,
         'state': -1,
         'dataset_version': {
