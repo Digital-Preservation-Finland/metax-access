@@ -538,7 +538,6 @@ class Metax:
             )
         if response.status_code == 404:
             raise DatasetNotAvailableError  # noqa: F405
-        # TODO: not sure how the actual content in V3 query is accessed
         # pylint: disable=no-member
         return response.content
 
