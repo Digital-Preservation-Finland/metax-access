@@ -45,3 +45,18 @@ def update_nested_dict(original, update):
             updated_dict[key] = update[key]
 
     return updated_dict
+
+
+def extended_result(url, metax, params={}):
+    """Handles paged queries by calling the next url.
+
+    :param str url: The URL to make the query.
+    :param obj metax: Metax instance to handle the queries.
+    :param dict params: URL parameters for the query
+    """
+    result = []
+    while url is not None:
+        response = metax.get(url, params=params).json()
+        url = response["next"]
+        result.extend(response["results"])
+    return result

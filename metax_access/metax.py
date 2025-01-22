@@ -9,7 +9,7 @@ from requests.auth import HTTPBasicAuth
 
 import metax_access.metax_v2 as metax_v2
 from metax_access.response_mapper import map_contract, map_dataset, map_file
-from metax_access.utils import update_nested_dict
+from metax_access.utils import update_nested_dict, extended_result
 
 # These imports are used by other projects (eg. upload-rest-api)
 # pylint: disable=unused-import
@@ -340,8 +340,8 @@ class Metax:
             return metax_v2.get_contract_datasets(self, pid)
         url = f"{self.baseurl}/datasets"
         params = {"preservation__contract": pid}
-        response = self.get(url, params=params)
-        return [map_dataset(dataset) for dataset in response.json()["results"]]
+        response = extended_result(url, self, params)
+        return [map_dataset(dataset) for dataset in response]
 
     def get_file(self, file_id, v2=False) -> MetaxFile:
         """Get file metadata from Metax.
@@ -379,11 +379,7 @@ class Metax:
         files = []
         url = f"{self.baseurl}/files?limit=10000&csc_project={project}"
         # GET 10000 files every iteration until all files are read
-        while url is not None:
-            response = self.get(url).json()
-            url = response["next"]
-            results = [map_file(file) for file in response["results"]]
-            files.extend(results)
+        files = extended_result(url, self)
 
         file_dict = {}
         for _file in files:
@@ -572,11 +568,15 @@ class Metax:
         if self.api_version == "v2":
             return metax_v2.get_dataset_files(self, dataset_id)
         url = f"{self.baseurl}/datasets/{dataset_id}/files"
-        response = self.get(url, allowed_status_codes=[404])
-        if response.status_code == 404:
-            raise DatasetNotAvailableError  # noqa: F405
+        result = []
+        while url is not None:
+            response = self.get(url, allowed_status_codes=[404])
+            if response.status_code == 404:
+                raise DatasetNotAvailableError  # noqa: F405
+            url = response.json()["next"]
+            result.extend(response.json()["results"])
 
-        return [map_file(file) for file in response.json()["results"]]
+        return [map_file(file) for file in result]
 
     def get_file_datasets(self, file_id):
         """Get a list of research datasets associated with file_id.
@@ -759,13 +759,13 @@ class Metax:
         if self.api_version == "v2":
             return metax_v2.get_project_file(self, project, path)
         url = f"{self.baseurl}/files"
-        response = self.get(
-            url, params={"pathname": path, "csc_project": project}
+        result = extended_result(
+            url, self, params={"pathname": path, "csc_project": project}
         )
         try:
             return next(
                 map_file(file)
-                for file in response.json()["results"]
+                for file in result
                 if file["pathname"].strip("/") == path.strip("/")
             )
         except StopIteration:

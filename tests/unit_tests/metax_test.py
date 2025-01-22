@@ -74,7 +74,7 @@ def test_get_dataset_files(requests_mock, metax):
     if metax.api_version == 'v2':
         json = [{'identifier': file_id}, {'identifier': file_id2}]
     else:
-        json = {'results': expected_output}
+        json = {'next': None,'results': expected_output}
 
     requests_mock.get(
         url, json=json
