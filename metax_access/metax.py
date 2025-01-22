@@ -34,7 +34,7 @@ from metax_access import (  # noqa: F401
     DS_STATE_VALIDATED_METADATA_UPDATED,
     DS_STATE_VALIDATING_METADATA,
 )
-from metax_access.error import * # noqa: F403, F401
+from metax_access.error import *  # noqa: F403, F401
 from metax_access.response import MetaxFile
 
 logger = logging.getLogger(__name__)
@@ -147,7 +147,7 @@ class Metax:
         url = f"{self.baseurl}/datasets"
         response = self.get(url, allowed_status_codes=[404], params=params)
         if response.status_code == 404:
-            raise DatasetNotAvailableError
+            raise DatasetNotAvailableError  # noqa: F405
         json = response.json()
         if "results" in json:
             json["results"] = [
@@ -212,7 +212,7 @@ class Metax:
         url = f"{self.baseurl}/contracts"
         response = self.get(url, allowed_status_codes=[404], params=params)
         if response.status_code == 404:
-            raise ContractNotAvailableError
+            raise ContractNotAvailableError  # noqa: F405
         json = response.json()
         json |= {
             "results": [
@@ -233,7 +233,7 @@ class Metax:
         url = f"{self.baseurl}/contracts/{pid}"
         response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
-            raise ContractNotAvailableError
+            raise ContractNotAvailableError  # noqa: F405
         return map_contract(response.json())
 
     def patch_contract(self, contract_id, data):
@@ -275,7 +275,7 @@ class Metax:
             allowed_status_codes=[404],
         )
         if response.status_code == 404:
-            raise DatasetNotAvailableError
+            raise DatasetNotAvailableError  # noqa: F405
         return map_dataset(response.json())
 
     def get_dataset_template(self):
@@ -342,7 +342,7 @@ class Metax:
         url = f"{self.baseurl}/files/{file_id}"
         response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
-            raise FileNotAvailableError
+            raise FileNotAvailableError  # noqa: F405
         return map_file(response.json())
 
     def get_files_dict(self, project):
@@ -519,11 +519,11 @@ class Metax:
         )
         if response.status_code == 400:
             detail = response.json()["detail"]
-            raise DataciteGenerationError(
+            raise DataciteGenerationError(  # noqa: F405
                 f"Datacite generation failed: {detail}"
             )
         if response.status_code == 404:
-            raise DatasetNotAvailableError
+            raise DatasetNotAvailableError  # noqa: F405
         # TODO: not sure how the actual content in V3 query is accessed
         # pylint: disable=no-member
         return response.content
@@ -543,7 +543,7 @@ class Metax:
         url = f"{self.baseurl}/datasets/{dataset_id}"
         response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
-            raise DatasetNotAvailableError
+            raise DatasetNotAvailableError  # noqa: F405
         result = response.json()
         if result["fileset"] is not None:
             return result["fileset"]["total_files_count"]
@@ -561,7 +561,7 @@ class Metax:
         url = f"{self.baseurl}/datasets/{dataset_id}/files"
         response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
-            raise DatasetNotAvailableError
+            raise DatasetNotAvailableError  # noqa: F405
 
         return [map_file(file) for file in response.json()["results"]]
 
@@ -648,7 +648,7 @@ class Metax:
             url, json=metadata, allowed_status_codes=[400, 404]
         )
         if response.status_code == 404:
-            raise FileNotAvailableError
+            raise FileNotAvailableError  # noqa: F405
         if response.status_code == 400:
             # Read the response and parse list of failed files
             try:
@@ -677,7 +677,7 @@ class Metax:
                 or re.search(identifier_exists_pattern, string)
                 for string in all_errors
             ):
-                raise ResourceAlreadyExistsError(
+                raise ResourceAlreadyExistsError(  # noqa: F405
                     "Some of the files already exist.", response=response
                 )
             # Raise HTTPError for unknown "bad request error"
@@ -756,7 +756,7 @@ class Metax:
                 if file["pathname"].strip("/") == path.strip("/")
             )
         except StopIteration:
-            raise FileNotAvailableError
+            raise FileNotAvailableError  # noqa: F405
 
     def request(self, method, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP request.
