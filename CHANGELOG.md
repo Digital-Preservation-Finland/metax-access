@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 0.34 - 2025-02-04
+
+### Added
+
+- Support for Metax V3 for the selected methods used by the FDPAS services, support for the rest of the methods will be implemented later.
+
 ## 0.33 - 2025-01-14
 
 ### Added

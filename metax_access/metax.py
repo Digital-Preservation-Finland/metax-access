@@ -69,7 +69,6 @@ class Metax:
         self.url = url
         if api_version == "v3":
             self.baseurl = f"{url}/v3"
-            self.rpcurl = f"{url}/rpc/v2"  # TODO: is this even needed?
         else:
             self.baseurl = f"{url}/rest/v2"
             self.rpcurl = f"{url}/rpc/v2"
@@ -95,7 +94,8 @@ class Metax:
         """Get the metadata of datasets from Metax.
 
         :param str states: dataset preservation state value as a string
-        e.g "10" for filtering.
+                           e.g "10" for filtering. Kept for V2 backward
+                           compatibility, recommended to use `state` instead.
         :param str limit: max number of datasets to be returned
         :param str offset: offset for paging
         :param str pas_filter: string for filtering datasets, Used for the
@@ -103,14 +103,24 @@ class Metax:
                                    1. research_dataset['title']
                                    2. research_dataset['curator']['name']
                                    3. contract['contract_json']['title']
+                                Deprecated in V3. Use `search` instead.
         :param str metadata_owner_org: Filter by dataset field
                                        metadata_owner_org
         :param str metadata_provider_user: Filter by dataset field
-                                           metadata_provider_user
+                                           metadata_provider_user.
+                                           Deprecated in V3. Use
+                                           `metadata_owner_user` instead.
         :param str ordering: metax dataset attribute for sorting datasets
-                             e.g "preservation_state"
+                             e.g V2 "preservation_state"
+                             or V3 "preservation__state"
         :param bool include_user_metadata: Metax parameter for including
-                                           metadata for files
+                                           metadata for files.
+                                           Deprecaed in V3.
+        :param str state: dataset preservation state value as a string
+                           e.g "10" for filtering.
+        :param str search: string for filtering datasets.
+        :param str metadata_owner_user: Filter by dataset field
+                                        metadata_owner_user.
         :returns: datasets from Metax as json.
         """
         if self.api_version == "v2":
@@ -183,7 +193,7 @@ class Metax:
                 self, dataset_ids, limit, offset, fields
             )
         # TODO: Does not have a implementation in v3
-        # just look for the datasets seperately
+        # just looks for the datasets seperately
         params = {}
         if fields is not None:
             params["fields"] = fields
@@ -201,7 +211,8 @@ class Metax:
         :param str offset: offset for paging
         :param str org_filter: string for filtering contracts based on
                                contract['contract_json']['organization']
-                               ['organization_identifier'] attribute value
+                               ['organization_identifier'] attribute value.
+                               Deprecated in V3.
         :returns: contracts from Metax as json.
         """
         if self.api_version == "v2":
@@ -260,6 +271,8 @@ class Metax:
         :param str dataset_id: id or identifier attribute of dataset
         :param bool include_user_metadata: Metax parameter for including
                                            metadata for files
+                                           Deprecated in V3.
+        :param bool v2: Parameter used in V2->V3 migration period.
         :returns: dataset as json
         """
         if self.api_version == "v2":
@@ -334,6 +347,7 @@ class Metax:
         """Get file metadata from Metax.
 
         :param str file_id: id or identifier attribute of file
+        :param bool v2: Parameter used in V2->3 migration period.
         :returns: file metadata as json
         """
         if self.api_version == "v2":
