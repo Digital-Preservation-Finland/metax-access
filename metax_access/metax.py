@@ -788,7 +788,9 @@ class Metax:
 
         if self.api_version == "v3":
             try:
-                kwargs.setdefault("params", {}).setdefault("include_nulls", True)
+                kwargs.setdefault("params", {}).setdefault(
+                    "include_nulls", True
+                )
             except (AttributeError, TypeError):
                 # 'params' is a 'param -> list[value]' mapping instead of
                 # 'param -> value' mapping. Add `include_nulls` at the
