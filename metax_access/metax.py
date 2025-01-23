@@ -87,7 +87,6 @@ class Metax:
         ordering=None,
         include_user_metadata=True,
         # V3 params:
-        state=None,
         search=None,
         metadata_owner_user=None,
     ):
@@ -116,8 +115,6 @@ class Metax:
         :param bool include_user_metadata: Metax parameter for including
                                            metadata for files.
                                            Deprecaed in V3.
-        :param str state: dataset preservation state value as a string
-                           e.g "10" for filtering.
         :param str search: string for filtering datasets.
         :param str metadata_owner_user: Filter by dataset field
                                         metadata_owner_user.
@@ -136,23 +133,23 @@ class Metax:
                 include_user_metadata,
             )
 
-        params = {}
+        params = []
         if search is not None:
-            params["search"] = search
+            params += [("search", search)]
         if metadata_owner_org is not None:
-            params["metadata_owner__organization"] = metadata_owner_org
+            params += [("metadata_owner__organization", metadata_owner_org)]
         # V3 metadata_owner_user is same as metadata provider user in V2
         if metadata_owner_user is not None:
-            params["metadata_owner__user"] = metadata_owner_user
+            params += [("metadata_owner__user", metadata_owner_user)]
         if ordering is not None:
-            params["ordering"] = ordering
-        if isinstance(states, str) and state is None:
+            params += [("ordering", ordering)]
+        if isinstance(states, str):
             states = states.split(",")
-            state = states[0]
-        if state is not None:
-            params["preservation__state"] = state
-        params["limit"] = limit
-        params["offset"] = offset
+        if states is not None:
+            for state_ in states:
+                params += [("preservation__state", str(state_))]
+        params += [("limit", limit)]
+        params += [("offset", offset)]
 
         url = f"{self.baseurl}/datasets"
         response = self.get(url, allowed_status_codes=[404], params=params)
@@ -235,6 +232,7 @@ class Metax:
     def get_contract(self, pid):
         """Get the contract data from Metax.
 
+        state=None,
         :param str pid: id or ientifier attribute of contract
         :returns: The contract from Metax as json.
         """
@@ -789,10 +787,14 @@ class Metax:
             kwargs["verify"] = self.verify
 
         if self.api_version == "v3":
-            if "params" not in kwargs:
-                kwargs["params"] = {"include_nulls": True}
-            else:
-                kwargs["params"]["include_nulls"] = True
+            try:
+                kwargs.setdefault("params", {}).setdefault("include_nulls", True)
+            except (AttributeError, TypeError):
+                # 'params' is a 'param -> list[value]' mapping instead of
+                # 'param -> value' mapping. Add `include_nulls` at the
+                # beginning; this ensures any explicit 'include_nulls' provided
+                # by the caller will be honored.
+                kwargs["params"].insert(0, ("include_nulls", True))
 
         if self.token:
             if self.api_version == "v2":
