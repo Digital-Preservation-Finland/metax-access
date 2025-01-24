@@ -568,7 +568,7 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.get_dataset_files(self, dataset_id)
-        url = f"{self.baseurl}/datasets/{dataset_id}/files"
+        url = f"{self.baseurl}/datasets/{dataset_id}/files?limit=10000"
         result = []
         while url is not None:
             response = self.get(url, allowed_status_codes=[404])
