@@ -113,7 +113,7 @@ def map_contract(metax_contract):
     required by the FDPAS services.
     """
     return {
-        "contract_identifier": metax_contract["id"],
+        "id": metax_contract["id"],
         "title": {
             "und": (
                 metax_contract["title"].get("und")

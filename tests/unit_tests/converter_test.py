@@ -151,7 +151,7 @@ BASE_DATASETV2 = {
     "identifier": "dataset_identifier",
     "data_catalog": {"identifier": "urn:nbn:fi:att:data-catalog-pas"},
     "preservation_identifier": "this-will-not-be-converted",
-    "contract": {"identifier": "contract_identifier"},
+    "contract": {"identifier": "id"},
     "research_dataset": {
         "metadata_version_identifier": "1955e904-e3dd-4d7e-99f1-3fed446f96d1",
         "preferred_identifier": "doi:test",
@@ -174,7 +174,7 @@ BASE_DATASETV3 = {
     "id": "dataset_identifier",
     "api_version": 1,
     "preservation": {
-        "contract": "contract_identifier",
+        "contract": "id",
         "state": 0,
         "description": None,
         "reason_description": None,

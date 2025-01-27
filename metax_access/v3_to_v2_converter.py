@@ -30,7 +30,7 @@ def convert_contract(json):
                 "created": json.get("created"),
                 "modified": json.get("modified"),
                 "validity": json.get("validity"),
-                "identifier": json.get("contract_identifier"),
+                "identifier": json.get("id"),
                 "description": json.get("description", {}).get("und"),
                 "organization": json.get("organization"),
                 "related_service": json.get("related_service"),

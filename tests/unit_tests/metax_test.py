@@ -254,7 +254,7 @@ def test_get_contracts(requests_mock, metax):
     del contract['id']
     expected_contracts = [
         _update_dict(contract,
-                     {'contract_identifier': id})
+                     {'id': id})
                      for id in ids
     ]
     v3_output_contracts = [
@@ -295,7 +295,7 @@ def test_get_contract(requests_mock, metax):
     contract = copy.deepcopy(V3_CONTRACT)
     del contract['id']
     expected_contract = copy.deepcopy(contract)
-    expected_contract |= {"contract_identifier": contract_id}
+    expected_contract |= {"id": contract_id}
     v3_output = copy.deepcopy(V3_CONTRACT)
     v3_output |= {'id': contract_id}
     json = v3_output
