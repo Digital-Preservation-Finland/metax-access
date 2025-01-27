@@ -1,41 +1,32 @@
 """Metax interface class."""
 
 import logging
-from typing import Union
 import re
+from typing import Union
 
 import requests
 from requests.auth import HTTPBasicAuth
 
 import metax_access.metax_v2 as metax_v2
-from metax_access.response_mapper import map_contract, map_dataset, map_file
-from metax_access.utils import update_nested_dict, extended_result
-
 # These imports are used by other projects (eg. upload-rest-api)
 # pylint: disable=unused-import
 from metax_access import (  # noqa: F401
-    DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION,
-    DS_STATE_ALL_STATES,
-    DS_STATE_GENERATING_METADATA,
-    DS_STATE_IN_DIGITAL_PRESERVATION,
-    DS_STATE_IN_DISSEMINATION,
-    DS_STATE_IN_PACKAGING_SERVICE,
-    DS_STATE_INITIALIZED,
-    DS_STATE_INVALID_METADATA,
-    DS_STATE_METADATA_CONFIRMED,
-    DS_STATE_METADATA_VALIDATION_FAILED,
-    DS_STATE_NONE,
-    DS_STATE_PACKAGING_FAILED,
-    DS_STATE_REJECTED_BY_USER,
+    DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION, DS_STATE_ALL_STATES,
+    DS_STATE_GENERATING_METADATA, DS_STATE_IN_DIGITAL_PRESERVATION,
+    DS_STATE_IN_DISSEMINATION, DS_STATE_IN_PACKAGING_SERVICE,
+    DS_STATE_INITIALIZED, DS_STATE_INVALID_METADATA,
+    DS_STATE_METADATA_CONFIRMED, DS_STATE_METADATA_VALIDATION_FAILED,
+    DS_STATE_NONE, DS_STATE_PACKAGING_FAILED, DS_STATE_REJECTED_BY_USER,
     DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
     DS_STATE_SIP_SENT_TO_INGESTION_IN_DPRES_SERVICE,
     DS_STATE_TECHNICAL_METADATA_GENERATED,
     DS_STATE_TECHNICAL_METADATA_GENERATION_FAILED,
-    DS_STATE_VALIDATED_METADATA_UPDATED,
-    DS_STATE_VALIDATING_METADATA,
-)
+    DS_STATE_VALIDATED_METADATA_UPDATED, DS_STATE_VALIDATING_METADATA)
 from metax_access.error import *  # noqa: F403, F401
 from metax_access.response import MetaxFile
+from metax_access.response_mapper import (map_contract, map_dataset,
+                                          map_directory_files, map_file)
+from metax_access.utils import extended_result, update_nested_dict
 
 logger = logging.getLogger(__name__)
 
@@ -748,7 +739,50 @@ class Metax:
                 path,
                 dataset_identifier,
             )
-        raise NotImplementedError("Metax API V3 support not implemented")
+        raise NotImplementedError(
+            "Metax API V3 support will not be implemented. "
+            "Use `get_dataset_directory` instead."
+        )
+
+    def get_dataset_directory(self, dataset_id: str, path: str):
+        """Get directory metadata, directories and files for given dataset.
+
+        :param dataset_id: Dataset identifier
+        :param path: Path of the directory
+        """
+        if self.api_version == "v2":
+            raise NotImplementedError(
+                "This is a V3 only API. Get with the times."
+            )
+
+        url = f"{self.baseurl}/datasets/{dataset_id}/directories"
+        response = self.get(
+            url, params={"path": path, "limit": 10_000},
+            allowed_status_codes=[404]
+        )
+        if response.status_code == 404:
+            raise DirectoryNotAvailableError
+
+        data = response.json()
+
+        result = {
+            "directory": data["results"]["directory"],
+            "directories": data["results"]["directories"],
+            "files": data["results"]["files"]
+        }
+
+        # Endpoint has pagination that involves two lists at the same time:
+        # 'files' and 'directories'
+        next = data["next"]
+
+        while next:
+            response = self.get(next)
+            data = response.json()
+            result["directories"] += data["results"]["directories"]
+            result["files"] += data["results"]["files"]
+            next = data["next"]
+
+        return map_directory_files(result)
 
     def get_project_file(self, project, path) -> MetaxFile:
         """Get file of project by path.

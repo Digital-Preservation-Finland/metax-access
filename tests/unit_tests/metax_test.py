@@ -2,7 +2,7 @@
 """Tests for ``metax_access.metax`` module."""
 import copy
 from contextlib import ExitStack as does_not_raise
-from urllib.parse import quote
+from urllib.parse import quote, urlencode
 
 import lxml.etree
 import pytest
@@ -1192,6 +1192,72 @@ def test_get_project_directory(requests_mock):
     )
     assert requests_mock.last_request.qs["project"] == ["foo"]
     assert requests_mock.last_request.qs["path"] == ["/testdir"]
+
+
+def test_get_dataset_directory(requests_mock, metax_v3):
+    """Test get_dataset_directory function.
+
+    :param requets_mock: HTTP request mocker
+    """
+    requests_mock.get(
+        f"{METAX_URL}/v3/datasets/dataset_id/directories?{{}}".format(
+            urlencode({"path": "/test_dir"})
+        ),
+        json={
+            "count": 2,
+            "next": (
+                f"{METAX_URL}/v3/datasets/dataset_id/directories?{{}}".format(
+                    urlencode({"path": "/test_dir", "page": 2})
+                )
+            ),
+            "results": {
+                "directory": {
+                    "pathname": "/test_dir"
+                },
+                "directories": [
+                    {
+                        "name": "sub_test_dir",
+                        "size": 50,
+                        "file_count": 2,
+                        "pathname": "/test_dir/sub_test_dir"
+                    }
+                ],
+                "files": []
+            }
+        }
+    )
+    requests_mock.get(
+        f"{METAX_URL}/v3/datasets/dataset_id/directories?{{}}".format(
+            urlencode({"path": "/test_dir", "page": 2})
+        ),
+        json={
+            "count": 2,
+            "next": None,
+            "results": {
+                "directory": {
+                    "pathname": "/test_dir"
+                },
+                "directories": [],
+                "files": [
+                    {
+                        "id": "12345678",
+                        "filename": "test.txt",
+                        "size": 25
+                    }
+                ]
+            }
+        }
+    )
+
+    result = metax_v3.get_dataset_directory("dataset_id", "/test_dir")
+
+    assert result["directory"]["pathname"] == "/test_dir"
+
+    assert len(result["directories"]) == 1
+    assert result["directories"][0]["pathname"] == "/test_dir/sub_test_dir"
+
+    assert len(result["files"]) == 1
+    assert result["files"][0]["filename"] == "test.txt"
 
 
 def test_get_directory_id(requests_mock):
