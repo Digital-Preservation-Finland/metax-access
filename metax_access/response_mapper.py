@@ -49,7 +49,7 @@ def map_file(metax_file):
             {
                 "use_category": (
                     {
-                        "identifier": metax_file["dataset_metadata"][
+                        "id": metax_file["dataset_metadata"][
                             "use_category"
                         ]["id"],
                         "pref_label": (
