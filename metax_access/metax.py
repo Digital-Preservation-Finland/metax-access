@@ -710,7 +710,7 @@ class Metax:
             return metax_v2.post_contract(self, metadata)
         url = f"{self.baseurl}/contracts"
         response = self.post(url, json=metadata)
-        return response.json()
+        return map_contract(response.json())
 
     def delete_contract(self, contract_id):
         """Delete metadata of contract.
