@@ -446,6 +446,9 @@ class Metax:
             return metax_v2.set_preservation_state(
                 self, dataset_id, state, description
             )
+        if state == DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION:
+            self.copy_dataset_to_pas_catalog(dataset_id)
+
         url = f"{self.baseurl}/datasets/{dataset_id}/preservation"
         # TODO: description has a language support, e.g. it expects
         # a dictionary in format {'en': '<desc>', 'und':'<desc>, 'fi':....}
@@ -457,6 +460,26 @@ class Metax:
             "description": {"en": description},
         }
         self.patch(url, json=data)
+
+    def copy_dataset_to_pas_catalog(self, dataset_id):
+        """Copies dataset to the PAS catalog.
+
+        Dataset can be copied only if it has a contract and
+        a preservation state set.
+
+        :param str dataset_id: id of the dataset
+        :returns: ``None``
+        """
+        if self.api_version == 'v2':
+            raise NotImplementedError("Metax API V2 support not implemented")
+        dataset = self.get_dataset(dataset_id)
+        if dataset["preservation"]["contract"] is None:
+            raise ValueError("Dataset has no contract set.")
+        url = (
+            f"{self.baseurl}/datasets/"
+            + f"{dataset_id}/create-preservation-version"
+        )
+        self.post(url)
 
     def set_preservation_reason(self, dataset_id, reason):
         """Set preservation reason of dataset.
@@ -776,7 +799,7 @@ class Metax:
             allowed_status_codes=[404]
         )
         if response.status_code == 404:
-            raise DirectoryNotAvailableError
+            raise DirectoryNotAvailableError  # noqa: F405
 
         data = response.json()
 

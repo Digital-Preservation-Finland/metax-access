@@ -9,6 +9,7 @@ import pytest
 import requests
 
 from metax_access import (DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
+                          DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION,
                           Metax)
 from metax_access.error import (ContractNotAvailableError,
                                 DataCatalogNotAvailableError,
@@ -517,6 +518,98 @@ def test_set_preservation_state(requests_mock, metax):
 
     # Check the method of last HTTP request
     assert requests_mock.last_request.method == "PATCH"
+
+def test_set_preservation_state_copy_to_pas_catalog(requests_mock, metax):
+    """Test ``set_preservation_state`` function.
+
+    Metadata in Metax is modified by sending HTTP PATCH request with modified
+    metadata in JSON format. This test checks that correct HTTP request is sent
+    to Metax and the PAS catalog endpoint was called with POST when the
+    preservation state is accpeted to preservation.
+
+    :returns: ``None``
+    """
+    dataset_id = "test_id"
+    contract_id = "contract_id"
+    url = (
+            f"{metax.baseurl}/datasets/"
+            + f"{dataset_id}/create-preservation-version"
+        )
+    dataset_url = f"{metax.baseurl}/datasets/{dataset_id}"
+    response = copy.deepcopy(V3_MINIMUM_TEMPLATE_DATASET)
+    response['id'] = dataset_id
+    response['preservation']['contract'] = contract_id
+    requests_mock.get(
+        dataset_url,
+        json=response
+    )
+    requests_mock.post(url)
+    patch_preservation_url = (
+        f"{metax.baseurl}/datasets/{dataset_id}/preservation"
+        if metax.api_version == "v3"
+        else f"{metax.baseurl}/datasets/{dataset_id}"
+    )
+
+    requests_mock.patch(patch_preservation_url)
+
+    metax.set_preservation_state(
+        dataset_id,
+        DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION,
+        "Accepted to preservation",
+    )
+
+    # Check the body of last HTTP request
+    request_body = requests_mock.last_request.json()
+    if metax.api_version == 'v2':
+        assert (
+            request_body["preservation_state"]
+            == DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION
+        )
+        assert (
+            request_body["preservation_description"] == "Accepted to preservation"
+        )
+    else:
+        assert (
+            request_body["state"]
+            == DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION
+        )
+        assert (
+            request_body["description"] == {"en": "Accepted to preservation"}
+        )
+        assert len(requests_mock.request_history) == 3
+        assert requests_mock.request_history[1].method == "POST"
+        assert requests_mock.request_history[1].path ==  f"/v3/datasets/{dataset_id}/create-preservation-version"
+        assert requests_mock.request_history[1].hostname == "foobar"
+
+    # Check the method of last HTTP request
+    assert requests_mock.last_request.method == "PATCH"
+
+
+def test_copy_dataset_to_pas_catalog_no_contract(requests_mock, metax):
+    """"Test copy_dataset_to_pas_catalog function without a contract.
+
+    A dataset without a contract can't be added to PAS Catalog.
+    Check that an error is raised, for such dataset.
+    """
+    dataset_id = 'dataset_id'
+    url = (
+            f"{metax.baseurl}/datasets/"
+            + f"{dataset_id}/create-preservation-version"
+        )
+    dataset_url = f"{metax.baseurl}/datasets/{dataset_id}"
+    response = copy.deepcopy(V3_MINIMUM_TEMPLATE_DATASET)
+    response['id'] = dataset_id
+    requests_mock.get(
+        dataset_url,
+        json=response
+    )
+    requests_mock.post(url)
+    if metax.api_version == "v3":
+        with pytest.raises(
+            ValueError,
+            match="Dataset has no contract set.",
+        ):
+            metax.copy_dataset_to_pas_catalog(dataset_id)
 
 
 def test_set_preservation_reason(requests_mock, metax):
@@ -1160,7 +1253,6 @@ def test_get_files_dict(requests_mock, metax):
     assert "/path/file2" in files
     assert files["/path/file1"]["identifier"] == "file1_identifier"
     assert files["/path/file1"]["storage_service"] == "pas"
-
 
 
 def test_get_project_directory(requests_mock):
