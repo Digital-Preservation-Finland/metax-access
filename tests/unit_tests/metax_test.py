@@ -1711,11 +1711,50 @@ def test_get_dataset_template(requests_mock):
     )
     assert METAX_CLIENT.get_dataset_template() == {"foo": "bar"}
 
+
+def test_get_file_format_versions(requests_mock, metax):
+    """Test get_file_format_versions."""
+    requests_mock.get(
+        f"{metax.baseurl}/reference-data/file-format-versions",
+        json=[
+            {
+                "id": "id1",  # This is unnecessary and should be ignored
+                "url": "url1",
+                "file_format": "format1",
+                "format_version": "version1",
+            },
+            {
+                "url": "url2",
+                "file_format": "format2",
+                "format_version": "version2",
+            },
+        ],
+    )
+
+    if metax.api_version == "v2":
+        with pytest.raises(NotImplementedError):
+            metax.get_file_format_versions()
+    else:
+        assert metax.get_file_format_versions() == [
+            {
+                "url": "url1",
+                "file_format": "format1",
+                "format_version": "version1",
+            },
+            {
+                "url": "url2",
+                "file_format": "format2",
+                "format_version": "version2",
+            },
+        ]
+
+
 def _check_values(json, expected_val):
     for k, v in expected_val.items():
         assert json[k] == v
     assert 'modified' in json
     assert 'created' in json
+
 
 def _update_dict(original, update):
     original_copy = copy.deepcopy(original)

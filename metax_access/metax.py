@@ -917,6 +917,29 @@ class Metax:
             json={"pas_process_running": False}
         )
 
+    def get_file_format_versions(self):
+        """Get reference data for file formats.
+
+        :returns: Reference data for file formats
+        """
+        if self.api_version == "v2":
+            error = "This method has only Metax API V3 support"
+            raise NotImplementedError(error)
+
+        url = f"{self.baseurl}/reference-data/file-format-versions"
+        params = {"pagination": False}
+        response = self.get(url, params=params)
+        result = response.json()
+
+        return [
+            {
+                "url": file_format_version["url"],
+                "file_format": file_format_version["file_format"],
+                "format_version": file_format_version["format_version"],
+            }
+            for file_format_version in result
+        ]
+
     def request(self, method, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP request.
 
