@@ -736,7 +736,9 @@ class Metax:
         """
         if self.api_version == "v2":
             return metax_v2.post_dataset(self, metadata)
-        raise NotImplementedError("Metax API V3 support not implemented")
+        url = f"{self.baseurl}/datasets"
+        response = self.post(url, json=metadata)
+        return map_dataset(response.json())
 
     def post_contract(self, metadata):
         """Post contract metadata.

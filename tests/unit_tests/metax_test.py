@@ -1031,19 +1031,30 @@ def test_post_multiple_files(
         assert exception_info.value.response.json() == response
 
 
-def test_post_dataset(requests_mock):
+def test_post_dataset(requests_mock, metax):
     """Test ``post_dataset`` function.
 
     Test that HTTP POST request is sent to correct url.
     """
-    requests_mock.post(METAX_REST_URL + "/datasets/", json={"identifier": "1"})
+    url = f'{metax.baseurl}/datasets'
+    json = copy.deepcopy(V3_MINIMUM_TEMPLATE_DATASET)
+    json |= {
+        "title": {"en": "A Test Dataset"}
+    }
+    if metax.api_version == 'v2':
+        url = f'{metax.baseurl}/datasets/'
+        json = {"identifier": "1"}
 
-    METAX_CLIENT.post_dataset({"identifier": "1"})
+    requests_mock.post(url, json=json)
+
+    metax.post_dataset(json)
 
     assert requests_mock.last_request.method == "POST"
     assert requests_mock.last_request.hostname == "foobar"
-    assert requests_mock.last_request.path == "/rest/v2/datasets/"
-
+    if metax.api_version == 'v2':
+        assert requests_mock.last_request.path == "/rest/v2/datasets/"
+    else:
+        assert requests_mock.last_request.path == "/v3/datasets"
 
 def test_query_datasets(requests_mock):
     """Test ``query_datasets`` function.
