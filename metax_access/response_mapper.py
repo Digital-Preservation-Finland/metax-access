@@ -153,7 +153,10 @@ def map_dataset(metax_dataset):
                 "csc_project": metax_dataset["fileset"]["csc_project"],
             }
             if metax_dataset["fileset"]
-            else None
+            else {
+                "total_files_size": 0,
+                "csc_project": None
+            }
         ),
         "preservation": (
             {
