@@ -525,10 +525,23 @@ class Metax:
 
         characteristics_url = f"{self.baseurl}/files/{file_id}/characteristics"
         extension_url = f"{self.baseurl}/files/{file_id}"
-        self.patch(
+        response = self.patch(
             characteristics_url,
+            allowed_status_codes=[404],
             json=file_characteristics.get("characteristics", {}),
         )
+        if response.status_code == 404:
+            # File characteristics object does not exist, so it must be
+            # created
+            response = self.put(
+                characteristics_url,
+                allowed_status_codes=[404],
+                json=file_characteristics.get("characteristics", {}),
+            )
+            if response.status_code == 404:
+                # If also PUT fails, the file probably does not exist
+                raise FileNotAvailableError
+
         self.patch(
             extension_url,
             json={
@@ -1036,6 +1049,19 @@ class Metax:
         :returns: requests response
         """
         return self.request("POST", url, allowed_status_codes, **kwargs)
+
+    def put(self, url, allowed_status_codes=None, **kwargs):
+        """Send authenticated HTTP PUT request.
+
+        This function is a wrapper function for requests.put with
+        automatic authentication. Raises HTTPError if request fails with
+        status code other than one of the allowed status codes.
+
+        :param url: Request URL
+        :param allowed_status_codes: List of allowed HTTP error codes
+        :returns: requests response
+        """
+        return self.request("PUT", url, allowed_status_codes, **kwargs)
 
     def delete(self, url, allowed_status_codes=None, **kwargs):
         """Send authenticated HTTP DELETE request.

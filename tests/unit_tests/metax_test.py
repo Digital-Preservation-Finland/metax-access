@@ -679,6 +679,61 @@ def test_patch_file(requests_mock):
     assert requests_mock.last_request.method == "PATCH"
 
 
+@pytest.mark.parametrize("patch_characteristics_status", [200, 404])
+def test_patch_file_characteristics(requests_mock, metax,
+                                    patch_characteristics_status):
+    """Test patch_file_characteristics.
+
+    :param requests_mock: HTTP Request mocker
+    :param metax: Metax client
+    :param patch_characteristics_status: HTTP status code of response
+        for patching file characteristics.
+    """
+    if metax.api_version == "v2":
+        pytest.skip(
+            "It does not make sense to create Metax V2 tests for this method "
+            "anymore."
+        )
+
+    # Mock Metax
+    patch_characteristics = requests_mock.patch(
+        f"{metax.baseurl}/files/file-id/characteristics",
+        status_code=patch_characteristics_status
+    )
+    put_characteristics = requests_mock.put(
+        f"{metax.baseurl}/files/file-id/characteristics",
+    )
+    patch_file = requests_mock.patch(
+        f"{metax.baseurl}/files/file-id",
+    )
+
+    characteristics = {"ham": "spam"}
+    extension = {"foo": "bar"}
+    metax.patch_file_characteristics(
+        "file-id",
+        {
+            "characteristics": characteristics,
+            "characteristics_extension": extension,
+        }
+    )
+
+    assert patch_characteristics.called_once
+    assert patch_characteristics.last_request.json() == characteristics
+
+    # If patching characteristics fails with HTTP 404 "Not found", the
+    # "characteristics" object does not exist, so PUT request should be
+    # used instead.
+    if patch_characteristics_status == 404:
+        assert put_characteristics.called_once
+        assert put_characteristics.last_request.json() == characteristics
+    else:
+        assert not put_characteristics.called_once
+
+    assert patch_file.called_once
+    assert patch_file.last_request.json() \
+        == {"characteristics_extension": extension}
+
+
 def test_delete_file(requests_mock):
     """Test ``delete_file`` function.
 
