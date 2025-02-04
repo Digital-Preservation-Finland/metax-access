@@ -519,16 +519,20 @@ def test_set_preservation_state(requests_mock, metax):
     # Check the method of last HTTP request
     assert requests_mock.last_request.method == "PATCH"
 
-def test_set_preservation_state_copy_to_pas_catalog(requests_mock, metax):
-    """Test ``set_preservation_state`` function.
 
-    Metadata in Metax is modified by sending HTTP PATCH request with modified
-    metadata in JSON format. This test checks that correct HTTP request is sent
-    to Metax and the PAS catalog endpoint was called with POST when the
-    preservation state is accpeted to preservation.
+def test_copy_dataset_to_pas_catalog(requests_mock, metax):
+    """Test ``copy_dataset_to_pas_catalog`` function.
+
+    Metadata in Metax is modified by sending HTTP PATCH request with
+    modified metadata in JSON format. This test checks that correct HTTP
+    request is sent to Metax and the PAS catalog endpoint was called
+    with POST when dataset is copied to PAS data catalog.
 
     :returns: ``None``
     """
+    if metax.api_version == "v2":
+        pytest.skip("Not implemented in Metax API V2")
+
     dataset_id = "test_id"
     contract_id = "contract_id"
     url = (
@@ -543,46 +547,12 @@ def test_set_preservation_state_copy_to_pas_catalog(requests_mock, metax):
         dataset_url,
         json=response
     )
-    requests_mock.post(url)
-    patch_preservation_url = (
-        f"{metax.baseurl}/datasets/{dataset_id}/preservation"
-        if metax.api_version == "v3"
-        else f"{metax.baseurl}/datasets/{dataset_id}"
-    )
+    post_create_preservation_version = requests_mock.post(url)
 
-    requests_mock.patch(patch_preservation_url)
+    metax.copy_dataset_to_pas_catalog( dataset_id)
 
-    metax.set_preservation_state(
-        dataset_id,
-        DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION,
-        "Accepted to preservation",
-    )
-
-    # Check the body of last HTTP request
-    request_body = requests_mock.last_request.json()
-    if metax.api_version == 'v2':
-        assert (
-            request_body["preservation_state"]
-            == DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION
-        )
-        assert (
-            request_body["preservation_description"] == "Accepted to preservation"
-        )
-    else:
-        assert (
-            request_body["state"]
-            == DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION
-        )
-        assert (
-            request_body["description"] == {"en": "Accepted to preservation"}
-        )
-        assert len(requests_mock.request_history) == 3
-        assert requests_mock.request_history[1].method == "POST"
-        assert requests_mock.request_history[1].path ==  f"/v3/datasets/{dataset_id}/create-preservation-version"
-        assert requests_mock.request_history[1].hostname == "foobar"
-
-    # Check the method of last HTTP request
-    assert requests_mock.last_request.method == "PATCH"
+    # Check that expected request was sent to Metax
+    assert post_create_preservation_version.called_once
 
 
 def test_copy_dataset_to_pas_catalog_no_contract(requests_mock, metax):

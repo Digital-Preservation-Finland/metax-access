@@ -446,8 +446,6 @@ class Metax:
             return metax_v2.set_preservation_state(
                 self, dataset_id, state, description
             )
-        if state == DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION:
-            self.copy_dataset_to_pas_catalog(dataset_id)
 
         url = f"{self.baseurl}/datasets/{dataset_id}/preservation"
         # TODO: description has a language support, e.g. it expects
