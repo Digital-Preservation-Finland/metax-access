@@ -494,6 +494,31 @@ class Metax:
         url = f"{self.baseurl}/datasets/{dataset_id}/preservation"
         self.patch(url, json={"reason_description": reason})
 
+    def set_pas_package_created(self, dataset_id):
+        """Set value of `pas_package_created` to True.
+
+        When `pas_package_created` is True, it means that dataset has
+        been preserved, and can be shown in Etsin. In Metax API V2,
+        `preservation_state` was used to check if dataset has been
+        preserved.
+
+        Because the name of the variable is a little misleading, it is
+        good to notice that when `pas_package_created` is False:
+
+            * it does NOT mean that SIP has not been created
+            * it does NOT mean that SIP has not been sent to digital
+              preservation service
+            * it does NOT mean that dataset has not been copied to PAS
+              data catalog
+            * it only means that the dataset is not preserved
+
+        :param str dataset_id: Id dataset
+        """
+        if self.api_version == "v2":
+            raise NotImplementedError("Metax API V2 support not implemented.")
+        url = f"{self.baseurl}/datasets/{dataset_id}/preservation"
+        self.patch(url, json={"pas_package_created": True})
+
     def patch_file(self, file_id, data):
         """Patch file metadata.
 

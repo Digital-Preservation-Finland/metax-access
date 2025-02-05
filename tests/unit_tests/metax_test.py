@@ -609,6 +609,19 @@ def test_set_preservation_reason(requests_mock, metax):
         }
 
 
+def test_set_pas_package_created(requests_mock, metax):
+    """Test `set_pas_package_created` method."""
+    if metax.api_version == "v2":
+        pytest.skip("Metax API V2 support not implemented")
+
+    patch_preservation \
+        = requests_mock.patch("/v3/datasets/test-dataset-id/preservation")
+    metax.set_pas_package_created("test-dataset-id")
+    assert patch_preservation.called_once
+    assert patch_preservation.last_request.json() \
+        == {"pas_package_created": True}
+
+
 def test_patch_file(requests_mock):
     """Test ``patch_file`` function.
 
