@@ -4,16 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## 0.34 - 2025-02-04
+## 0.34 - 2025-02-10
 
 ### Added
 
-- Support for Metax V3 for the selected methods used by the FDPAS services, support for the rest of the methods will be implemented later.
-- `copy_dataset_to_pas_catalog` method for copying dataset to PAS catalog.
-
-### Changed
-
-- `set_preservation_state` copies a dataset to the PAS catalog if the preservation state is ''Accepted to preservation''.
+- Support for Metax V3 as required by the FDDPS services
+- Add Metax V3 methods
+  - `set_pas_package_created`
+  - `get_file_format_versions`
+  - `get_dataset_directory`
+  - `unlock_dataset` and `lock_dataset`
+  - `copy_dataset_to_pas_catalog` method for copying dataset to PAS catalog.
+- Add `api_version` configuration parameter
 
 ## 0.33 - 2025-01-14
 
