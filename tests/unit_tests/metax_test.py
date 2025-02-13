@@ -35,15 +35,9 @@ del DATASET['created']
 del DATASET['modified']
 
 @pytest.fixture(autouse=True, scope='function')
-def metax(request):
-    """Choose which Metax implementation is used.
-
-    Use Metax V3 if --v3 option is used and V2 otherwise.
-    """
-    if request.config.getoption("--v3"):
-        return Metax(METAX_URL, token='token_foo', verify=False, api_version='v3')
-    else:
-        return Metax(METAX_URL, METAX_USER, METAX_PASSWORD, verify=False)
+def metax():
+    """Metax V3 client instance"""
+    return Metax(METAX_URL, token='token_foo', verify=False, api_version='v3')
 
 
 def test_init():
@@ -73,17 +67,10 @@ def test_get_dataset_files(requests_mock, metax):
 
     expected_output = [expected_file, expected_file2]
 
-    if metax.api_version == 'v2':
-        json = [{'identifier': file_id}, {'identifier': file_id2}]
-    else:
-        json = {'next': None,'results': expected_output}
+    json = {'next': None,'results': expected_output}
 
     requests_mock.get(
         url, json=json
-    )
-    requests_mock.get(
-        f"{metax.baseurl}/datasets/{dataset_id}?include_user_metadata=true&file_details=true",
-        json={}
     )
     files = metax.get_dataset_files(dataset_id)
 
@@ -99,12 +86,8 @@ def test_get_file(requests_mock, metax):
     expected_file['id'] = file_id
     json = expected_file
 
-    if metax.api_version == 'v2':
-        url = url = f'{metax.baseurl}/files/foo'
-        json = {'identifier': file_id}
-
     requests_mock.get(url, json=json)
-    file = metax.get_file('foo') if metax.api_version == 'v2' else metax.get_file(file_id)
+    file = metax.get_file(file_id)
     assert file == expected_file
 
 def test_get_datasets(requests_mock, caplog, metax):
@@ -118,21 +101,11 @@ def test_get_datasets(requests_mock, caplog, metax):
     ids = ['foo', 'bar']
     expected_datasets = [_update_dict(DATASET, {'id': id}) for id in ids]
     json = [_update_dict(V3_MINIMUM_TEMPLATE_DATASET, {'id': id}) for id in ids]
-    if metax.api_version == 'v2':
-        json = [{"identifier": id} for id in ids]
     metax_mock = requests_mock.get(
         f"{metax.baseurl}/datasets/foo/files", json={}
     )
     metax_mock = requests_mock.get(
         f"{metax.baseurl}/datasets/bar/files", json={}
-    )
-    metax_mock = requests_mock.get(
-        f"{metax.baseurl}/datasets/foo?include_user_metadata=true&file_details=true",
-        json={},
-    )
-    metax_mock = requests_mock.get(
-        f"{metax.baseurl}/datasets/bar?include_user_metadata=true&file_details=true",
-        json={},
     )
     metax_mock = requests_mock.get(
         f"{metax.baseurl}/datasets",
@@ -146,13 +119,6 @@ def test_get_datasets(requests_mock, caplog, metax):
     query_string = metax_mock.last_request.qs
     assert query_string["limit"][0] == "1000000"
     assert query_string["offset"][0] == "0"
-
-    if metax.api_version == 'v2':
-        assert query_string["include_user_metadata"][0] == "true"
-        assert (
-        query_string["preservation_state"][0]
-        == "-1,0,10,20,30,40,50,60,65,70,75,80,90,100,110,120,130,140"
-    )
 
     # No errors should be logged
     logged_errors = [r for r in caplog.records if r.levelname == "ERROR"]
@@ -168,8 +134,6 @@ def test_get_datasets_with_parameters(requests_mock, metax):
     :returns: None
     """
     json = {'results':[V3_MINIMUM_TEMPLATE_DATASET]}
-    if metax.api_version == 'v2':
-        json = {'results':[{}]}
     metax_mock = requests_mock.get(f'{metax.baseurl}/datasets', json=json)
     datasets = metax.get_datasets(
         states="states-param",
@@ -187,17 +151,10 @@ def test_get_datasets_with_parameters(requests_mock, metax):
     assert query_string["limit"][0] == "limit-param"
     assert query_string["offset"][0] == "offset-param"
     assert query_string["ordering"][0] == "ordering-param"
-    if metax.api_version == 'v2':
-        assert query_string["preservation_state"][0] == "states-param"
-        assert query_string["pas_filter"][0] == "pas-filter-param"
-        assert query_string["metadata_owner_org"][0] == "owner-org-param"
-        assert query_string["metadata_provider_user"][0] == "provider-user-param"
-        assert "include_user_metadata" not in query_string
-    if metax.api_version == 'v3':
-        assert query_string["preservation__state"][0] == "states-param"
-        assert query_string["search"][0] == "search-param"
-        assert query_string["metadata_owner__organization"][0] == "owner-org-param"
-        assert query_string["metadata_owner__user"][0] == "metadata-owner-user"
+    assert query_string["preservation__state"][0] == "states-param"
+    assert query_string["search"][0] == "search-param"
+    assert query_string["metadata_owner__organization"][0] == "owner-org-param"
+    assert query_string["metadata_owner__user"][0] == "metadata-owner-user"
 
     _check_values(datasets[0], DATASET)
 
@@ -265,14 +222,6 @@ def test_get_contracts(requests_mock, metax):
     ]
     json = {
             "results": v3_output_contracts
-        }
-    if metax.api_version == 'v2':
-        json = {
-            "results": [
-                {'contract_json':
-                    {"identifier": id}
-                }
-            for id in ids]
         }
     requests_mock.get(
         f'{metax.baseurl}/contracts',
@@ -350,7 +299,6 @@ def test_get_dataset_file_count_not_found(requests_mock, metax):
         url = f"{metax.baseurl}/datasets/does-not-exist/files"
     requests_mock.get(
         url,
-        additional_matcher=(lambda req: req.qs["file_fields"] == ["id"]) if metax.api_version == 'v2' else None,
         status_code=404,
     )
 
@@ -395,8 +343,6 @@ def test_set_contract(requests_mock, metax):
     """
     dataset_id = 'test_id'
     url = f'{metax.baseurl}/datasets/{dataset_id}/preservation'
-    if metax.api_version == 'v2':
-        url = f'{metax.baseurl}/datasets/{dataset_id}'
     requests_mock.patch(url, json={})
     # TODO: Only used in v2 test
     requests_mock.get(
@@ -408,11 +354,7 @@ def test_set_contract(requests_mock, metax):
     assert requests_mock.last_request.method == "PATCH"
 
     request_body = requests_mock.last_request.json()
-    if metax.api_version == 'v2':
-        assert isinstance(request_body["contract"], dict)
-        assert request_body["contract"]["identifier"] == "new:contract:id"
-    else:
-        assert request_body["contract"] == "new:contract:id"
+    assert request_body["contract"] == "new:contract:id"
 
 
 def test_get_datacite(requests_mock, metax):
@@ -425,8 +367,6 @@ def test_get_datacite(requests_mock, metax):
     # Read sample datacite from file and create mocked HTTP response
     dataset_id = 'test_id'
     url = f'{metax.baseurl}/datasets/{dataset_id}/metadata-download?format=datacite&include_nulls=True'
-    if metax.api_version == 'v2':
-        url = f'{metax.baseurl}/datasets/{dataset_id}?dataset_format=datacite&dummy_doi=false'
 
     datacite = lxml.etree.parse("tests/data/datacite_sample.xml")
     requests_mock.get(url,
@@ -499,22 +439,13 @@ def test_set_preservation_state(requests_mock, metax):
 
     # Check the body of last HTTP request
     request_body = requests_mock.last_request.json()
-    if metax.api_version == 'v2':
-        assert (
-            request_body["preservation_state"]
-            == DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE
-        )
-        assert (
-            request_body["preservation_description"] == "Accepted to preservation"
-        )
-    else:
-        assert (
-            request_body["state"]
-            == DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE
-        )
-        assert (
-            request_body["description"] == {"en": "Accepted to preservation"}
-        )
+    assert (
+        request_body["state"]
+        == DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE
+    )
+    assert (
+        request_body["description"] == {"en": "Accepted to preservation"}
+    )
 
     # Check the method of last HTTP request
     assert requests_mock.last_request.method == "PATCH"
@@ -591,22 +522,15 @@ def test_set_preservation_reason(requests_mock, metax):
     """
     dataset_id = 'test_id'
     url = f'{metax.baseurl}/datasets/{dataset_id}/preservation'
-    if metax.api_version == 'v2':
-        url = f'{metax.baseurl}/datasets/{dataset_id}'
     requests_mock.patch(url)
 
     metax.set_preservation_reason(dataset_id, "The reason.")
 
     # Check the method of last HTTP request
     assert requests_mock.last_request.method == "PATCH"
-    if metax.api_version == 'v2':
-        assert requests_mock.last_request.json() == {
-            "preservation_reason_description": "The reason."
-        }
-    if metax.api_version == 'v3':
-        assert requests_mock.last_request.json() == {
-            "reason_description": "The reason."
-        }
+    assert requests_mock.last_request.json() == {
+        "reason_description": "The reason."
+    }
 
 
 def test_set_pas_package_created(requests_mock, metax):
@@ -753,18 +677,13 @@ def test_post_file(requests_mock, metax):
     Test that HTTP POST request is sent to correct url.
     """
     url = f"{metax.baseurl}/files"
-    if metax.api_version == 'v2':
-        url = f"{metax.baseurl}/files/"
     requests_mock.post(url, json={"ide": "1"})
 
     metax.post_file({"id": "1"})
 
     assert requests_mock.last_request.method == "POST"
     assert requests_mock.last_request.hostname == "foobar"
-    if metax.api_version == 'v2':
-        assert requests_mock.last_request.path == "/rest/v2/files/"
-    else:
-        assert requests_mock.last_request.path == "/v3/files"
+    assert requests_mock.last_request.path == "/v3/files"
 
 
 @pytest.mark.parametrize(
@@ -1079,9 +998,6 @@ def test_post_dataset(requests_mock, metax):
     json |= {
         "title": {"en": "A Test Dataset"}
     }
-    if metax.api_version == 'v2':
-        url = f'{metax.baseurl}/datasets/'
-        json = {"identifier": "1"}
 
     requests_mock.post(url, json=json)
 
@@ -1089,10 +1005,8 @@ def test_post_dataset(requests_mock, metax):
 
     assert requests_mock.last_request.method == "POST"
     assert requests_mock.last_request.hostname == "foobar"
-    if metax.api_version == 'v2':
-        assert requests_mock.last_request.path == "/rest/v2/datasets/"
-    else:
-        assert requests_mock.last_request.path == "/v3/datasets"
+    assert requests_mock.last_request.path == "/v3/datasets"
+
 
 def test_query_datasets(requests_mock):
     """Test ``query_datasets`` function.
@@ -1262,36 +1176,6 @@ def test_get_files_dict(requests_mock, metax):
             })
         ],
     }
-    if metax.api_version == 'v2':
-        url = f"{metax.baseurl}/files?limit=10000&project_identifier=test"
-        first_response = {
-            "next": "https://next.url",
-            "results": [
-                {
-                    "id": 28260,
-                    "file_path": "/path/file1",
-                    "file_storage": {
-                        "id": 1,
-                        "identifier": "urn:nbn:fi:att:file-storage-pas",
-                    },
-                    "identifier": "file1_identifier",
-                }
-            ],
-        }
-        second_response = {
-            "next": None,
-            "results": [
-                {
-                    "id": 23125,
-                    "file_path": "/path/file2",
-                    "file_storage": {
-                        "id": 1,
-                        "identifier": "urn:nbn:fi:att:file-storage-pas",
-                    },
-                    "identifier": "file2_identifier",
-                }
-            ],
-        }
     requests_mock.get(
         url,
         json=first_response,
@@ -1467,12 +1351,8 @@ def test_get_project_file(file_path, results, results_v3, requests_mock, metax):
         metax.get_project_file("foo", file_path)
         == expected_file
     )
-    if metax.api_version == 'v2':
-        assert requests_mock.last_request.qs["project_identifier"] == ["foo"]
-        assert requests_mock.last_request.qs["file_path"] == [file_path]
-    else:
-        assert requests_mock.last_request.qs["csc_project"] == ["foo"]
-        assert requests_mock.last_request.qs["pathname"] == [file_path]
+    assert requests_mock.last_request.qs["csc_project"] == ["foo"]
+    assert requests_mock.last_request.qs["pathname"] == [file_path]
 
 
 @pytest.mark.parametrize(
