@@ -271,10 +271,10 @@ def map_dataset(metax_dataset):
         ],
         "metadata_owner": (
             {
-                "organization": metax_dataset["metadata_owner"][
-                    "organization"
-                ],
-                "user": metax_dataset["metadata_owner"]["user"],
+                "organization": (
+                    metax_dataset["metadata_owner"].get("organization")
+                ),
+                "user": metax_dataset["metadata_owner"].get("user"),
             }
             if metax_dataset["metadata_owner"] is not None
             else None
