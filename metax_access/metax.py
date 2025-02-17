@@ -624,12 +624,15 @@ class Metax:
         :param metadata: file metadata dictionary or list of files
         :returns: JSON response from Metax
         """
-        url = f"{self.baseurl}/files"
+        if not isinstance(metadata, list):
+            metadata = [metadata]
+
+        # TODO: This endpoint does not handle 'include_nulls=true', which
+        # should be fixed
+        url = f"{self.baseurl}/files/post-many"
         response = self.post(
-            url, json=metadata, allowed_status_codes=[400, 404]
+            url, json=metadata, allowed_status_codes=[400]
         )
-        if response.status_code == 404:
-            raise FileNotAvailableError
         if response.status_code == 400:
             # Read the response and parse list of failed files
             try:
@@ -646,16 +649,15 @@ class Metax:
             all_errors = []
             for file_ in failed_files:
                 for error_message in file_["errors"].values():
-                    all_errors.extend(error_message)
-            path_exists_pattern = (
-                "a file with path .* already exists in project .*"
+                    all_errors.append(error_message)
+
+            unique_field_exists_pattern = (
+                "A file with the same value already exists, .*"
             )
-            identifier_exists_pattern = (
-                "a file with given identifier already exists"
-            )
+            file_exists_pattern = "File already exists.*"
             if all(
-                re.search(path_exists_pattern, string)
-                or re.search(identifier_exists_pattern, string)
+                re.search(unique_field_exists_pattern, string)
+                or re.search(file_exists_pattern, string)
                 for string in all_errors
             ):
                 raise ResourceAlreadyExistsError(
