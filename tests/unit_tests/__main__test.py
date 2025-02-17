@@ -1,11 +1,16 @@
 """Tests for `metax_acces.__main__` module."""
+import copy
 import json
 import shutil
-import copy
 
 import pytest
-from tests.unit_tests.utils import (V3_CONTRACT, V3_FILE,
-                                    V3_MINIMUM_TEMPLATE_DATASET)
+
+from tests.unit_tests.utils import (V3_MINIMUM_TEMPLATE_DATASET,
+                                    create_test_v3_dataset,
+                                    create_test_v3_file)
+
+from metax_access.response_mapper import map_file
+
 DATASET = copy.deepcopy(V3_MINIMUM_TEMPLATE_DATASET)
 del DATASET['created']
 del DATASET['modified']
@@ -35,33 +40,33 @@ def mock_default_config(tmpdir, monkeypatch):
             [
                 {
                     'method': 'POST',
-                    'url': 'https://metax.localhost/rest/v2/datasets/'
+                    'url': 'https://metax.localhost/v3/datasets'
                 }
             ],
         ),
-        (
-            ['patch', 'dataset', 'foo', 'test_file.json'],
-            [
-                {
-                    'method': 'GET',
-                    'url': 'https://metax.localhost/rest/v2/datasets/foo'
-                    '?include_user_metadata=true'
-                },
-                {
-                    'method': 'PATCH',
-                    'url': 'https://metax.localhost/rest/v2/datasets/foo'
-                }
-            ]
-        ),
-        (
-            ['delete', 'dataset', 'foo'],
-            [
-                {
-                    'method': 'DELETE',
-                    'url': 'https://metax.localhost/rest/v2/datasets/foo'
-                }
-            ]
-        )
+        # FIXME: Not implemented yet
+        # (
+        #     ['patch', 'dataset', 'foo', 'test_file.json'],
+        #     [
+        #         {
+        #             'method': 'GET',
+        #             'url': 'https://metax.localhost/v3/datasets/foo'
+        #         },
+        #         {
+        #             'method': 'PATCH',
+        #             'url': 'https://metax.localhost/v3/datasets/foo'
+        #         }
+        #     ]
+        # ),
+        # (
+        #     ['delete', 'dataset', 'foo'],
+        #     [
+        #         {
+        #             'method': 'DELETE',
+        #             'url': 'https://metax.localhost/v3/datasets/foo'
+        #         }
+        #     ]
+        # )
 
     ]
 )
@@ -78,24 +83,25 @@ def test_main(requests_mock, tmpdir, arguments, expected_requests, cli_invoke):
     # Mock Metax
     mocked_metax_responses = [
         requests_mock.register_uri(
-            request['method'], request['url'], json={'foo2': 'bar2'}
+            request['method'], request['url'], json=create_test_v3_dataset()
         ) for request in expected_requests
     ]
 
     # Create a test_file
     test_file = tmpdir / 'test_file.json'
-    test_file.write('{"foo1": "bar1"}')
+    test_file.write(json.dumps(create_test_v3_dataset()))
 
     # Run CLI in directory that contains test_file.json
     with tmpdir.as_cwd():
         result = cli_invoke(arguments)
     assert result.exit_code == 0
 
-    # Each expected request should be sent once
+    # Each expected request shouldbe sent once
     for response in mocked_metax_responses:
         assert response.called_once
 
 
+@pytest.mark.xfail(raises=NotImplementedError)
 @pytest.mark.parametrize(
     ('cli_args', 'expected_output'),
     [
@@ -152,39 +158,25 @@ def test_directory_command(requests_mock, cli_args, expected_output,
     "parameters,expected_result",
     [
         # Search file by identifier
-        (['fileid1'], {'id': 'fileid1',
-                       'pathname': None, 
-                       'filename': None, 
-                       'size': None, 
-                       'checksum': None, 
-                       'storage_service': None, 
-                       'csc_project': None,
-                       'dataset_metadata': {
-                           'use_category': None
-                        },
-                        'characteristics': None, 
-                        'characteristics_extension': None}),
-        # Search file by path
-        (['project1:filepath2', '--by-path'],
-         {'id': 'fileid2',
-          'pathname': '/filepath2',
-          'filename': None,
-          'size': None,
-          'checksum': None,
-          'storage_service': None,
-          'csc_project': None,
-          'dataset_metadata':
-            {
-                'use_category': None
-            },
-            'characteristics': None,
-            'characteristics_extension': None
-          }
+        (
+            ['fileid1'],
+            map_file(create_test_v3_file(id="fileid1"))
         ),
+        # Search file by path
+        # FIXME: Not implemented yet
+        # (
+        #     ['project1:filepath2', '--by-path'],
+        #     create_test_v3_file(
+        #         id="fileid2",
+        #         pathname="/filepath2"
+        #     )
+        # ),
         # Delete file by identifier
-        (['fileid1', '--delete'], ''),
+        # FIXME: Not implemented yet
+        # (['fileid1', '--delete'], ''),
         # List datasets of file
-        (['fileid1', '--datasets'], {'foo': 'bar'}),
+        # FIXME: Not implemented yet
+        # (['fileid1', '--datasets'], {'foo': 'bar'}),
     ]
 )
 def test_file_datasets_command(requests_mock, cli_invoke, parameters,
@@ -198,15 +190,15 @@ def test_file_datasets_command(requests_mock, cli_invoke, parameters,
     :param requests_mock: HTTP request mocker
     """
     requests_mock.get(
-        'https://metax.localhost/rest/v2/files/fileid1',
-        json={'identifier': 'fileid1'}
+        'https://metax.localhost/v3/files/fileid1',
+        json=create_test_v3_file(id="fileid1")
     )
     requests_mock.delete(
-        'https://metax.localhost/rest/v2/files/fileid1',
+        'https://metax.localhost/v3/files/fileid1',
         json={}
     )
     requests_mock.get(
-        'https://metax.localhost/rest/v2/files?file_path='
+        'https://metax.localhost/v3/files?file_path='
         'filepath2&project_identifier=project1',
         json={
             'results': [
@@ -222,13 +214,9 @@ def test_file_datasets_command(requests_mock, cli_invoke, parameters,
 
     # Run command and check the result
     result = cli_invoke(['file'] + parameters)
-    print('output')
-    print(result.output)
     if isinstance(expected_result, dict):
-        print(json.loads(result.output))
         assert json.loads(result.output) == expected_result
     else:
-        print(result.output)
         assert result.output == expected_result
 
 
@@ -294,6 +282,7 @@ def test_output(tmpdir, monkeypatch, cli_invoke):
     assert json.loads(output_file.read())['foo'] == 'bar'
 
 
+@pytest.mark.xfail(raises=NotImplementedError)
 @pytest.mark.parametrize(
     ['arguments', 'mock_url_query_string'],
     [
@@ -347,8 +336,10 @@ def test_verify(requests_mock, cli_invoke, mock_default_config,
     --no-verify CLI parameter or by adding `verify=false` to
     configuration file.
     """
-    mocker = requests_mock.get('https://metax.localhost/rest/v2/datasets/1',
-                               json={})
+    mocker = requests_mock.get(
+        'https://metax.localhost/v3/datasets/1',
+        json=create_test_v3_dataset()
+    )
 
     # Create a config file
     mock_default_config.write(

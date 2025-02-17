@@ -7,7 +7,6 @@ from typing import Union
 import requests
 from requests.auth import HTTPBasicAuth
 
-from metax_access import metax_v2
 from metax_access.error import (ContractNotAvailableError,
                                 DataciteGenerationError,
                                 DatasetNotAvailableError,
@@ -58,7 +57,7 @@ class Metax:
         password=None,
         token=None,
         verify=True,
-        api_version="v2",
+        api_version="v3",
     ):
         """Initialize Metax object.
 
@@ -69,20 +68,17 @@ class Metax:
         """
         if not user and not token:
             raise ValueError("Metax user or access token is required.")
-        if api_version not in ("v2", "v3"):
-            raise ValueError(f"API version '{api_version}' is invalid.")
 
         self.username = user
         self.password = password
         self.token = token
         self.url = url
-        if api_version == "v3":
-            self.baseurl = f"{url}/v3"
-        else:
-            self.baseurl = f"{url}/rest/v2"
-            self.rpcurl = f"{url}/rpc/v2"
+        self.baseurl = f"{url}/v3"
         self.verify = verify
-        self.api_version = api_version
+
+        # TODO: Remove once all conditional 'is V2/V3' blocks have been removed
+        # from FDDPS projects
+        self.api_version = "v3"
 
     # pylint: disable=too-many-arguments
     def get_datasets(
@@ -129,19 +125,6 @@ class Metax:
                                         metadata_owner_user.
         :returns: datasets from Metax as json.
         """
-        if self.api_version == "v2":
-            return metax_v2.get_datasets(
-                self,
-                states,
-                limit,
-                offset,
-                pas_filter,
-                metadata_owner_org,
-                metadata_provider_user,
-                ordering,
-                include_user_metadata,
-            )
-
         params = []
         if search is not None:
             params += [("search", search)]
@@ -178,8 +161,6 @@ class Metax:
             to be used as query parameters
         :returns: datasets from Metax as json.
         """
-        if self.api_version == "v2":
-            return metax_v2.query_datasets(self, param_dict)
         raise NotImplementedError("Metax API V3 support not implemented")
 
     def get_datasets_by_ids(
@@ -194,10 +175,6 @@ class Metax:
                             dataset. If not set, all fields are retrieved.
         :returns: List of found datasets
         """
-        if self.api_version == "v2":
-            return metax_v2.get_datasets_by_ids(
-                self, dataset_ids, limit, offset, fields
-            )
         # TODO: Does not have a implementation in v3
         # just looks for the datasets seperately
         params = {}
@@ -221,8 +198,6 @@ class Metax:
                                Deprecated in V3.
         :returns: contracts from Metax as json.
         """
-        if self.api_version == "v2":
-            return metax_v2.get_contracts(self, limit, offset, org_filter)
         params = {}
         params["limit"] = limit
         params["offset"] = offset
@@ -245,9 +220,6 @@ class Metax:
         :param str pid: id or ientifier attribute of contract
         :returns: The contract from Metax as json.
         """
-        if self.api_version == "v2":
-            return metax_v2.get_contract(self, pid)
-
         url = f"{self.baseurl}/contracts/{pid}"
         response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
@@ -262,8 +234,6 @@ class Metax:
                           key/value pairs that will be updated
         :returns: ``None``
         """
-        if self.api_version == "v2":
-            return metax_v2.patch_contract(self, contract_id, data)
         original_data = self.get_contract(contract_id)
         for key in data:
             if isinstance(data[key], dict) and key in original_data:
@@ -282,13 +252,6 @@ class Metax:
         :param bool v2: Parameter used in V2->V3 migration period.
         :returns: dataset as json
         """
-        if self.api_version == "v2":
-            return metax_v2.get_dataset(
-                self,
-                dataset_id,
-                include_user_metadata,
-                v2,
-            )
         url = f"{self.baseurl}/datasets/{dataset_id}"
         response = self.get(
             url,
@@ -303,8 +266,6 @@ class Metax:
 
         :returns: Template as json
         """
-        if self.api_version == "v2":
-            return metax_v2.get_dataset_template(self)
         raise NotImplementedError("Metax API V3 support not implemented")
 
     def patch_dataset(
@@ -317,10 +278,6 @@ class Metax:
                           key/value pairs that will be updated
         :returns: ``None``
         """
-        if self.api_version == "v2":
-            return metax_v2.patch_dataset(
-                self, dataset_id, data, overwrite_objects, v2
-            )
         raise NotImplementedError("Metax API V3 support not implemented")
 
     def set_contract(self, dataset_id, contract_id):
@@ -330,8 +287,6 @@ class Metax:
         :param str contract_if: the new contract id of the dataset
         :returns: ``None``
         """
-        if self.api_version == "v2":
-            return metax_v2.set_contract(self, dataset_id, contract_id)
         data = {"contract": contract_id}
         url = f"{self.baseurl}/datasets/{dataset_id}/preservation"
         response = self.patch(url, json=data)
@@ -343,8 +298,6 @@ class Metax:
         :param str pid: id or identifier attribute of contract
         :returns: The datasets from Metax as json.
         """
-        if self.api_version == "v2":
-            return metax_v2.get_contract_datasets(self, pid)
         url = f"{self.baseurl}/datasets"
         params = {"preservation__contract": pid}
         response = extended_result(url, self, params)
@@ -357,9 +310,6 @@ class Metax:
         :param bool v2: Parameter used in V2->3 migration period.
         :returns: file metadata as json
         """
-        if self.api_version == "v2":
-            return metax_v2.get_file(self, file_id, v2)
-
         url = f"{self.baseurl}/files/{file_id}"
         response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
@@ -381,8 +331,6 @@ class Metax:
         :param project: project id
         :returns: Dict of all the files of a given project
         """
-        if self.api_version == "v2":
-            return metax_v2.get_files_dict(self, project)
         files = []
         url = f"{self.baseurl}/files?limit=10000&csc_project={project}"
         # GET 10000 files every iteration until all files are read
@@ -410,8 +358,6 @@ class Metax:
         :param str path: path of the directory
         :returns: directory identifier
         """
-        if self.api_version == "v2":
-            return metax_v2.get_directory_id(self, project, path)
         raise NotImplementedError("Metax API V3 support not implemented")
 
     def set_preservation_state(self, dataset_id, state, description):
@@ -442,11 +388,6 @@ class Metax:
         :param str description: The value for `preservation_description`
         :returns: ``None``
         """
-        if self.api_version == "v2":
-            return metax_v2.set_preservation_state(
-                self, dataset_id, state, description
-            )
-
         url = f"{self.baseurl}/datasets/{dataset_id}/preservation"
         # TODO: description has a language support, e.g. it expects
         # a dictionary in format {'en': '<desc>', 'und':'<desc>, 'fi':....}
@@ -468,8 +409,6 @@ class Metax:
         :param str dataset_id: id of the dataset
         :returns: ``None``
         """
-        if self.api_version == 'v2':
-            raise NotImplementedError("Metax API V2 support not implemented")
         dataset = self.get_dataset(dataset_id)
         if dataset["preservation"]["contract"] is None:
             raise ValueError("Dataset has no contract set.")
@@ -489,8 +428,6 @@ class Metax:
         :param str reason: The value for `preservation_reason_description`
         :returns: ``None``
         """
-        if self.api_version == "v2":
-            return metax_v2.set_preservation_reason(self, dataset_id, reason)
         url = f"{self.baseurl}/datasets/{dataset_id}/preservation"
         self.patch(url, json={"reason_description": reason})
 
@@ -514,8 +451,6 @@ class Metax:
 
         :param str dataset_id: Id dataset
         """
-        if self.api_version == "v2":
-            raise NotImplementedError("Metax API V2 support not implemented.")
         url = f"{self.baseurl}/datasets/{dataset_id}/preservation"
         self.patch(url, json={"pas_package_created": True})
 
@@ -527,8 +462,6 @@ class Metax:
                           key/value pairs that will be updated
         :returns: JSON response from Metax
         """
-        if self.api_version == "v2":
-            return metax_v2.patch_file(self, file_id, data)
         raise NotImplementedError("Metax API V3 support not implemented")
 
     def patch_file_characteristics(self, file_id, file_characteristics):
@@ -541,11 +474,6 @@ class Metax:
                                     that will be updated are required.
         :returns: JSON response from Metax
         """
-        if self.api_version == "v2":
-            return metax_v2.patch_file_characteristics(
-                self, file_id, file_characteristics
-            )
-
         characteristics_url = f"{self.baseurl}/files/{file_id}/characteristics"
         extension_url = f"{self.baseurl}/files/{file_id}"
         response = self.patch(
@@ -582,12 +510,6 @@ class Metax:
                           a dummy DOI if the actual DOI is not yet generated
         :returns: Datacite XML as string
         """
-        if self.api_version == "v2":
-            return metax_v2.get_datacite(
-                self,
-                dataset_id,
-                dummy_doi,
-            )
         url = f"{self.baseurl}/datasets/{dataset_id}/metadata-download"
         params = {"format": "datacite"}
         response = self.get(
@@ -613,8 +535,6 @@ class Metax:
 
         :returns: total count of files
         """
-        if self.api_version == "v2":
-            return metax_v2.get_dataset_file_count(self, dataset_id)
         url = f"{self.baseurl}/datasets/{dataset_id}"
         response = self.get(url, allowed_status_codes=[404])
         if response.status_code == 404:
@@ -631,8 +551,6 @@ class Metax:
         :param str dataset_id: id or identifier attribute of dataset
         :returns: metadata of dataset files as json
         """
-        if self.api_version == "v2":
-            return metax_v2.get_dataset_files(self, dataset_id)
         url = f"{self.baseurl}/datasets/{dataset_id}/files?limit=10000"
         result = []
         while url is not None:
@@ -650,8 +568,6 @@ class Metax:
         :param file_id: File identifier
         :returns: List of datasets associated with file_id
         """
-        if self.api_version == "v2":
-            return metax_v2.get_file_datasets(self, file_id)
         # V3 endpoint
         # 'https://metax.fd-test.csc.fi/v3/files/datasets?relations=false'
         raise NotImplementedError("Metax API V3 support not implemented")
@@ -663,8 +579,6 @@ class Metax:
         :returns: Dictionary with the format
                   {file_identifier: [dataset_identifier1, ...]}
         """
-        if self.api_version == "v2":
-            return metax_v2.get_file2dataset_dict(self, file_ids)
         if not file_ids:
             # Querying with an empty list of file IDs causes an error
             # with Metax V2 and is silly anyway, since the result would be
@@ -680,8 +594,6 @@ class Metax:
         :param file_id: file identifier
         :returns: JSON response from Metax
         """
-        if self.api_version == "v2":
-            return metax_v2.delete_file(self, file_id)
         raise NotImplementedError("Metax API V3 support not implemented")
 
     def delete_files(self, file_id_list):
@@ -690,9 +602,6 @@ class Metax:
         :param file_id_list: List of ids to delete from Metax
         :returns: JSON returned by Metax
         """
-        if self.api_version == "v2":
-            return metax_v2.delete_files(self, file_id_list)
-
         url = f"{self.baseurl}/files/delete-many"
         response = self.delete(
             url,
@@ -707,8 +616,6 @@ class Metax:
         :param dataset_id: dataset identifier
         :returns: ``None``
         """
-        if self.api_version == "v2":
-            return metax_v2.delete_dataset(self, dataset_id)
         raise NotImplementedError("Metax API V3 support not implemented")
 
     def post_file(self, metadata: Union[MetaxFile, list[MetaxFile]]):
@@ -717,11 +624,6 @@ class Metax:
         :param metadata: file metadata dictionary or list of files
         :returns: JSON response from Metax
         """
-        if self.api_version == "v2":
-            return metax_v2.post_file(
-                self,
-                metadata,
-            )
         url = f"{self.baseurl}/files"
         response = self.post(
             url, json=metadata, allowed_status_codes=[400, 404]
@@ -770,8 +672,6 @@ class Metax:
         :param metadata: dataset metadata dictionary
         :returns: JSON response from Metax
         """
-        if self.api_version == "v2":
-            return metax_v2.post_dataset(self, metadata)
         url = f"{self.baseurl}/datasets"
         response = self.post(url, json=metadata)
         return map_dataset(response.json())
@@ -782,8 +682,6 @@ class Metax:
         :param metadata: contract metadata dictionary
         :returns: JSON response from Metax
         """
-        if self.api_version == "v2":
-            return metax_v2.post_contract(self, metadata)
         url = f"{self.baseurl}/contracts"
         response = self.post(url, json=metadata)
         return map_contract(response.json())
@@ -794,8 +692,6 @@ class Metax:
         :param dataset_id: contract identifier
         :returns: ``None``
         """
-        if self.api_version == "v2":
-            return metax_v2.delete_contract(self, contract_id)
         raise NotImplementedError("Metax API V3 support not implemented")
 
     def get_project_directory(self, project, path, dataset_identifier=None):
@@ -808,13 +704,6 @@ class Metax:
                                        dataset
         :returns: directory metadata
         """
-        if self.api_version == "v2":
-            return metax_v2.get_project_directory(
-                self,
-                project,
-                path,
-                dataset_identifier,
-            )
         raise NotImplementedError(
             "Metax API V3 support will not be implemented. "
             "Use `get_dataset_directory` instead."
@@ -826,11 +715,6 @@ class Metax:
         :param dataset_id: Dataset identifier
         :param path: Path of the directory
         """
-        if self.api_version == "v2":
-            raise NotImplementedError(
-                "This is a V3 only API. Get with the times."
-            )
-
         url = f"{self.baseurl}/datasets/{dataset_id}/directories"
         response = self.get(
             url, params={"path": path, "limit": 10_000},
@@ -867,8 +751,6 @@ class Metax:
         :param str path: path of the file
         :returns: file metadata
         """
-        if self.api_version == "v2":
-            return metax_v2.get_project_file(self, project, path)
         url = f"{self.baseurl}/files"
         result = extended_result(
             url, self, params={"pathname": path, "csc_project": project}
@@ -889,11 +771,6 @@ class Metax:
 
         :param dataset_id: Dataset identifier
         """
-        if self.api_version == "v2":
-            raise ValueError(
-                "Dataset locking not available for Metax V2"
-            )
-
         # Lock the dataset first; this should hopefully prevent files
         # from being added/removed, which is probably the lesser evil.
         self.request(
@@ -924,11 +801,6 @@ class Metax:
 
         :param dataset_id: Dataset identifier
         """
-        if self.api_version == "v2":
-            raise ValueError(
-                "Dataset locking not available for Metax V2"
-            )
-
         # Unlock files first; if we unlock the dataset first there is a small
         # chance that files could be removed from the dataset, meaning they
         # won't be unlocked.
@@ -958,10 +830,6 @@ class Metax:
 
         :returns: Reference data for file formats
         """
-        if self.api_version == "v2":
-            error = "This method has only Metax API V3 support"
-            raise NotImplementedError(error)
-
         url = f"{self.baseurl}/reference-data/file-format-versions"
         params = {"pagination": False}
         response = self.get(url, params=params)
@@ -993,28 +861,19 @@ class Metax:
         if "verify" not in kwargs:
             kwargs["verify"] = self.verify
 
-        if self.api_version == "v3":
-            try:
-                kwargs.setdefault("params", {}).setdefault(
-                    "include_nulls", True
-                )
-            except (AttributeError, TypeError):
-                # 'params' is a 'param -> list[value]' mapping instead of
-                # 'param -> value' mapping. Add `include_nulls` at the
-                # beginning; this ensures any explicit 'include_nulls' provided
-                # by the caller will be honored.
-                kwargs["params"].insert(0, ("include_nulls", True))
+        try:
+            kwargs.setdefault("params", {}).setdefault(
+                "include_nulls", True
+            )
+        except (AttributeError, TypeError):
+            # 'params' is a 'param -> list[value]' mapping instead of
+            # 'param -> value' mapping. Add `include_nulls` at the
+            # beginning; this ensures any explicit 'include_nulls' provided
+            # by the caller will be honored.
+            kwargs["params"].insert(0, ("include_nulls", True))
 
         if self.token:
-            if self.api_version == "v2":
-                if "headers" in kwargs:
-                    kwargs["headers"]["Authorization"] = f"Bearer {self.token}"
-                else:
-                    kwargs["headers"] = {
-                        "Authorization": f"Bearer {self.token}"
-                    }
-            if self.api_version == "v3":
-                kwargs["headers"] = {"Authorization": f"Token {self.token}"}
+            kwargs["headers"] = {"Authorization": f"Token {self.token}"}
         else:
             kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
 

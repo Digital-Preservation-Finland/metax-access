@@ -60,6 +60,5 @@ def metax_v3():
     return Metax(
         "https://foobar",
         user="tpas", password="password",
-        api_version="v3",
         verify=False
     )
