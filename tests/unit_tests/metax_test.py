@@ -8,8 +8,8 @@ import lxml.etree
 import pytest
 import requests
 
-from metax_access import (DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
-                          DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION,
+from metax_access import (DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION,
+                          DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
                           Metax)
 from metax_access.error import (ContractNotAvailableError,
                                 DataCatalogNotAvailableError,
@@ -628,7 +628,17 @@ def test_post_file(requests_mock, metax):
     Test that HTTP POST request is sent to correct url.
     """
     url = f"{METAX_URL}/v3/files/post-many"
-    requests_mock.post(url, json={"ide": "1"})
+    requests_mock.post(
+        url,
+        json={
+            "success": [
+                {
+                    "object": create_test_v3_file(),
+                    "action": "insert"
+                }
+            ]
+        }
+    )
 
     metax.post_file({"id": "1"})
 
@@ -913,7 +923,7 @@ def test_post_multiple_files(
     )
 
     with expectation as exception_info:
-        metax.post_file(
+        metax.post_files(
             [
                 {
                     "id": "1",

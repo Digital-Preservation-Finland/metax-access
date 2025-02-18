@@ -2,7 +2,6 @@
 
 import logging
 import re
-from typing import Union
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -618,10 +617,20 @@ class Metax:
         """
         raise NotImplementedError("Metax API V3 support not implemented")
 
-    def post_file(self, metadata: Union[MetaxFile, list[MetaxFile]]):
-        """Post file metadata.
+    def post_file(self, metadata: MetaxFile) -> MetaxFile:
+        """Create single file
 
-        :param metadata: file metadata dictionary or list of files
+        :param metadata: Metadata dictionary
+        :returns: Created metadata
+        """
+        return map_file(
+            self.post_files([metadata])["success"][0]["object"]
+        )
+
+    def post_files(self, metadata: list[MetaxFile]):
+        """Create multiple files
+
+        :param metadata: list of files
         :returns: JSON response from Metax
         """
         if not isinstance(metadata, list):
