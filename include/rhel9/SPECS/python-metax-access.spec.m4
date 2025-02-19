@@ -49,9 +49,6 @@ export SETUPTOOLS_SCM_PRETEND_VERSION=%{file_version}
 %pyproject_install
 %pyproject_save_files metax_access
 
-# Copy config file to /etc/metax.cfg with correct permissions
-install -D -m 0644 include/etc/metax.cfg %{buildroot}%{_sysconfdir}/metax.cfg
-
 # TODO: executables with "-3" suffix are added to maintain compatibility with our systems.
 # executables with "-3" suffix should be deprecated.
 cp %{buildroot}%{_bindir}/metax_access %{buildroot}%{_bindir}/metax_access-3
@@ -59,7 +56,6 @@ cp %{buildroot}%{_bindir}/metax_access %{buildroot}%{_bindir}/metax_access-3
 %files -n python3-metax-access -f %{pyproject_files}
 %{_bindir}/metax_access
 %{_bindir}/metax_access-3
-%config(noreplace) %{_sysconfdir}/metax.cfg
 %license LICENSE
 %doc README.rst
 
