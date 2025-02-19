@@ -153,15 +153,6 @@ class Metax:
             ]
         return json
 
-    def query_datasets(self, param_dict):
-        """Get datasets from metax based on query parameters.
-
-        :param dict param_dict: a dictionary containing attribute-value -pairs
-            to be used as query parameters
-        :returns: datasets from Metax as json.
-        """
-        raise NotImplementedError("Metax API V3 support not implemented")
-
     def get_datasets_by_ids(
         self, dataset_ids, limit=1000000, offset=0, fields=None
     ):
@@ -260,25 +251,6 @@ class Metax:
             raise DatasetNotAvailableError
         return map_dataset(response.json())
 
-    def get_dataset_template(self):
-        """Get minimal dataset template.
-
-        :returns: Template as json
-        """
-        raise NotImplementedError("Metax API V3 support not implemented")
-
-    def patch_dataset(
-        self, dataset_id, data, overwrite_objects=False, v2=False
-    ):
-        """Patch a dataset.S
-
-        :param str dataset_id: id or identifier of the dataset
-        :param dict data: A dataset dictionary that contains only the
-                          key/value pairs that will be updated
-        :returns: ``None``
-        """
-        raise NotImplementedError("Metax API V3 support not implemented")
-
     def set_contract(self, dataset_id, contract_id):
         """Update the contract of a dataset.
 
@@ -342,22 +314,6 @@ class Metax:
                 "storage_service": _file["storage_service"],
             }
         return file_dict
-
-    def get_directory_id(
-        self,
-        project,
-        path,
-    ):
-        """Get the identifier of a direcotry with project and a path.
-
-        The directory id will be deprecated in Metax V3 but the V2's
-        directory identifier is available with this method.
-
-        :param str project: project identifier of the directory
-        :param str path: path of the directory
-        :returns: directory identifier
-        """
-        raise NotImplementedError("Metax API V3 support not implemented")
 
     def set_preservation_state(self, dataset_id, state, description):
         """Set preservation state of dataset.
@@ -452,16 +408,6 @@ class Metax:
         """
         url = f"{self.baseurl}/datasets/{dataset_id}/preservation"
         self.patch(url, json={"pas_package_created": True})
-
-    def patch_file(self, file_id, data):
-        """Patch file metadata.
-
-        :param str file_id: identifier of the file
-        :param dict data: A file metadata dictionary that contains only the
-                          key/value pairs that will be updated
-        :returns: JSON response from Metax
-        """
-        raise NotImplementedError("Metax API V3 support not implemented")
 
     def patch_file_characteristics(self, file_id, file_characteristics):
         """Patch file characteristics ja file_characteristics_extension
@@ -561,16 +507,6 @@ class Metax:
 
         return [map_file(file) for file in result]
 
-    def get_file_datasets(self, file_id):
-        """Get a list of research datasets associated with file_id.
-
-        :param file_id: File identifier
-        :returns: List of datasets associated with file_id
-        """
-        # V3 endpoint
-        # 'https://metax.fd-test.csc.fi/v3/files/datasets?relations=false'
-        raise NotImplementedError("Metax API V3 support not implemented")
-
     def get_file2dataset_dict(self, file_ids):
         """Get a dict of {file_identifier: [dataset_identifier...] mappings
 
@@ -587,14 +523,6 @@ class Metax:
         response = self.post(url, json=file_ids)
         return response.json()
 
-    def delete_file(self, file_id):
-        """Delete metadata of a file.
-
-        :param file_id: file identifier
-        :returns: JSON response from Metax
-        """
-        raise NotImplementedError("Metax API V3 support not implemented")
-
     def delete_files(self, file_id_list):
         """Delete file metadata from Metax.
 
@@ -608,24 +536,6 @@ class Metax:
         )
 
         return response
-
-    def delete_dataset(self, dataset_id):
-        """Delete metadata of dataset.
-
-        :param dataset_id: dataset identifier
-        :returns: ``None``
-        """
-        raise NotImplementedError("Metax API V3 support not implemented")
-
-    def post_file(self, metadata: MetaxFile) -> MetaxFile:
-        """Create single file
-
-        :param metadata: Metadata dictionary
-        :returns: Created metadata
-        """
-        return map_file(
-            self.post_files([metadata])["success"][0]["object"]
-        )
 
     def post_files(self, metadata: list[MetaxFile]):
         """Create multiple files
@@ -696,29 +606,6 @@ class Metax:
         url = f"{self.baseurl}/contracts"
         response = self.post(url, json=metadata)
         return map_contract(response.json())
-
-    def delete_contract(self, contract_id):
-        """Delete metadata of contract.
-
-        :param dataset_id: contract identifier
-        :returns: ``None``
-        """
-        raise NotImplementedError("Metax API V3 support not implemented")
-
-    def get_project_directory(self, project, path, dataset_identifier=None):
-        """Get directory metadata, directories, and files of project by path.
-
-        :param str project: project identifier of the directory
-        :param str path: path of the directory
-        :param str dataset_identifier: Only list files and directories
-                                       that are part of specified
-                                       dataset
-        :returns: directory metadata
-        """
-        raise NotImplementedError(
-            "Metax API V3 support will not be implemented. "
-            "Use `get_dataset_directory` instead."
-        )
 
     def get_dataset_directory(self, dataset_id: str, path: str):
         """Get directory metadata, directories and files for given dataset.

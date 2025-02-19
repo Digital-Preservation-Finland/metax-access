@@ -278,35 +278,6 @@ def test_get_dataset_file_count_not_found(requests_mock, metax):
         metax.get_dataset_file_count("does-not-exist")
 
 
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_patch_dataset(requests_mock, metax):
-    """Test ``patch_dataset`` function.
-
-    Patch a dataset with few updated key/value pairs and check that correct
-    HTTP request was sent to Metax.
-
-    :returns: ``None``
-    """
-    requests_mock.patch(METAX_REST_URL + "/datasets/test_id", json={})
-    requests_mock.get(
-        METAX_REST_URL + "/datasets/test_id",
-        json={
-            "research_dataset": {
-                "provenance": [{"foo": "bar"}, {"fiz": "buz"}]
-            }
-        },
-    )
-
-    update = {"foo1": "bar1", "research_dataset": {"foo2": "bar2"}}
-    metax.patch_dataset("test_id", update, False, True)
-    assert requests_mock.last_request.method == "PATCH"
-
-    request_body = requests_mock.last_request.json()
-    assert isinstance(request_body["research_dataset"]["provenance"], list)
-    assert request_body["research_dataset"]["foo2"] == "bar2"
-    assert request_body["foo1"] == "bar1"
-
-
 def test_set_contract(requests_mock, metax):
     """Test ``set_contract`` function.
 
@@ -502,47 +473,6 @@ def test_set_pas_package_created(requests_mock, metax):
         == {"pas_package_created": True}
 
 
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_patch_file(requests_mock, metax):
-    """Test ``patch_file`` function.
-
-    Metadata in Metax is modified by sending HTTP PATCH request with modified
-    metadata in JSON format. This test checks that correct HTTP request is sent
-    to Metax in V2 format, and that patch_file returns JSON response from Metax.
-
-    :returns: None
-    """
-    # Mock Metax
-    requests_mock.get(METAX_REST_URL + "/files/test_id", json={})
-    requests_mock.patch(METAX_REST_URL + "/files/test_id", json={"foo": "bar"})
-
-    # Patch a file
-    sample_data = {
-        "id": "42",
-        "checksum": "sha256:212f954060735c8aea7af705e0b268723148d37898339f21014c24dc5cf6736b",
-        "file_characteristics": {
-            "file_format": "text/plain",
-            "format_version": "1.0",
-            "encoding": "UTF-8",
-        },
-    }
-    assert metax.patch_file("test_id", sample_data) == {"foo": "bar"}
-
-    # Check that the JSON was converted to V2
-    file_v2 = requests_mock.last_request.json()
-    assert file_v2 == {
-        "id": "42",
-        "identifier": "42",
-        "checksum": {
-            "algorithm": "SHA-256",
-            "value": "212f954060735c8aea7af705e0b268723148d37898339f21014c24dc5cf6736b",
-        }
-    }
-
-    # Check the method of last HTTP request
-    assert requests_mock.last_request.method == "PATCH"
-
-
 @pytest.mark.parametrize("patch_characteristics_status", [200, 404])
 def test_patch_file_characteristics(requests_mock, metax,
                                     patch_characteristics_status):
@@ -590,174 +520,6 @@ def test_patch_file_characteristics(requests_mock, metax,
     assert patch_file.called_once
     assert patch_file.last_request.json() \
         == {"characteristics_extension": extension}
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_delete_file(requests_mock, metax):
-    """Test ``delete_file`` function.
-
-    Test that HTTP DELETE request is sent to correct url.
-    """
-    requests_mock.delete(
-        METAX_REST_URL + "/files/file1", json={"deleted_files_count": 1}
-    )
-
-    metax.delete_file("file1")
-
-    assert requests_mock.last_request.method == "DELETE"
-    assert requests_mock.last_request.hostname == "foobar"
-    assert requests_mock.last_request.path == "/rest/v2/files/file1"
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_delete_dataset(requests_mock, metax):
-    """Test ``delete_dataset`` function.
-
-    Test that HTTP DELETE request is sent to correct url.
-    """
-    requests_mock.delete(METAX_REST_URL + "/datasets/dataset1")
-
-    metax.delete_dataset("dataset1")
-
-    assert requests_mock.last_request.method == "DELETE"
-    assert requests_mock.last_request.hostname == "foobar"
-    assert requests_mock.last_request.path == "/rest/v2/datasets/dataset1"
-
-
-def test_post_file(requests_mock, metax):
-    """Test ``post_file`` function.
-
-    Test that HTTP POST request is sent to correct url.
-    """
-    url = f"{METAX_URL}/v3/files/post-many"
-    requests_mock.post(
-        url,
-        json={
-            "success": [
-                {
-                    "object": create_test_v3_file(),
-                    "action": "insert"
-                }
-            ]
-        }
-    )
-
-    metax.post_file({"id": "1"})
-
-    assert requests_mock.last_request.method == "POST"
-    assert requests_mock.last_request.hostname == "foobar"
-    assert requests_mock.last_request.path == "/v3/files/post-many"
-
-
-@pytest.mark.parametrize(
-    ("response", "expected_exception"),
-    [
-        # Trying to post file, path already exists
-        (
-            {
-                "failed": [
-                    {
-                        "errors": {
-                            "pathname": (
-                                "A file with the same value already exists, "
-                                "id='foo'"
-                            )
-                        }
-                    }
-                ]
-            },
-            ResourceAlreadyExistsError("Some of the files already exist."),
-        ),
-        # Unknown error
-        (
-            {
-                "failed": [
-                    {
-                        "errors": {
-                            "pathname": "Some other error in file path"
-                        }
-                    }
-                ]
-            },
-            requests.HTTPError(
-                "400 Client Error: Bad Request for url: "
-                "https://foobar/v3/files/post-many.*"
-            ),
-        ),
-        # Multiple files that already exist
-        (
-            {
-                "failed": [
-                    {
-                        "object": {"id": "foo1", "pathname": "/foo1"},
-                        "errors": {
-                            "pathname": (
-                                "A file with the same value already exists, "
-                                "id='foo1'"
-                            )
-                        },
-                    },
-                    {
-                        "object": {"id": "foo2", "pathname": "/foo2"},
-                        "errors": {
-                            "pathname": (
-                                "A file with the same value already exists, "
-                                "id='foo2'"
-                            )
-                        },
-                    },
-                ]
-            },
-            ResourceAlreadyExistsError("Some of the files already exist."),
-        ),
-        # Multiple files, one already exists, one has other error
-        (
-            {
-                "failed": [
-                    {
-                        "errors": {
-                            "pathname": (
-                                "A file with the same value already exists, "
-                                "id='foo'"
-                            )
-                        }
-                    },
-                    {"errors": {"pathname": "Other error"}},
-                ]
-            },
-            requests.HTTPError(
-                "400 Client Error: Bad Request for url: "
-                "https://foobar/v3/files/post-many.*"
-            ),
-        ),
-    ],
-)
-def test_post_file_bad_request(
-        requests_mock, response, expected_exception, metax):
-    """Test post file failures.
-
-    If Metax responds with HTTP 400 "Bad request" error, an exception
-    should be raised.
-
-    :param response: Mocked response from Metax
-    :param expected_exception: expected exception
-    """
-    requests_mock.post(
-        f"{METAX_URL}/v3/files/post-many",
-        status_code=400,
-        json=response,
-        reason="Bad Request",
-    )
-
-    with pytest.raises(
-        expected_exception.__class__, match=str(expected_exception)
-    ):
-        metax.post_file(
-            {
-                "id": "1",
-                "pathname": "/foo",
-            }
-        )
 
 
 @pytest.mark.parametrize(
@@ -972,54 +734,6 @@ def test_post_dataset(requests_mock, metax):
     assert requests_mock.last_request.path == "/v3/datasets"
 
 
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_query_datasets(requests_mock, metax):
-    """Test ``query_datasets`` function.
-
-    Mocks Metax to return simple JSON as HTTP response and checks that
-    the returned dict contains the correct values.
-
-    :returns: ``None``
-    """
-    requests_mock.get(
-        METAX_REST_URL + "/datasets?preferred_identifier=foobar",
-        json = {
-            "results": [
-                {
-                    "identifier": "foo",
-                    'preservation_identifier': 1234,
-                    'preservation_dataset_version': {
-                        'preferred_identifier': 'foobar',
-                        'identifier': 123
-                    }
-                }
-            ]
-        },
-    )
-    requests_mock.get(METAX_REST_URL + "/datasets/foo/files", json={})
-    requests_mock.get(
-        METAX_REST_URL
-        + "/datasets/foo?include_user_metadata=true&file_details=true",
-        json={},
-    )
-    datasets = metax.query_datasets({"preferred_identifier": "foobar"})
-    assert len(datasets["results"]) == 1
-    expected_dataset = copy.deepcopy(DATASET)
-    expected_dataset['preservation'] = {
-        'contract': None,
-        'description': None,
-        'reason_description': None,
-        'state': -1,
-        'dataset_version': {
-            'id': 123,
-            'persistent_identifier': 'foobar',
-            'preservation_state': -1
-        }
-    }
-    expected_dataset['id'] = 'foo'
-    _check_values(datasets['results'][0], expected_dataset)
-
-
 def test_get_dataset_by_ids(requests_mock, metax):
     """Test ``get_datasets_by_ids`` function.
 
@@ -1148,22 +862,6 @@ def test_get_dataset_directory(requests_mock, metax_v3):
 
     assert len(result["files"]) == 1
     assert result["files"][0]["filename"] == "test.txt"
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_get_directory_id(requests_mock, metax):
-    """Test get_directory_id function.
-
-    :param requets_mock: HTTP request mocker
-    """
-    metadata = {"identifier": "dir:id:1"}
-    requests_mock.get(METAX_REST_URL + "/directories/files", json=metadata)
-    assert (
-        metax.get_directory_id("foo", "/testdir")
-        == metadata["identifier"]
-    )
-    assert requests_mock.last_request.qs["project"] == ["foo"]
-    assert requests_mock.last_request.qs["path"] == ["/testdir"]
 
 
 @pytest.mark.parametrize(
@@ -1451,16 +1149,6 @@ def test_lock_dataset(requests_mock, metax_v3, action):
     assert dataset_patch.request_history[0].json() == {
         "pas_process_running": expected_status
     }
-
-
-@pytest.mark.xfail(raises=NotImplementedError)
-def test_get_dataset_template(requests_mock, metax):
-    """Test get_dataset_template function."""
-    requests_mock.get(
-        METAX_RPC_URL + "/datasets/get_minimal_dataset_template",
-        json={"foo": "bar"},
-    )
-    assert metax.get_dataset_template() == {"foo": "bar"}
 
 
 def test_get_file_format_versions(requests_mock, metax):

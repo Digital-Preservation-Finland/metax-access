@@ -52,14 +52,6 @@ class ContractNotAvailableError(ResourceNotAvailableError):
         super().__init__("Contract not found")
 
 
-class DataCatalogNotAvailableError(ResourceNotAvailableError):
-    """Exception raised when contract is not found from metax."""
-
-    def __init__(self):
-        """Init DataCatalogNotAvailableError."""
-        super().__init__("Datacatalog not found")
-
-
 class DirectoryNotAvailableError(ResourceNotAvailableError):
     """Exception raised when directory is not found from metax."""
 
