@@ -2,20 +2,19 @@
 """Tests for ``metax_access.metax`` module."""
 import copy
 from contextlib import ExitStack as does_not_raise
-from urllib.parse import quote, urlencode
+from urllib.parse import urlencode
 
 import lxml.etree
 import pytest
 import requests
 
-from metax_access import (DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION,
-                          DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
-                          Metax)
+from metax_access import (
+    DS_STATE_REJECTED_IN_DIGITAL_PRESERVATION_SERVICE,
+    Metax,
+)
 from metax_access.error import (ContractNotAvailableError,
-                                DataCatalogNotAvailableError,
                                 DataciteGenerationError,
                                 DatasetNotAvailableError,
-                                DirectoryNotAvailableError,
                                 FileNotAvailableError,
                                 ResourceAlreadyExistsError)
 from tests.unit_tests.utils import (V3_CONTRACT, V3_FILE,
@@ -77,6 +76,7 @@ def test_get_dataset_files(requests_mock, metax):
 
     assert expected_output == files
 
+
 def test_get_file(requests_mock, metax):
     """File metadata is retrived with ``get_file`` method and
     the output is compared to the expected output.
@@ -91,6 +91,7 @@ def test_get_file(requests_mock, metax):
     file = metax.get_file(file_id)
     assert file == expected_file
 
+
 def test_get_datasets(requests_mock, caplog, metax):
     """Test ``get_datasets`` function.
 
@@ -100,8 +101,9 @@ def test_get_datasets(requests_mock, caplog, metax):
     :returns: None
     """
     ids = ['foo', 'bar']
-    expected_datasets = [_update_dict(DATASET, {'id': id}) for id in ids]
-    json = [_update_dict(V3_MINIMUM_TEMPLATE_DATASET, {'id': id}) for id in ids]
+    expected_datasets = [_update_dict(DATASET, {'id': id_}) for id_ in ids]
+    json = [_update_dict(V3_MINIMUM_TEMPLATE_DATASET, {'id': id_})
+            for id_ in ids]
     metax_mock = requests_mock.get(
         f"{metax.baseurl}/datasets/foo/files", json={}
     )
@@ -159,6 +161,7 @@ def test_get_datasets_with_parameters(requests_mock, metax):
 
     _check_values(datasets[0], DATASET)
 
+
 def test_get_dataset(requests_mock, metax):
     """Test ``get_dataset`` function.
 
@@ -197,13 +200,13 @@ def test_get_contracts(requests_mock, metax):
     del contract['id']
     expected_contracts = [
         _update_dict(contract,
-                     {'id': id})
-                     for id in ids
+                     {'id': id_})
+                     for id_ in ids
     ]
     v3_output_contracts = [
         _update_dict(contract,
-                     {'id': id})
-                     for id in ids
+                     {'id': id_})
+                     for id_ in ids
     ]
     json = {
             "results": v3_output_contracts
@@ -242,7 +245,7 @@ def test_get_contract(requests_mock, metax):
 
 
 def test_get_dataset_file_count(requests_mock, metax):
-    """Test retrieving the total file count for a dataset"""
+    """Test retrieving the total file count for a dataset."""
 
     def _request_has_correct_params(req):
         return req.qs["file_fields"] == ["id"]
@@ -302,6 +305,7 @@ def test_patch_dataset(requests_mock, metax):
     assert isinstance(request_body["research_dataset"]["provenance"], list)
     assert request_body["research_dataset"]["foo2"] == "bar2"
     assert request_body["foo1"] == "bar1"
+
 
 def test_set_contract(requests_mock, metax):
     """Test ``set_contract`` function.
@@ -424,9 +428,8 @@ def test_copy_dataset_to_pas_catalog(requests_mock, metax):
     dataset_id = "test_id"
     contract_id = "contract_id"
     url = (
-            f"{metax.baseurl}/datasets/"
-            + f"{dataset_id}/create-preservation-version"
-        )
+        f"{metax.baseurl}/datasets/{dataset_id}/create-preservation-version"
+    )
     dataset_url = f"{metax.baseurl}/datasets/{dataset_id}"
     response = copy.deepcopy(V3_MINIMUM_TEMPLATE_DATASET)
     response['id'] = dataset_id
@@ -451,9 +454,8 @@ def test_copy_dataset_to_pas_catalog_no_contract(requests_mock, metax):
     """
     dataset_id = 'dataset_id'
     url = (
-            f"{metax.baseurl}/datasets/"
-            + f"{dataset_id}/create-preservation-version"
-        )
+        f"{metax.baseurl}/datasets/{dataset_id}/create-preservation-version"
+    )
     dataset_url = f"{metax.baseurl}/datasets/{dataset_id}"
     response = copy.deepcopy(V3_MINIMUM_TEMPLATE_DATASET)
     response['id'] = dataset_id
@@ -974,8 +976,8 @@ def test_post_dataset(requests_mock, metax):
 def test_query_datasets(requests_mock, metax):
     """Test ``query_datasets`` function.
 
-    Mocks Metax to return simple JSON as HTTP response and checks that the
-    returned dict contains the correct values.
+    Mocks Metax to return simple JSON as HTTP response and checks that
+    the returned dict contains the correct values.
 
     :returns: ``None``
     """
@@ -1165,7 +1167,7 @@ def test_get_directory_id(requests_mock, metax):
 
 
 @pytest.mark.parametrize(
-    "file_path,results,results_v3",
+    ("file_path", "results", "results_v3"),
     [
         # Only one matching file in Metax
         (
@@ -1216,7 +1218,7 @@ def test_get_project_file(file_path, results, results_v3, requests_mock, metax):
 
 
 @pytest.mark.parametrize(
-    "results,results_v3",
+    ("results", "results_v3"),
     (
         # One match is found, but it is not exact match
         ([{"file_path": "/testdir/testfile/foo", "identifier": "foo"}],
@@ -1278,7 +1280,7 @@ def test_get_file2dataset_dict_empty(requests_mock, metax):
 
 @pytest.mark.parametrize(
     ("url", "method", "parameters", "expected_error"),
-    (
+    [
         ("/datasets", "get_datasets", [], DatasetNotAvailableError),
         (
             "/contracts",
@@ -1298,7 +1300,7 @@ def test_get_file2dataset_dict_empty(requests_mock, metax):
             ["foo"],
             DatasetNotAvailableError,
         ),
-    ),
+    ],
 )
 def test_get_http_404(requests_mock, metax, url, method, parameters, expected_error):
     """Test a method when Metax responds with 404 "Not found" error.
@@ -1318,7 +1320,7 @@ def test_get_http_404(requests_mock, metax, url, method, parameters, expected_er
 
 @pytest.mark.parametrize(
     ("url", "method", "parameters"),
-    (
+    [
         (
             "/datasets?include_nulls=True&limit=1000000&offset=0",
             "get_datasets",
@@ -1345,7 +1347,7 @@ def test_get_http_404(requests_mock, metax, url, method, parameters, expected_er
             "get_dataset_files",
             ["foo"]
         ),
-    ),
+    ],
 )
 def test_get_http_503(requests_mock, metax, caplog, url, method, parameters):
     """Test a method when Metax responds with 503 "Server error".
@@ -1381,8 +1383,8 @@ def test_get_http_503(requests_mock, metax, caplog, url, method, parameters):
 def test_set_preservation_state_http_503(requests_mock, metax):
     """Test ``set_preservation_state`` function.
 
-    ``set_preservation_state`` should throw a HTTPError when requests.patch()
-    returns http 503 error.
+    ``set_preservation_state`` should throw a HTTPError when
+    requests.patch() returns http 503 error.
     """
     requests_mock.patch(
         f"{metax.baseurl}/datasets/foobar/preservation",
@@ -1395,7 +1397,7 @@ def test_set_preservation_state_http_503(requests_mock, metax):
 
 @pytest.mark.parametrize("action", ["lock", "unlock"])
 def test_lock_dataset(requests_mock, metax_v3, action):
-    """Test locking/unlocking a dataset
+    """Test locking/unlocking a dataset.
 
     `pas_process_running` will be set to True or False for the dataset and its
     files, depending on whether the dataset is being locked or unlocked
