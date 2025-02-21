@@ -23,11 +23,6 @@ from tests.unit_tests.utils import (V3_CONTRACT, V3_FILE,
                                     create_test_v3_file)
 
 METAX_URL = "https://foobar"
-METAX_REST_ROOT_URL = f"{METAX_URL}/rest"
-METAX_REST_URL = f"{METAX_URL}/rest/v2"
-METAX_RPC_URL = f"{METAX_URL}/rpc/v2"
-METAX_USER = "tpas"
-METAX_PASSWORD = "password"
 
 DATASET = copy.deepcopy(V3_MINIMUM_TEMPLATE_DATASET)
 del DATASET['created']
@@ -299,11 +294,6 @@ def test_set_contract(requests_mock, metax):
     dataset_id = 'test_id'
     url = f'{metax.baseurl}/datasets/{dataset_id}/preservation'
     requests_mock.patch(url, json={})
-    # TODO: Only used in v2 test
-    requests_mock.get(
-        metax.baseurl + "/datasets/test_id",
-        json={}
-    )
 
     metax.set_contract(dataset_id, 'new:contract:id')
     assert requests_mock.last_request.method == "PATCH"
@@ -926,16 +916,15 @@ def test_get_project_file(file_path, results, results_v3, requests_mock, metax):
 
 
 @pytest.mark.parametrize(
-    ("results", "results_v3"),
-    (
+    "results",
+    [
         # One match is found, but it is not exact match
-        ([{"file_path": "/testdir/testfile/foo", "identifier": "foo"}],
-         [{"pathname": "/testdir/testfile/foo", "id": "foo"}]),
+        [{"pathname": "/testdir/testfile/foo", "id": "foo"}],
         # No matches found
-        ([], []),
-    ),
+        [],
+    ]
 )
-def test_get_project_file_not_found(results, results_v3, requests_mock, metax):
+def test_get_project_file_not_found(results, requests_mock, metax):
     """Test searching file_path that is not available.
 
     :param results: Matching files in Metax
@@ -947,7 +936,7 @@ def test_get_project_file_not_found(results, results_v3, requests_mock, metax):
             "count": 1,
             "next": None,
             "previous": None,
-            "results": [_update_dict(V3_FILE, res) for res in results_v3]
+            "results": [_update_dict(V3_FILE, res) for res in results]
         },
     )
     with pytest.raises(FileNotAvailableError):
