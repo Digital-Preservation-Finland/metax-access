@@ -92,6 +92,17 @@ def test_get_file(requests_mock, metax):
     assert file == expected_file
 
 
+def test_get_dataset_file(requests_mock, metax):
+    """Test retrieving dataset specific file metadata."""
+    dataset_id = "dataset-id"
+    file_id = "file-id"
+    url = f"{metax.baseurl}/datasets/{dataset_id}/files/{file_id}"
+    expected_file = copy.deepcopy(V3_FILE)
+    requests_mock.get(url, json=expected_file)
+
+    assert metax.get_dataset_file(dataset_id, file_id) == expected_file
+
+
 def test_get_datasets(requests_mock, caplog, metax):
     """Test ``get_datasets`` function.
 

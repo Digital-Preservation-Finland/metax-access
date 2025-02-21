@@ -287,6 +287,19 @@ class Metax:
             raise FileNotAvailableError
         return map_file(response.json())
 
+    def get_dataset_file(self, dataset_id, file_id) -> MetaxFile:
+        """Get file metadata with dataset specific metadata.
+
+        :param str dataset_id: Identifier of dataset
+        :param str file_id: Identifier of file
+        :returns: File metadata as json
+        """
+        url = f"{self.baseurl}/datasets/{dataset_id}/files/{file_id}"
+        response = self.get(url, allowed_status_codes=[404])
+        if response.status_code == 404:
+            raise FileNotAvailableError
+        return map_file(response.json())
+
     def get_files_dict(self, project):
         """Get all the files of a given project.
 
