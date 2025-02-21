@@ -14,7 +14,6 @@ def main():
         install_requires=[
             "requests",
             "lxml",
-            "click"
         ],
         package_data={"metax_access": ["py.typed"]},
         entry_points={
