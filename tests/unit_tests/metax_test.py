@@ -45,9 +45,11 @@ def test_init():
 
     Init function should raise exception if required parameters are not given.
     """
-    with pytest.raises(ValueError) as exception:
-        Metax(METAX_URL)
-    assert str(exception.value) == "Metax user or access token is required."
+    # TODO: Password authentication should not be requred anymore, so all
+    # parameters should be required
+    error="missing 1 required positional argument"
+    with pytest.raises(TypeError, match=error) as exception:
+        Metax()
 
 
 def test_get_dataset_files(requests_mock, metax):
@@ -153,13 +155,10 @@ def test_get_datasets_with_parameters(requests_mock, metax):
         states="states-param",
         limit="limit-param",
         offset="offset-param",
-        pas_filter="pas-filter-param",
         metadata_owner_org="owner-org-param",
-        metadata_provider_user="provider-user-param",
+        metadata_owner_user='metadata-owner-user',
         ordering="ordering-param",
-        include_user_metadata=False,
         search='search-param',
-        metadata_owner_user='metadata-owner-user'
     )['results']
     query_string = metax_mock.last_request.qs
     assert query_string["limit"][0] == "limit-param"

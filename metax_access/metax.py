@@ -4,7 +4,6 @@ import logging
 import re
 
 import requests
-from requests.auth import HTTPBasicAuth
 
 from metax_access.error import (ContractNotAvailableError,
                                 DataciteGenerationError,
@@ -48,7 +47,6 @@ logger = logging.getLogger(__name__)
 class Metax:
     """Get metadata from metax as dict object."""
 
-    # pylint: disable=too-many-arguments
     def __init__(
         self,
         url,
@@ -56,28 +54,19 @@ class Metax:
         password=None,
         token=None,
         verify=True,
-        api_version="v3",
+        api_version=None,
     ):
         """Initialize Metax object.
 
         :param url: Metax url
         :param user: Metax user
-        :param password: Metax user password
         :param token: Metax access token
+        :param verify: Use SSL verification. `True` by default.
         """
-        if not user and not token:
-            raise ValueError("Metax user or access token is required.")
-
-        self.username = user
-        self.password = password
         self.token = token
         self.url = url
         self.baseurl = f"{url}/v3"
         self.verify = verify
-
-        # TODO: Remove once all conditional 'is V2/V3' blocks have been removed
-        # from FDDPS projects
-        self.api_version = "v3"
 
     # pylint: disable=too-many-arguments
     def get_datasets(
@@ -85,43 +74,24 @@ class Metax:
         states=None,
         limit="1000000",
         offset="0",
-        pas_filter=None,
         metadata_owner_org=None,
-        metadata_provider_user=None,
-        ordering=None,
-        include_user_metadata=True,
-        # V3 params:
-        search=None,
         metadata_owner_user=None,
+        ordering=None,
+        search=None,
     ):
         """Get the metadata of datasets from Metax.
 
         :param str states: dataset preservation state value as a string
-                           e.g "10" for filtering. Kept for V2 backward
-                           compatibility, recommended to use `state` instead.
+            e.g "10" for filtering.
         :param str limit: max number of datasets to be returned
         :param str offset: offset for paging
-        :param str pas_filter: string for filtering datasets, Used for the
-                               following attributes in metax:
-                                   1. research_dataset['title']
-                                   2. research_dataset['curator']['name']
-                                   3. contract['contract_json']['title']
-                                Deprecated in V3. Use `search` instead.
         :param str metadata_owner_org: Filter by dataset field
                                        metadata_owner_org
-        :param str metadata_provider_user: Filter by dataset field
-                                           metadata_provider_user.
-                                           Deprecated in V3. Use
-                                           `metadata_owner_user` instead.
-        :param str ordering: metax dataset attribute for sorting datasets
-                             e.g V2 "preservation_state"
-                             or V3 "preservation__state"
-        :param bool include_user_metadata: Metax parameter for including
-                                           metadata for files.
-                                           Deprecaed in V3.
-        :param str search: string for filtering datasets.
         :param str metadata_owner_user: Filter by dataset field
                                         metadata_owner_user.
+        :param str ordering: metax dataset attribute for sorting
+            datasets.
+        :param str search: string for filtering datasets.
         :returns: datasets from Metax as json.
         """
         params = []
@@ -129,7 +99,6 @@ class Metax:
             params += [("search", search)]
         if metadata_owner_org is not None:
             params += [("metadata_owner__organization", metadata_owner_org)]
-        # V3 metadata_owner_user is same as metadata provider user in V2
         if metadata_owner_user is not None:
             params += [("metadata_owner__user", metadata_owner_user)]
         if ordering is not None:
@@ -147,16 +116,13 @@ class Metax:
         if response.status_code == 404:
             raise DatasetNotAvailableError
         json = response.json()
-        if "results" in json:
-            json["results"] = [
-                map_dataset(dataset) for dataset in json["results"]
-            ]
+        json["results"] = [map_dataset(dataset) for dataset in json["results"]]
         return json
 
     def get_datasets_by_ids(
         self, dataset_ids, limit=1000000, offset=0, fields=None
     ):
-        """Get datasets with given IDs.
+        """Get datasets with given identifiers.
 
         :param list dataset_ids: Dataset identifiers
         :param limit: Max number of datasets to return
@@ -177,15 +143,11 @@ class Metax:
             datasets.append(response.json())
         return datasets
 
-    def get_contracts(self, limit="1000000", offset="0", org_filter=None):
+    def get_contracts(self, limit="1000000", offset="0"):
         """Get the data for contracts list from Metax.
 
         :param str limit: max number of contracts to be returned
         :param str offset: offset for paging
-        :param str org_filter: string for filtering contracts based on
-                               contract['contract_json']['organization']
-                               ['organization_identifier'] attribute value.
-                               Deprecated in V3.
         :returns: contracts from Metax as json.
         """
         params = {}
@@ -206,8 +168,7 @@ class Metax:
     def get_contract(self, pid):
         """Get the contract data from Metax.
 
-        state=None,
-        :param str pid: id or ientifier attribute of contract
+        :param str pid: Identifier of the contract
         :returns: The contract from Metax as json.
         """
         url = f"{self.baseurl}/contracts/{pid}"
@@ -219,7 +180,7 @@ class Metax:
     def patch_contract(self, contract_id, data):
         """Patch a contract.
 
-        :param str contract_id: id or identifier of the contract
+        :param str contract_id: Identifier of the contract
         :param dict data: A contract metadata dictionary that contains only the
                           key/value pairs that will be updated
         :returns: ``None``
@@ -232,14 +193,10 @@ class Metax:
         response = self.patch(url, json=data)
         return map_contract(response.json())
 
-    def get_dataset(self, dataset_id, include_user_metadata=True, v2=False):
+    def get_dataset(self, dataset_id):
         """Get dataset metadata from Metax.
 
-        :param str dataset_id: id or identifier attribute of dataset
-        :param bool include_user_metadata: Metax parameter for including
-                                           metadata for files
-                                           Deprecated in V3.
-        :param bool v2: Parameter used in V2->V3 migration period.
+        :param str dataset_id: Identifier of the dataset
         :returns: dataset as json
         """
         url = f"{self.baseurl}/datasets/{dataset_id}"
@@ -254,8 +211,9 @@ class Metax:
     def set_contract(self, dataset_id, contract_id):
         """Update the contract of a dataset.
 
-        :param str dataset_id: identifier of the dataset
-        :param str contract_if: the new contract id of the dataset
+        :param str dataset_id: Identifier of the dataset
+        :param str contract_if: the new contract identifier of the
+            dataset
         :returns: ``None``
         """
         data = {"contract": contract_id}
@@ -266,7 +224,7 @@ class Metax:
     def get_contract_datasets(self, pid):
         """Get the datasets of a contract from Metax.
 
-        :param str pid: id or identifier attribute of contract
+        :param str pid: Identifier of the contract
         :returns: The datasets from Metax as json.
         """
         url = f"{self.baseurl}/datasets"
@@ -274,11 +232,10 @@ class Metax:
         response = extended_result(url, self, params)
         return [map_dataset(dataset) for dataset in response]
 
-    def get_file(self, file_id, v2=False) -> MetaxFile:
+    def get_file(self, file_id) -> MetaxFile:
         """Get file metadata from Metax.
 
-        :param str file_id: id or identifier attribute of file
-        :param bool v2: Parameter used in V2->3 migration period.
+        :param str file_id: Identifier of the file
         :returns: file metadata as json
         """
         url = f"{self.baseurl}/files/{file_id}"
@@ -290,8 +247,8 @@ class Metax:
     def get_dataset_file(self, dataset_id, file_id) -> MetaxFile:
         """Get file metadata with dataset specific metadata.
 
-        :param str dataset_id: Identifier of dataset
-        :param str file_id: Identifier of file
+        :param str dataset_id: Identifier of the dataset
+        :param str file_id: Identifier of the file
         :returns: File metadata as json
         """
         url = f"{self.baseurl}/datasets/{dataset_id}/files/{file_id}"
@@ -351,7 +308,7 @@ class Metax:
         130 = Rejected in digital preservation service
         140 = in dissemination
 
-        :param str dataset_id: id or identifier attribute of dataset in Metax
+        :param str dataset_id: Identifier of the dataset
         :param int state: The value for `preservation_state`
         :param str description: The value for `preservation_description`
         :returns: ``None``
@@ -374,7 +331,7 @@ class Metax:
         Dataset can be copied only if it has a contract and
         a preservation state set.
 
-        :param str dataset_id: id of the dataset
+        :param str dataset_id: Identifier of the dataset
         :returns: ``None``
         """
         dataset = self.get_dataset(dataset_id)
@@ -392,7 +349,7 @@ class Metax:
         Sets value of `preservation_reason_description` for dataset in
         Metax.
 
-        :param str dataset_id: id or identifier attribute of dataset in Metax
+        :param str dataset_id: Identifier of the dataset
         :param str reason: The value for `preservation_reason_description`
         :returns: ``None``
         """
@@ -417,7 +374,7 @@ class Metax:
               data catalog
             * it only means that the dataset is not preserved
 
-        :param str dataset_id: Id dataset
+        :param str dataset_id: Identifier of the dataset
         """
         url = f"{self.baseurl}/datasets/{dataset_id}/preservation"
         self.patch(url, json={"pas_package_created": True})
@@ -425,7 +382,7 @@ class Metax:
     def patch_file_characteristics(self, file_id, file_characteristics):
         """Patch file characteristics ja file_characteristics_extension
 
-        :param str file_id: identifier of the file
+        :param str file_id: Identifier of the file
         :param dict file_characteristics: A dictionary including file
                                     characteristics and file characteristics
                                     extension fields. Only key/value pairs
@@ -463,7 +420,7 @@ class Metax:
     def get_datacite(self, dataset_id, dummy_doi="false"):
         """Get descriptive metadata in datacite xml format.
 
-        :param dataset_id: id or identifier attribute of dataset
+        :param dataset_id: Identifier of the dataset
         :param dummy_doi: "false" or "true". "true" asks Metax to use
                           a dummy DOI if the actual DOI is not yet generated
         :returns: Datacite XML as string
@@ -488,7 +445,7 @@ class Metax:
         Get total file count for a dataset in Metax, including those
         in directories.
 
-        :param str dataset_id: id or identifier of dataset
+        :param str dataset_id: Identifier of the dataset
         :raises DatasetNotAvailableError: If dataset is not available
 
         :returns: total count of files
@@ -506,7 +463,7 @@ class Metax:
     def get_dataset_files(self, dataset_id) -> list[MetaxFile]:
         """Get files metadata of dataset Metax.
 
-        :param str dataset_id: id or identifier attribute of dataset
+        :param str dataset_id: Identifier of the dataset
         :returns: metadata of dataset files as json
         """
         url = f"{self.baseurl}/datasets/{dataset_id}/files?limit=10000"
@@ -523,14 +480,11 @@ class Metax:
     def get_file2dataset_dict(self, file_ids):
         """Get a dict of {file_identifier: [dataset_identifier...] mappings
 
-        :param file_ids: List of file IDs
+        :param file_ids: List of file identifiers
         :returns: Dictionary with the format
                   {file_identifier: [dataset_identifier1, ...]}
         """
         if not file_ids:
-            # Querying with an empty list of file IDs causes an error
-            # with Metax V2 and is silly anyway, since the result would be
-            # empty as well.
             return {}
         url = f"{self.baseurl}/files/datasets?relations=true"
         response = self.post(url, json=file_ids)
@@ -539,7 +493,7 @@ class Metax:
     def delete_files(self, file_id_list):
         """Delete file metadata from Metax.
 
-        :param file_id_list: List of ids to delete from Metax
+        :param file_id_list: List of identifiers of files to be deleted
         :returns: JSON returned by Metax
         """
         url = f"{self.baseurl}/files/delete-many"
@@ -783,10 +737,7 @@ class Metax:
             # by the caller will be honored.
             kwargs["params"].insert(0, ("include_nulls", True))
 
-        if self.token:
-            kwargs["headers"] = {"Authorization": f"Token {self.token}"}
-        else:
-            kwargs["auth"] = HTTPBasicAuth(self.username, self.password)
+        kwargs["headers"] = {"Authorization": f"Token {self.token}"}
 
         response = requests.request(method, url, **kwargs)
         request = response.request
