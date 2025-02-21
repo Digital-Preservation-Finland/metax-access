@@ -20,28 +20,6 @@ After the repository has been added, the package can be installed by running the
 
     sudo dnf install python3-metax-access
 
-Usage
------
-A simple commandline interface can be used for posting, retrieving, or deleting metadata. For example to view metadata of dataset::
-
-   metax_access --url metax-test.csc.fi -u tpas -p password get dataset 1
-
-Alternatively ``host``, ``user``, and ``password`` may be to configuration file ``~/.metax.cfg``::
-
-   [metax]
-   url=https://metax-test.csc.fi
-   user=tpas
-   password=password
-
-
-which can be used wifh ``-c`` flag ::
-
-   metax_access -c ~/.metax.cfg get dataset 1
-
-For more information see::
-
-   metax_access -h
-
 Installation using Python Virtualenv for development purposes
 -------------------------------------------------------------
 
