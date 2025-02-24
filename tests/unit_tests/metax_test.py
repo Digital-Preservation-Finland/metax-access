@@ -29,7 +29,7 @@ del DATASET['created']
 del DATASET['modified']
 
 
-@pytest.fixture(autouse=True, scope='function')
+@pytest.fixture
 def metax():
     """Metax V3 client instance"""
     return Metax(METAX_URL, token='token_foo', verify=False)
@@ -798,7 +798,7 @@ def test_get_files_dict(requests_mock, metax):
     assert files["/path/file1"]["storage_service"] == "pas"
 
 
-def test_get_dataset_directory(requests_mock, metax_v3):
+def test_get_dataset_directory(requests_mock, metax):
     """Test get_dataset_directory function.
 
     :param requets_mock: HTTP request mocker
@@ -853,7 +853,7 @@ def test_get_dataset_directory(requests_mock, metax_v3):
         }
     )
 
-    result = metax_v3.get_dataset_directory("dataset_id", "/test_dir")
+    result = metax.get_dataset_directory("dataset_id", "/test_dir")
 
     assert result["directory"]["pathname"] == "/test_dir"
 
@@ -1093,7 +1093,7 @@ def test_set_preservation_state_http_503(requests_mock, metax):
 
 
 @pytest.mark.parametrize("action", ["lock", "unlock"])
-def test_lock_dataset(requests_mock, metax_v3, action):
+def test_lock_dataset(requests_mock, metax, action):
     """Test locking/unlocking a dataset.
 
     `pas_process_running` will be set to True or False for the dataset and its
@@ -1133,10 +1133,10 @@ def test_lock_dataset(requests_mock, metax_v3, action):
     )
 
     if action == "lock":
-        metax_v3.lock_dataset("foobar")
+        metax.lock_dataset("foobar")
         expected_status = True
     elif action == "unlock":
-        metax_v3.unlock_dataset("foobar")
+        metax.unlock_dataset("foobar")
         expected_status = False
 
     # Files were patched to set the status

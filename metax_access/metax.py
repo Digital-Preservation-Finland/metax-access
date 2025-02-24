@@ -50,16 +50,12 @@ class Metax:
     def __init__(
         self,
         url,
-        user=None,
-        password=None,
         token=None,
-        verify=True,
-        api_version=None,
+        verify=True
     ):
         """Initialize Metax object.
 
         :param url: Metax url
-        :param user: Metax user
         :param token: Metax access token
         :param verify: Use SSL verification. `True` by default.
         """

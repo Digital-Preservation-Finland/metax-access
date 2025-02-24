@@ -7,8 +7,6 @@ import tempfile
 
 import pytest
 
-from metax_access import Metax
-
 # Print debug messages to stdout
 logging.basicConfig(level=logging.DEBUG)
 
@@ -34,13 +32,3 @@ def testpath(request):
     request.addfinalizer(fin)
 
     return temp_path
-
-
-@pytest.fixture(scope="function")
-def metax_v3():
-    """Return Metax client configured for Metax V3"""
-    return Metax(
-        "https://foobar",
-        user="tpas", password="password",
-        verify=False
-    )
