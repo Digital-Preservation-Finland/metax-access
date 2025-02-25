@@ -271,6 +271,10 @@ def map_dataset(metax_dataset):
         ],
         "metadata_owner": (
             {
+                # TODO: `metadata_owner.user` and
+                # `metadata_owner.organization` might be hidden in some
+                # datasets, so they then set to `None`. Does it make
+                # sense fetch those datasets? Can it be avoided?
                 "organization": (
                     metax_dataset["metadata_owner"].get("organization")
                 ),
@@ -294,7 +298,10 @@ def _map_actors(actors):
                     "external_identifier": actor["person"][
                         "external_identifier"
                     ],
-                    "email": actor["person"]["email"],
+                    # TODO: `email` might be hidden in some datasets, so
+                    # it is then set to `None`. Does it make sense fetch
+                    # those datasets? Can it be avoided?
+                    "email": actor["person"].get("email"),
                 }
                 if actor.get("person") is not None
                 else None

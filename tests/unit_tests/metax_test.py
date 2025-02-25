@@ -192,6 +192,42 @@ def test_get_dataset(requests_mock, metax):
     _check_values(dataset, expected_dataset)
 
 
+def test_get_hidden_dataset(requests_mock, metax):
+    """Test mapping hidden dataset.
+
+    Metadata owner organization/user and email address of actor could be
+    missing from dataset metadata. It should not cause exception.
+    """
+    dataset_id = "123"
+    url = f"{metax.baseurl}/datasets/{dataset_id}"
+    json = copy.deepcopy(V3_MINIMUM_TEMPLATE_DATASET)
+    json["id"] = dataset_id
+
+    # "Hide" some information
+    json["metadata_owner"] = {
+        # No "organization" here!
+        # No "user" here!
+    }
+    json["actors"] = [{
+        "person": {
+            "name": "pekka",
+            "external_identifier": "123",
+            # No "email" here!
+        }
+    }]
+
+    requests_mock.get(
+        url,
+        json=json,
+    )
+
+    # The missing information should be set to `None`
+    dataset = metax.get_dataset(dataset_id)
+    assert dataset["metadata_owner"]["organization"] is None
+    assert dataset["metadata_owner"]["user"] is None
+    assert dataset["actors"][0]["person"]["email"] is None
+
+
 def test_get_contracts(requests_mock, metax):
     """Test ``get_contracts`` function.
 
