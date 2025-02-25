@@ -8,15 +8,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- `post_file` and `post_files` methods for submitting a single and multiple files
+- `get_dataset_file` method
 
 ### Fixed
 
-- Fix duplicate file detection in `post_file` and `post_files`
+- Duplicate file detection was fixed in in `post_file`, and the method was renamed as `post_files`
 
 ### Removed
 
 - Support for Metax V2
+- Support for password authentication
+- CLI, and methods that were required only for CLI
 
 ## 0.34 - 2025-02-10
 
