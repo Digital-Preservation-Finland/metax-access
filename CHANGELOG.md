@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## Unreleased
+## 0.35 - 2025-02-26
 
 ### Added
 
@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - Duplicate file detection was fixed in in `post_file`, and the method was renamed as `post_files`
+- Fix fetching datasets that contain "hidden" metadata
 
 ### Removed
 
