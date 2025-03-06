@@ -256,11 +256,6 @@ def map_dataset(metax_dataset):
                 ),
                 "outcome_description": p["outcome_description"],
                 "is_associated_with": _map_actors(p["is_associated_with"]),
-                "preservation_event": (
-                    {"pref_label": p["preservation_event"]["pref_label"]}
-                    if p["preservation_event"] is not None
-                    else None
-                ),
                 "lifecycle_event": (
                     {"pref_label": p["lifecycle_event"]["pref_label"]}
                     if p["lifecycle_event"] is not None

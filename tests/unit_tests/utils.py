@@ -244,7 +244,6 @@ DATASET_V3 = {
                 'url': None
             },
             'outcome_description': {'en': 'Great success'},
-            'preservation_event': None,
             'spatial': None,
             'temporal': {
                 'end_date': '1999-02-01T00:00:00.000Z',
