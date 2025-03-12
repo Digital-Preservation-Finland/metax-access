@@ -901,29 +901,26 @@ def test_get_dataset_directory(requests_mock, metax):
 
 
 @pytest.mark.parametrize(
-    ("file_path", "results", "results_v3"),
+    ("file_path", "results"),
     [
         # Only one matching file in Metax
         (
             "/dir/file",
-            [{"file_path": "/dir/file"}],
             [{"pathname": "/dir/file"}]
         ),
         # Two matching files in Metax. First one is not exact match.
         (
             "/dir/file",
-            [{"file_path": "/dir/file/foo"}, {"file_path": "/dir/file"}],
             [{"pathname": "/dir/file/foo"}, {"pathname": "/dir/file"}]
         ),
         # file_path without leading '/' should work as well
         (
             "dir/file",
-            [{"file_path": "/dir/file"}],
             [{"pathname": "/dir/file"}],
         ),
     ],
 )
-def test_get_project_file(file_path, results, results_v3, requests_mock, metax):
+def test_get_project_file(file_path, results, requests_mock, metax):
     """Test get_project_file function.
 
     :param file_path: Path of file to get
@@ -936,7 +933,7 @@ def test_get_project_file(file_path, results, results_v3, requests_mock, metax):
             "count": 1,
             "next": None,
             "previous": None,
-            "results": [_update_dict(V3_FILE, res) for res in results_v3]
+            "results": [_update_dict(V3_FILE, res) for res in results]
         },
     )
     expected_file = copy.deepcopy(V3_FILE)
