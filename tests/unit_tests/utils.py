@@ -6,6 +6,7 @@ from metax_access import DS_STATE_METADATA_CONFIRMED
 V3_FILE = {
     "id": None,
     "pathname": None,
+    "storage_identifier": None,
     "filename": None,
     "size": None,
     "checksum": None,
