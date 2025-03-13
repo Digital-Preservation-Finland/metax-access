@@ -473,32 +473,28 @@ class Metax:
 
         return [map_file(file) for file in result]
 
-    def get_file2dataset_dict(self, file_ids):
+    def get_file2dataset_dict(self, file_storage_ids):
         """Get a dict of {file_identifier: [dataset_identifier...] mappings
 
-        :param file_ids: List of file identifiers
+        :param file_storage_ids: List of file storage identifiers
         :returns: Dictionary with the format
                   {file_identifier: [dataset_identifier1, ...]}
         """
-        if not file_ids:
+        if not file_storage_ids:
             return {}
-        url = f"{self.baseurl}/files/datasets?relations=true"
-        response = self.post(url, json=file_ids)
+        url = (f"{self.baseurl}/files/datasets?relations=true&"
+               f"storage_service=pas")
+        response = self.post(url, json=file_storage_ids)
         return response.json()
 
-    def delete_files(self, file_id_list):
+    def delete_files(self, files):
         """Delete file metadata from Metax.
 
-        :param file_id_list: List of identifiers of files to be deleted
+        :param files: List of files to be deleted
         :returns: JSON returned by Metax
         """
         url = f"{self.baseurl}/files/delete-many"
-        response = self.delete(
-            url,
-            json=[{"id": file_id} for file_id in file_id_list]
-        )
-
-        return response
+        return self.post(url, json=files)
 
     def post_files(self, metadata: list[MetaxFile]):
         """Create multiple files
