@@ -99,11 +99,8 @@ class Metax:
             params += [("metadata_owner__user", metadata_owner_user)]
         if ordering is not None:
             params += [("ordering", ordering)]
-        if isinstance(states, str):
-            states = states.split(",")
         if states is not None:
-            for state_ in states:
-                params += [("preservation__state", str(state_))]
+            params += [("preservation__state", states)]
         params += [("limit", limit)]
         params += [("offset", offset)]
 
