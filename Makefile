@@ -17,15 +17,6 @@ github:
 	    pip install -r requirements_dev.txt; \
 	    pip install .; \
 
-test:
-	${PYTHON} -m pytest tests/unit_tests -svvv --junitxml=junit.xml
-
-coverage:
-	${PYTHON} -m pytest tests --cov=metax_access --cov-fail-under=70 --cov-report=html
-	coverage report -m
-	coverage html
-	coverage xml
-
 clean: clean-rpm
 	find . -iname '*.pyc' -type f -delete
 	find . -iname '__pycache__' -exec rm -rf '{}' \; | true

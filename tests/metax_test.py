@@ -17,10 +17,13 @@ from metax_access.error import (ContractNotAvailableError,
                                 DatasetNotAvailableError,
                                 FileNotAvailableError,
                                 ResourceAlreadyExistsError)
-from tests.unit_tests.utils import (V3_CONTRACT, V3_FILE,
-                                    V3_MINIMUM_TEMPLATE_DATASET,
-                                    create_test_v3_dataset,
-                                    create_test_v3_file)
+from tests.utils import (
+    V3_CONTRACT,
+    V3_FILE,
+    V3_MINIMUM_TEMPLATE_DATASET,
+    create_test_v3_dataset,
+    create_test_v3_file,
+)
 
 METAX_URL = "https://foobar"
 
