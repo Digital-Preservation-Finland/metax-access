@@ -7,10 +7,6 @@ install:
 	# Cleanup temporary files
 	rm -f INSTALLED_FILES
 
-	# Copy config file to /etc
-	mkdir -p "${ETC}"
-	cp include/etc/metax.cfg ${ETC}/
-
 	# Use Python setuptools
 	python3 ./setup.py install -O1 --prefix="${PREFIX}" --root="${DESTDIR}" --record=INSTALLED_FILES
 
@@ -20,9 +16,6 @@ github:
 	    pip install --upgrade pip setuptools; \
 	    pip install -r requirements_dev.txt; \
 	    pip install .; \
-	    if [ ! -f ~/.metax.cfg ]; then \
-	    	cp include/etc/metax.cfg ~/.metax.cfg; \
-	    fi
 
 test:
 	${PYTHON} -m pytest tests/unit_tests -svvv --junitxml=junit.xml
