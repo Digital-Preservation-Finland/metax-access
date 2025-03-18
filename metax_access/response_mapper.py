@@ -151,17 +151,13 @@ def map_dataset(metax_dataset):
                 "total_files_size": metax_dataset["fileset"][
                     "total_files_size"
                 ],
-                # TODO: A temporary fix. Remove this conditionality
-                # when post_dataset no longer remove csc project
-                # field from response.
-                "csc_project": (
-                    metax_dataset["fileset"]["csc_project"]
-                    if metax_dataset["fileset"].get("csc_project")
-                    else None
-                ),
+                "csc_project": metax_dataset["fileset"]["csc_project"],
             }
             if metax_dataset["fileset"]
-            else {"total_files_size": 0, "csc_project": None}
+            else {
+                "total_files_size": 0,
+                "csc_project": None
+            }
         ),
         "preservation": (
             {
