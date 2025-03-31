@@ -15,6 +15,8 @@ V3_FILE = {
     "dataset_metadata": {"use_category": None},
     "characteristics": None,
     "characteristics_extension": None,
+    "pas_compatible_file": None,
+    "non_pas_compatible_file": None,
 }
 
 V3_CONTRACT = {
@@ -318,6 +320,7 @@ FILE_V3 = {
     "characteristics_extension": None,
     "pas_process_running": False,
     "pas_compatible_file": None,
+    "non_pas_compatible_file": None,
     "dataset_metadata": {
         "title": None,
         "file_type": None,

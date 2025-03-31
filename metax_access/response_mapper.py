@@ -106,6 +106,8 @@ def map_file(metax_file):
             else None
         ),
         "characteristics_extension": metax_file["characteristics_extension"],
+        "pas_compatible_file": metax_file["pas_compatible_file"],
+        "non_pas_compatible_file": metax_file["non_pas_compatible_file"],
     }
 
 
