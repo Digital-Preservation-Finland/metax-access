@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 0.36 - 2025-04-02
+
+### Added
+
+- Include `pas_compatible_file` and `non_pas_compatible_file` dataset fields
+
+## Changed
+
+- `get_file2dataset_ids` now accepts a list of storage identifiers and only retrieves files from PAS storage service
+- `delete_files` accepts a list of file objects allowing any identifiers to be used for files
+
+## Fixed
+
+- Support new syntax for `preservation__state` dataset search parameter
+
 ## 0.35 - 2025-02-26
 
 ### Added
