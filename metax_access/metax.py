@@ -133,7 +133,7 @@ class Metax:
         for dataset_id in dataset_ids:
             url = f"{self.baseurl}/datasets/{dataset_id}"
             response = self.get(url, params=params)
-            datasets.append(response.json())
+            datasets.append(map_dataset(response.json()))
         return datasets
 
     def get_contracts(self, limit="1000000", offset="0"):

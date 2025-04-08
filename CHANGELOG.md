@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased
+
+### Fixed
+
+- Fix missing dataset response mapping in `get_datasets_by_ids`
+
 ## 0.36 - 2025-04-02
 
 ### Added
