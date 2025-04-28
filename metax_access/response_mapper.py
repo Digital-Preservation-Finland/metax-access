@@ -50,14 +50,13 @@ def map_file(metax_file):
             {
                 "use_category": (
                     {
-                        "id": metax_file["dataset_metadata"][
-                            "use_category"
-                        ]["id"],
                         "pref_label": (
                             metax_file["dataset_metadata"]["use_category"][
                                 "pref_label"
                             ]
                         ),
+                        "url": metax_file["dataset_metadata"][
+                                "use_category"]["url"]
                     }
                     if metax_file.get("dataset_metadata", {}).get(
                         "use_category"
