@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## 0.38 - 2025-04-29
+
+### Added
+
+- Add field `dataset_metadata.use_category.url` to file
+
+### Removed
+
+- Remove field `dataset_metadata.use_category.id` from file
+
 ## 0.37 - 2025-04-11
 
 ### Fixed
