@@ -1,7 +1,7 @@
 """Expose public interface from submodules."""
 from .error import (  # noqa: F401
     ContractNotAvailableError, DataciteGenerationError,
-    DatasetNotAvailableError, DirectoryNotAvailableError,
+    DatasetNotAvailableError,
     FileNotAvailableError, MetaxError,
     ResourceAlreadyExistsError, ResourceNotAvailableError)
 

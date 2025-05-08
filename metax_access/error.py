@@ -52,14 +52,6 @@ class ContractNotAvailableError(ResourceNotAvailableError):
         super().__init__("Contract not found")
 
 
-class DirectoryNotAvailableError(ResourceNotAvailableError):
-    """Exception raised when directory is not found from metax."""
-
-    def __init__(self):
-        """Init DirectoryNotAvailableError."""
-        super().__init__("Directory not found")
-
-
 class DataciteGenerationError(MetaxError):
     """Exception raised when Metax returned 400 for datacite."""
 

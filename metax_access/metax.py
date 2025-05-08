@@ -8,7 +8,6 @@ import requests
 from metax_access.error import (ContractNotAvailableError,
                                 DataciteGenerationError,
                                 DatasetNotAvailableError,
-                                DirectoryNotAvailableError,
                                 FileNotAvailableError,
                                 ResourceAlreadyExistsError)
 from metax_access.response import MetaxFile
@@ -575,7 +574,12 @@ class Metax:
             allowed_status_codes=[404]
         )
         if response.status_code == 404:
-            raise DirectoryNotAvailableError  # noqa: F405
+            # Instead of raising error, return empty lists
+            return {
+                "directory": {},
+                "directories": [],
+                "files": []
+            }
 
         data = response.json()
 
