@@ -134,7 +134,7 @@ Fixed
 Added
 ~~~~~
 
--  ``get_directory_id``\ returns an identifier of a directory.
+-  ``get_directory_id`` returns an identifier of a directory.
 -  All methods, retrieving data from Metax, return Mtax V3 format data.
 
 0.30 - 2024-09-27
