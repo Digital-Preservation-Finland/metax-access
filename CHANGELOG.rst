@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a
 Changelog <https://keepachangelog.com/en/1.1.0/>`__.
 
+1.0.0 - 2025-05-26
+------------------
+
+Changed
+~~~~~~~
+
+- ``get_dataset_directory`` returns empty list instead of raising exception, when dataset does not contain any files.
+
+
 0.38 - 2025-04-29
 -----------------
 
