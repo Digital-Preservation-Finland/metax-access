@@ -19,8 +19,6 @@ Removed
 
 -  Remove field ``dataset_metadata.use_category.id`` from file
 
-.. _section-1:
-
 0.37 - 2025-04-11
 -----------------
 
@@ -29,12 +27,8 @@ Fixed
 
 -  Fix missing dataset response mapping in ``get_datasets_by_ids``
 
-.. _section-2:
-
 0.36 - 2025-04-02
 -----------------
-
-.. _added-1:
 
 Added
 ~~~~~
@@ -50,27 +44,19 @@ Changed
 -  ``delete_files`` accepts a list of file objects allowing any
    identifiers to be used for files
 
-.. _fixed-1:
-
 Fixed
 -----
 
 -  Support new syntax for ``preservation__state`` dataset search
    parameter
 
-.. _section-3:
-
 0.35 - 2025-02-26
 -----------------
-
-.. _added-2:
 
 Added
 ~~~~~
 
 -  ``get_dataset_file`` method
-
-.. _fixed-2:
 
 Fixed
 ~~~~~
@@ -79,8 +65,6 @@ Fixed
    method was renamed as ``post_files``
 -  Fix fetching datasets that contain “hidden” metadata
 
-.. _removed-1:
-
 Removed
 ~~~~~~~
 
@@ -88,12 +72,8 @@ Removed
 -  Support for password authentication
 -  CLI, and methods that were required only for CLI
 
-.. _section-4:
-
 0.34 - 2025-02-10
 -----------------
-
-.. _added-3:
 
 Added
 ~~~~~
@@ -110,20 +90,14 @@ Added
 
 -  Add ``api_version`` configuration parameter
 
-.. _section-5:
-
 0.33 - 2025-01-14
 -----------------
-
-.. _added-4:
 
 Added
 ~~~~~
 
 -  ``response_mapper`` module.
 -  ``set_contract`` method for updating the contract of a dataset.
-
-.. _changed-1:
 
 Changed
 ~~~~~~~
@@ -136,12 +110,8 @@ Changed
 -  ``null`` values are included to the responses of the
    ``metax-access``.
 
-.. _section-6:
-
 0.32 - 2024-11-26
 -----------------
-
-.. _added-5:
 
 Added
 ~~~~~
@@ -152,20 +122,14 @@ Added
    -  ``checksum.checked``
    -  ``file_uploaded``
 
-.. _fixed-3:
-
 Fixed
 ~~~~~
 
 -  ``storage_identifier`` is normalized correctly as external file
    identifier instead of storage service identifier
 
-.. _section-7:
-
 0.31 - 2024-10-25
 -----------------
-
-.. _added-6:
 
 Added
 ~~~~~
@@ -173,12 +137,8 @@ Added
 -  ``get_directory_id``\ returns an identifier of a directory.
 -  All methods, retrieving data from Metax, return Mtax V3 format data.
 
-.. _section-8:
-
 0.30 - 2024-09-27
 -----------------
-
-.. _changed-2:
 
 Changed
 ~~~~~~~
@@ -187,8 +147,6 @@ Changed
    directory by the path and the project id of a directory. Accessing a
    directory with the directory ID is no longer supported. The command’s
    flag ``--files`` was changed to ``--content``
-
-.. _removed-2:
 
 Removed
 ~~~~~~~
