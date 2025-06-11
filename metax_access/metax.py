@@ -49,7 +49,7 @@ class Metax:
     def __init__(
         self,
         url,
-        token=None,
+        token,
         verify=True
     ):
         """Initialize Metax object.
