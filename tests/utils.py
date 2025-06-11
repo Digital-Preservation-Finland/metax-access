@@ -81,6 +81,7 @@ DATASET_V3 = {
                 'custom_url': None,
                 'description': None,
                 'title': [{'en': 'Title here'}],
+                'pref_label': {'en': 'Example License'},
                 'url': 'http://urn.fi/urn:nbn:fi:csc-3388475675'
             }
         ]

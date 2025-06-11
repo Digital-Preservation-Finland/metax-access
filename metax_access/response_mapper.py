@@ -206,7 +206,10 @@ def map_dataset(metax_dataset):
         "access_rights": (
             {
                 "license": [
-                    {"url": license["url"], "title": license["title"]}
+                    {
+                        "url": license["url"] or "",
+                        "pref_label": license["pref_label"],
+                    }
                     for license in metax_dataset["access_rights"]["license"]
                 ]
             }
