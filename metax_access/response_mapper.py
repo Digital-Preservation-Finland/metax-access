@@ -44,8 +44,9 @@ def map_file(metax_file):
         "checksum": metax_file["checksum"],
         "csc_project": metax_file["csc_project"],
         "storage_service": metax_file["storage_service"],
-        # the dataset metadata field is problematic for the mapping
-        # as it does not seem to be nullable.
+        # dataset metadata field is only included when file is queried
+        # related to the dataset. e.g. get dataset files method. Otherwise
+        # Metax won't include it to the response.
         "dataset_metadata": (
             {
                 "use_category": (
@@ -70,10 +71,6 @@ def map_file(metax_file):
         ),
         "characteristics": (
             {
-                # if something breaks (e.g. in the e2e tests)
-                # this field used to contain pref_label
-                # field. It was not needed in the UTs
-                # so it is not included anymore.
                 "file_format_version": (
                     {
                         "file_format": metax_file["characteristics"][
@@ -119,8 +116,6 @@ def map_contract(metax_contract):
         "title": {
             "und": (
                 metax_contract["title"].get("und")
-                if metax_contract["title"] is not None
-                else {"und": None}
             )
         },
         "quota": metax_contract["quota"],
@@ -128,7 +123,7 @@ def map_contract(metax_contract):
         "contact": metax_contract["contact"],
         "related_service": metax_contract["related_service"],
         "description": (
-            {"und": metax_contract["description"]["und"]}
+            {"und": metax_contract["description"].get("und")}
             if metax_contract["description"] is not None
             else {"und": None}
         ),
@@ -167,6 +162,8 @@ def map_dataset(metax_dataset):
                 "reason_description": metax_dataset["preservation"][
                     "reason_description"
                 ],
+                # This field is created when a IDA-QVAIN dataset is preserved
+                # and a copy of it is preserved.
                 "dataset_version": (
                     {
                         "id": metax_dataset["preservation"]["dataset_version"][
