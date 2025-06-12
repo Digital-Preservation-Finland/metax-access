@@ -765,7 +765,7 @@ def test_get_datacite(requests_mock, metax):
     dataset_id = "test_id"
     url = f"{metax.baseurl}/datasets/{dataset_id}/metadata-download?format=datacite&include_nulls=True"
 
-    datacite = lxml.etree.parse("tests/data/datacite_sample.xml")
+    datacite = lxml.etree.parse("tests/data/xml/datacite_sample.xml")
     requests_mock.get(
         url,
         complete_qs=True,

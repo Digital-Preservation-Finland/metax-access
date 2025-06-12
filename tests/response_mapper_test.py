@@ -6,37 +6,25 @@ from metax_access.response_mapper import (
     map_directory_files,
 )
 
-from tests.metax_data.files import (
-    BASE_FILE,
-    BASE_FILE_RESPONSE,
-    FILE_WITH_MINIMAL_CHARACTERISTICS_FIELD,
-    FILE_WITH_MINIMAL_CHARACTERISTICS_FIELD_RESPONSE,
-    FULL_FILE,
-    FULL_FILE_RESPONSE,
+from tests.data.metax_access_responses import (
+    files as metax_access_file,
+    datasets as metax_access_dataset,
+    directory_files as metax_access_directory_files,
+    contracts as metax_access_contract
 )
-
-from tests.metax_data.datasets import (
-    BASE_DATASET,
-    BASE_DATASET_RESPONSE,
-    FULL_DATASET,
-    FULL_DATASET_RESPONSE,
-)
-
-from tests.metax_data.contracts import CONTRACT, CONTRACT_RESPONSE
-
-from tests.metax_data.directory_files import (
-    BASE_DIRECTORY_FILES,
-    BASE_DIRECTORY_FILES_RESPONSE,
-    DIRECTORY_FILES,
-    DIRECTORY_FILES_RESPONSE,
+from tests.data.metax_responses import (
+    files as metax_file,
+    directory_files as metax_directory_files,
+    contracts as metax_contract,
+    datasets as metax_dataset
 )
 
 
 @pytest.mark.parametrize(
     ("input", "output"),
     [
-        (BASE_DATASET, BASE_DATASET_RESPONSE),
-        (FULL_DATASET, FULL_DATASET_RESPONSE),
+        (metax_dataset.BASE, metax_access_dataset.BASE),
+        (metax_dataset.FULL, metax_access_dataset.FULL),
     ],
 )
 def test_map_dataset(input, output):
@@ -46,7 +34,7 @@ def test_map_dataset(input, output):
 @pytest.mark.parametrize(
     ("input", "output"),
     [
-        (CONTRACT, CONTRACT_RESPONSE),
+        (metax_contract.BASE, metax_access_contract.BASE),
     ],
 )
 def test_map_contract(input, output):
@@ -56,11 +44,11 @@ def test_map_contract(input, output):
 @pytest.mark.parametrize(
     ("input", "output"),
     [
-        (BASE_FILE, BASE_FILE_RESPONSE),
-        (FULL_FILE, FULL_FILE_RESPONSE),
+        (metax_file.BASE, metax_access_file.BASE),
+        (metax_file.FULL, metax_access_file.FULL),
         (
-            FILE_WITH_MINIMAL_CHARACTERISTICS_FIELD,
-            FILE_WITH_MINIMAL_CHARACTERISTICS_FIELD_RESPONSE,
+            metax_file.MINIMAL_CHARACTERISTICS_FIELD,
+            metax_access_file.MINIMAL_CHARACTERISTICS_FIELD,
         ),
     ],
 )
@@ -71,8 +59,8 @@ def test_map_file(input, output):
 @pytest.mark.parametrize(
     ("input", "output"),
     [
-        (DIRECTORY_FILES, DIRECTORY_FILES_RESPONSE),
-        (BASE_DIRECTORY_FILES, BASE_DIRECTORY_FILES_RESPONSE),
+        (metax_directory_files.BASE, metax_access_directory_files.BASE),
+        (metax_directory_files.FULL, metax_access_directory_files.FULL),
     ],
 )
 def test_map_directory_files(input, output):

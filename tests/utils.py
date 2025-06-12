@@ -1,9 +1,9 @@
 import copy
 import contextlib
-from tests.metax_data.contracts import CONTRACT_RESPONSE
-from tests.metax_data.datasets import BASE_DATASET_RESPONSE
-from tests.metax_data.files import BASE_FILE_RESPONSE
-from tests.metax_data.directory_files import BASE_DIRECTORY_FILES_RESPONSE
+from tests.data.metax_access_responses.contracts import BASE as BASE_CONTRACT
+from tests.data.metax_access_responses.datasets import BASE as BASE_DATASET
+from tests.data.metax_access_responses.files import BASE as BASE_FILE
+from tests.data.metax_access_responses.directory_files import BASE as BASE_DIRECTORY_FILES
 
 def _create_merged_dict(data, **kwargs):
     """
@@ -45,15 +45,15 @@ def _create_merged_dict(data, **kwargs):
 
 
 def create_test_file(**kwargs):
-    return _create_merged_dict(BASE_FILE_RESPONSE, **kwargs)
+    return _create_merged_dict(BASE_FILE, **kwargs)
 
 
 def create_test_dataset(**kwargs):
-    return _create_merged_dict(BASE_DATASET_RESPONSE, **kwargs)
+    return _create_merged_dict(BASE_DATASET, **kwargs)
 
 
 def create_test_contract(**kwargs):
-    return _create_merged_dict(CONTRACT_RESPONSE, **kwargs)
+    return _create_merged_dict(BASE_CONTRACT, **kwargs)
 
 def create_test_directory_files(**kwargs):
-    return _create_merged_dict(BASE_DIRECTORY_FILES_RESPONSE, **kwargs)
+    return _create_merged_dict(BASE_DIRECTORY_FILES, **kwargs)

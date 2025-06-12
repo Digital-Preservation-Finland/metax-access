@@ -1,0 +1,1 @@
+"""Test data for the responses of metax_access."""
