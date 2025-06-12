@@ -576,11 +576,11 @@ class Metax:
         )
         if response.status_code == 404:
             # Instead of raising error, return empty lists
-            return {
-                "directory": {},
+            return map_directory_files({
+                "directory": None,
                 "directories": [],
                 "files": []
-            }
+            })
 
         data = response.json()
 
