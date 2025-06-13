@@ -163,7 +163,6 @@ def map_dataset(metax_dataset):
                     "reason_description"
                 ],
                 # This field is created when a IDA-QVAIN dataset is preserved
-                # and a copy of it is preserved.
                 "dataset_version": (
                     {
                         "id": metax_dataset["preservation"]["dataset_version"][

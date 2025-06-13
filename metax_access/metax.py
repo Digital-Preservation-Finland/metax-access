@@ -5,14 +5,20 @@ import re
 
 import requests
 
-from metax_access.error import (ContractNotAvailableError,
-                                DataciteGenerationError,
-                                DatasetNotAvailableError,
-                                FileNotAvailableError,
-                                ResourceAlreadyExistsError)
+from metax_access.error import (
+    ContractNotAvailableError,
+    DataciteGenerationError,
+    DatasetNotAvailableError,
+    FileNotAvailableError,
+    ResourceAlreadyExistsError,
+)
 from metax_access.response import MetaxFile
-from metax_access.response_mapper import (map_contract, map_dataset,
-                                          map_directory_files, map_file)
+from metax_access.response_mapper import (
+    map_contract,
+    map_dataset,
+    map_directory_files,
+    map_file,
+)
 from metax_access.utils import extended_result, update_nested_dict
 
 # These imports are used by other projects (eg. upload-rest-api)
@@ -36,7 +42,7 @@ from metax_access import (  # noqa: F401 isort:skip
     DS_STATE_TECHNICAL_METADATA_GENERATED,
     DS_STATE_TECHNICAL_METADATA_GENERATION_FAILED,
     DS_STATE_VALIDATED_METADATA_UPDATED,
-    DS_STATE_VALIDATING_METADATA
+    DS_STATE_VALIDATING_METADATA,
 )
 
 logger = logging.getLogger(__name__)
@@ -46,12 +52,7 @@ logger = logging.getLogger(__name__)
 class Metax:
     """Get metadata from metax as dict object."""
 
-    def __init__(
-        self,
-        url,
-        token,
-        verify=True
-    ):
+    def __init__(self, url, token, verify=True):
         """Initialize Metax object.
 
         :param url: Metax url
@@ -107,9 +108,7 @@ class Metax:
         json["results"] = [map_dataset(dataset) for dataset in json["results"]]
         return json
 
-    def get_datasets_by_ids(
-        self, dataset_ids, limit=1000000, offset=0
-    ):
+    def get_datasets_by_ids(self, dataset_ids, limit=1000000, offset=0):
         """Get datasets with given identifiers.
 
         :param list dataset_ids: Dataset identifiers
@@ -478,8 +477,10 @@ class Metax:
         """
         if not file_storage_ids:
             return {}
-        url = (f"{self.baseurl}/files/datasets?relations=true&"
-               f"storage_service=pas")
+        url = (
+            f"{self.baseurl}/files/datasets?relations=true&"
+            f"storage_service=pas"
+        )
         response = self.post(url, json=file_storage_ids)
         return response.json()
 
@@ -504,9 +505,7 @@ class Metax:
         # TODO: This endpoint does not handle 'include_nulls=true', which
         # should be fixed
         url = f"{self.baseurl}/files/post-many"
-        response = self.post(
-            url, json=metadata, allowed_status_codes=[400]
-        )
+        response = self.post(url, json=metadata, allowed_status_codes=[400])
         if response.status_code == 400:
             # Read the response and parse list of failed files
             try:
@@ -576,18 +575,16 @@ class Metax:
         )
         if response.status_code == 404:
             # Instead of raising error, return empty lists
-            return map_directory_files({
-                "directory": None,
-                "directories": [],
-                "files": []
-            })
+            return map_directory_files(
+                {"directory": None, "directories": [], "files": []}
+            )
 
         data = response.json()
 
         result = {
             "directory": data["results"]["directory"],
             "directories": data["results"]["directories"],
-            "files": data["results"]["files"]
+            "files": data["results"]["files"],
         }
 
         # Endpoint has pagination that involves two lists at the same time:
@@ -635,7 +632,7 @@ class Metax:
         self.request(
             "PATCH",
             f"{self.baseurl}/datasets/{dataset_id}/preservation",
-            json={"pas_process_running": True}
+            json={"pas_process_running": True},
         )
 
         # TODO: Metax V3 does not allow retrieving only selected fields
@@ -645,12 +642,9 @@ class Metax:
         self.post(
             f"{self.baseurl}/files/patch-many",
             json=[
-                {
-                    "id": file_["id"],
-                    "pas_process_running": True
-                }
+                {"id": file_["id"], "pas_process_running": True}
                 for file_ in files
-            ]
+            ],
         )
 
     def unlock_dataset(self, dataset_id: str):
@@ -670,18 +664,15 @@ class Metax:
         self.post(
             f"{self.baseurl}/files/patch-many",
             json=[
-                {
-                    "id": file_["id"],
-                    "pas_process_running": False
-                }
+                {"id": file_["id"], "pas_process_running": False}
                 for file_ in files
-            ]
+            ],
         )
 
         self.request(
             "PATCH",
             f"{self.baseurl}/datasets/{dataset_id}/preservation",
-            json={"pas_process_running": False}
+            json={"pas_process_running": False},
         )
 
     def get_file_format_versions(self):
