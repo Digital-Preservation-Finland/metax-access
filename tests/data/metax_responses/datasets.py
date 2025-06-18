@@ -81,10 +81,16 @@ FULL = _construct_dataset(
         "description": None,
         "license": [
             {
-                "custom_url": None,
-                "description": None,
-                "title": [{"en": "Title here"}],
                 "url": "http://license_url.test",
+                "pref_label": {
+                    "en": "Licence Label Test 1.0",
+                    "fi": "Lisenssin Nimi Testi 1.0",
+                },
+                "id": "license_test_id",
+                "custom_url": None,
+                "title": None,
+                "description": None,
+                "in_scheme": "http://testi.fi/codelist/testi/license",
             }
         ],
     },

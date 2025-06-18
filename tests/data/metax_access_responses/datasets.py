@@ -64,7 +64,10 @@ FULL = _construct_dataset_response(
         "license": [
             {
                 "url": "http://license_url.test",
-                "title": [{"en": "Title here"}],
+                "pref_label": {
+                    "en": "Licence Label Test 1.0",
+                    "fi": "Lisenssin Nimi Testi 1.0",
+                },
             }
         ]
     },
