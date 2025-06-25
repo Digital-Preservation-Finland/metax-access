@@ -45,3 +45,4 @@ DS_STATE_ALL_STATES = (
     DS_STATE_IN_DISSEMINATION,
 )
 from .metax import Metax  # noqa: F401, E402
+from .template_data import *  # noqa: F401, E402, F403
