@@ -19,7 +19,17 @@ BASE = {
     "csc_project": "user_test_project",
     "storage_service": "test_pas",
     "dataset_metadata": {"use_category": None},
-    "characteristics": None,
+    "characteristics": {
+        "file_format_version": {
+            "file_format": None,
+            "format_version": None,
+        },
+        "encoding": None,
+        "csv_delimiter": None,
+        "csv_record_separator": None,
+        "csv_quoting_char": None,
+        "csv_has_header": None,
+    },
     "characteristics_extension": None,
     "pas_compatible_file": None,
     "non_pas_compatible_file": None,
@@ -50,7 +60,10 @@ FULL = _construct_file_response(
 
 MINIMAL_CHARACTERISTICS_FIELD = _construct_file_response(
     characteristics={
-        "file_format_version": None,
+        "file_format_version": {
+            "file_format": None,
+            "format_version": None,
+        },
         "encoding": "UTF-TEST",
         "csv_delimiter": None,
         "csv_record_separator": None,

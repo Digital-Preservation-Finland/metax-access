@@ -83,7 +83,10 @@ def map_file(metax_file):
                     }
                     if metax_file["characteristics"]["file_format_version"]
                     is not None
-                    else None
+                    else {
+                        "file_format": None,
+                        "format_version": None,
+                    }
                 ),
                 "encoding": metax_file["characteristics"]["encoding"],
                 "csv_delimiter": metax_file["characteristics"][
@@ -100,7 +103,19 @@ def map_file(metax_file):
                 ],
             }
             if metax_file["characteristics"] is not None
-            else None
+            else (
+                {
+                    "file_format_version": {
+                        "file_format": None,
+                        "format_version": None,
+                    },
+                    "encoding": None,
+                    "csv_delimiter": None,
+                    "csv_record_separator": None,
+                    "csv_quoting_char": None,
+                    "csv_has_header": None,
+                }
+            )
         ),
         "characteristics_extension": metax_file["characteristics_extension"],
         "pas_compatible_file": metax_file["pas_compatible_file"],
