@@ -131,8 +131,7 @@ class Metax:
         url = f"{self.baseurl}/datasets"
         response = self.get(url, params=params)
         json = response.json()
-        json["results"] = [map_dataset(dataset) for dataset in json["results"]]
-        return json
+        return [map_dataset(dataset) for dataset in json["results"]]
 
     def get_contracts(self, limit="1000000", offset="0"):
         """Get the data for contracts list from Metax.

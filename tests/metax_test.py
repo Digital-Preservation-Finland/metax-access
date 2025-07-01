@@ -197,7 +197,7 @@ def test_get_datasets(requests_mock, caplog, metax, qs):
     assert datasets["results"] == expected_datasets
 
 
-def test_get_dataset_by_ids(requests_mock, caplog, metax):
+def test_get_datasets_by_ids(requests_mock, caplog, metax):
     """Test ``get_datasets_by_ids`` function."""
 
     expected_datasets = [create_test_dataset(id=id_) for id_ in ["foo", "bar"]]
@@ -208,7 +208,7 @@ def test_get_dataset_by_ids(requests_mock, caplog, metax):
 
     query_ids = ["foo", "bar", "cat"]
     datasets = metax.get_datasets_by_ids(query_ids)
-    assert len(datasets["results"]) == 2
+    assert len(datasets) == 2
     # Check that correct query parameter were used
     query_string = metax_mock.last_request.qs
 
@@ -220,7 +220,7 @@ def test_get_dataset_by_ids(requests_mock, caplog, metax):
     logged_errors = [r for r in caplog.records if r.levelname == "ERROR"]
     assert not logged_errors
 
-    assert datasets["results"] == expected_datasets
+    assert datasets == expected_datasets
 
 
 def test_get_dataset(requests_mock, metax):
