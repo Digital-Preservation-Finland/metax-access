@@ -89,19 +89,15 @@ class Metax:
         :param str search: string for filtering datasets.
         :returns: datasets from Metax as json.
         """
-        params = []
-        if search is not None:
-            params += [("search", search)]
-        if metadata_owner_org is not None:
-            params += [("metadata_owner__organization", metadata_owner_org)]
-        if metadata_owner_user is not None:
-            params += [("metadata_owner__user", metadata_owner_user)]
-        if ordering is not None:
-            params += [("ordering", ordering)]
-        if states is not None:
-            params += [("preservation__state", states)]
-        params += [("limit", limit)]
-        params += [("offset", offset)]
+        params = {
+            "search": search,
+            "metadata_owner__organization": metadata_owner_org,
+            "metadata_owner__user": metadata_owner_user,
+            "ordering": ordering,
+            "preservation__state": states,
+            "limit": limit,
+            "offset": offset,
+        }
 
         url = f"{self.baseurl}/datasets"
         response = self.get(url, allowed_status_codes=[404], params=params)
@@ -146,9 +142,7 @@ class Metax:
         :param str offset: offset for paging
         :returns: contracts from Metax as json.
         """
-        params = {}
-        params["limit"] = limit
-        params["offset"] = offset
+        params = {"limit": limit, "offset": offset}
         url = f"{self.baseurl}/contracts"
         response = self.get(url, allowed_status_codes=[404], params=params)
         if response.status_code == 404:
@@ -260,8 +254,8 @@ class Metax:
 
             {
                 file_path: {
-                    "id": id,
                     "identifier": identifier
+                    "storage_service" : storage_service
                 }
             }
 
@@ -269,9 +263,11 @@ class Metax:
         :returns: Dict of all the files of a given project
         """
         files = []
-        url = f"{self.baseurl}/files?limit=10000&csc_project={project}"
+        url = f"{self.baseurl}/files"
         # GET 10000 files every iteration until all files are read
-        files = extended_result(url, self)
+        files = extended_result(
+            url, self, params={"limit": 10000, "csc_project": project}
+        )
 
         file_dict = {}
         for _file in files:
@@ -574,8 +570,9 @@ class Metax:
         """
         url = f"{self.baseurl}/datasets/{dataset_id}/directories"
         response = self.get(
-            url, params={"path": path, "limit": 10_000},
-            allowed_status_codes=[404]
+            url,
+            params={"path": path, "limit": 10_000},
+            allowed_status_codes=[404],
         )
         if response.status_code == 404:
             # Instead of raising error, return empty lists
@@ -723,17 +720,9 @@ class Metax:
         if "verify" not in kwargs:
             kwargs["verify"] = self.verify
 
-        try:
-            kwargs.setdefault("params", {}).setdefault(
+        kwargs.setdefault("params", {}).setdefault(
                 "include_nulls", True
             )
-        except (AttributeError, TypeError):
-            # 'params' is a 'param -> list[value]' mapping instead of
-            # 'param -> value' mapping. Add `include_nulls` at the
-            # beginning; this ensures any explicit 'include_nulls' provided
-            # by the caller will be honored.
-            kwargs["params"].insert(0, ("include_nulls", True))
-
         kwargs["headers"] = {"Authorization": f"Token {self.token}"}
 
         response = requests.request(method, url, **kwargs)
