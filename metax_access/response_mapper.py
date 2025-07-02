@@ -56,8 +56,9 @@ def map_file(metax_file):
                                 "pref_label"
                             ]
                         ),
-                        "url": metax_file["dataset_metadata"][
-                                "use_category"]["url"]
+                        "url": metax_file["dataset_metadata"]["use_category"][
+                            "url"
+                        ],
                     }
                     if metax_file.get("dataset_metadata", {}).get(
                         "use_category"
@@ -113,11 +114,7 @@ def map_contract(metax_contract):
     """
     return {
         "id": metax_contract["id"],
-        "title": {
-            "und": (
-                metax_contract["title"].get("und")
-            )
-        },
+        "title": {"und": (metax_contract["title"].get("und"))},
         "quota": metax_contract["quota"],
         "organization": metax_contract["organization"],
         "contact": metax_contract["contact"],
@@ -148,11 +145,15 @@ def map_dataset(metax_dataset):
                     "total_files_size"
                 ],
                 "csc_project": metax_dataset["fileset"]["csc_project"],
+                "total_files_count": metax_dataset["fileset"][
+                    "total_files_count"
+                ],
             }
             if metax_dataset["fileset"]
             else {
                 "total_files_size": 0,
-                "csc_project": None
+                "csc_project": None,
+                "total_files_count": 0,
             }
         ),
         "preservation": (
@@ -162,7 +163,7 @@ def map_dataset(metax_dataset):
                 "reason_description": metax_dataset["preservation"][
                     "reason_description"
                 ],
-                # This field is created when a IDA-QVAIN dataset is preserved
+                # This field is created when a dataset is preserved
                 "dataset_version": (
                     {
                         "id": metax_dataset["preservation"]["dataset_version"][
@@ -271,8 +272,6 @@ def map_dataset(metax_dataset):
                 ),
                 "user": metax_dataset["metadata_owner"].get("user"),
             }
-            if metax_dataset["metadata_owner"] is not None
-            else None
         ),
         "data_catalog": metax_dataset["data_catalog"],
     }

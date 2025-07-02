@@ -19,7 +19,11 @@ BASE = {
     "title": {"en": "testing"},
     "description": None,
     "modified": "test_modified_date",
-    "fileset": {"total_files_size": 0, "csc_project": None},
+    "fileset": {
+        "total_files_size": 0,
+        "csc_project": None,
+        "total_files_count": 0,
+    },
     "preservation": {
         "state": -1,
         "description": None,
@@ -48,7 +52,11 @@ BASE = {
 
 FULL = _construct_dataset_response(
     description={"en": "A descriptive description describing the content."},
-    fileset={"total_files_size": 300, "csc_project": None},
+    fileset={
+        "total_files_size": 300,
+        "csc_project": None,
+        "total_files_count": 3,
+    },
     preservation={
         "state": 75,
         "description": {"en": "preservation_description"},
