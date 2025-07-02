@@ -496,7 +496,7 @@ def test_get_files_dict(requests_mock, metax):
 
     :returns: ``None``
     """
-    url_1 = f"{metax.baseurl}/files?include_nulls=True&limit=10000&csc_project=test"
+    url_1 = f"{metax.baseurl}/files?csc_project=test"
     file_1 = create_test_file(
         id="file1_identifier", pathname="/path/file1", storage_service="pas1"
     )
@@ -1009,26 +1009,26 @@ def test_lock_dataset(requests_mock, metax, action):
     files, depending on whether the dataset is being locked or unlocked
     """
     requests_mock.patch(
-        f"{metax.baseurl}/datasets/foobar/preservation?include_nulls=true",
+        f"{metax.baseurl}/datasets/foobar/preservation",
         json={},
     )
     requests_mock.get(
-        f"{metax.baseurl}/datasets/foobar/files?include_nulls=true&limit=10000",
+        f"{metax.baseurl}/datasets/foobar/files",
         json={
             "results": [
                 create_test_file(id="file_1"),
                 create_test_file(id="file_2"),
             ],
             "next": f"{metax.baseurl}/datasets/foobar/files"
-            "?include_nulls=true&page=2&limit=10000",
+            "?page=2",
         },
     )
     requests_mock.get(
-        f"{metax.baseurl}/datasets/foobar/files?include_nulls=true&page=2&limit=10000",
+        f"{metax.baseurl}/datasets/foobar/files?page=2",
         json={"results": [create_test_file(id="file_3")], "next": None},
     )
     files_patch = requests_mock.post(
-        f"{metax.baseurl}/files/patch-many?include_nulls=true", json={}
+        f"{metax.baseurl}/files/patch-many", json={}
     )
     dataset_patch = requests_mock.patch(
         f"{metax.baseurl}/datasets/foobar/preservation", json={}
