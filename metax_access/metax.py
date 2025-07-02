@@ -112,28 +112,32 @@ class Metax:
         return json
 
     def get_datasets_by_ids(
-        self, dataset_ids, limit=1000000, offset=0, fields=None
+        self, dataset_ids, limit=1000000, offset=0
     ):
         """Get datasets with given identifiers.
 
         :param list dataset_ids: Dataset identifiers
         :param limit: Max number of datasets to return
         :param offset: Offset for paging
-        :param list fields: Optional list of fields to retrieve for each
-                            dataset. If not set, all fields are retrieved.
         :returns: List of found datasets
         """
-        # TODO: Does not have a implementation in v3
-        # just looks for the datasets seperately
-        params = {}
-        if fields is not None:
-            params["fields"] = fields
-        datasets = []
-        for dataset_id in dataset_ids:
-            url = f"{self.baseurl}/datasets/{dataset_id}"
-            response = self.get(url, params=params)
-            datasets.append(map_dataset(response.json()))
-        return datasets
+        # TODO: This is initially get_datasets with extra params
+        # If no additional checks are made to ensure that all
+        # datasets with ids are included to response, this should be
+        # merged to get_datasets.
+        # This method is only used by upload_rest_api and no error is raised
+        # in metax if dataset id does not exist, the non existens datasets
+        # are simply left out from the response.
+        params = {
+            "id": dataset_ids,
+            "limit": limit,
+            "offset": offset
+        }
+        url = f"{self.baseurl}/datasets"
+        response = self.get(url, params=params)
+        json = response.json()
+        json["results"] = [map_dataset(dataset) for dataset in json["results"]]
+        return json
 
     def get_contracts(self, limit="1000000", offset="0"):
         """Get the data for contracts list from Metax.
