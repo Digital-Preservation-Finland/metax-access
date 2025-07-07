@@ -108,7 +108,7 @@ class Metax:
         json["results"] = [map_dataset(dataset) for dataset in json["results"]]
         return json
 
-    def get_datasets_by_ids(self, dataset_ids, limit=1000000, offset=0):
+    def get_datasets_by_ids(self, dataset_ids):
         """Get datasets with given identifiers.
 
         :param list dataset_ids: Dataset identifiers
@@ -117,21 +117,23 @@ class Metax:
         :returns: List of found datasets
         """
         # TODO: This is initially get_datasets with extra params
-        # If no additional checks are made to ensure that all
-        # datasets with ids are included to response, this should be
-        # merged to get_datasets.
+        # and could be merged with get_datasets method.
+
         # This method is only used by upload_rest_api and no error is raised
         # in metax if dataset id does not exist, the non existens datasets
         # are simply left out from the response.
-        params = {
-            "id": dataset_ids,
-            "limit": limit,
-            "offset": offset
-        }
-        url = f"{self.baseurl}/datasets"
-        response = self.get(url, params=params)
-        json = response.json()
-        return [map_dataset(dataset) for dataset in json["results"]]
+        dataset_results = []
+        batch_size = 100
+        total_batches = (len(dataset_ids) // batch_size) + 1
+
+        for i in range(total_batches):
+            if batch_ids := dataset_ids[i * batch_size:(i + 1) * batch_size]:
+                params = {"id": ",".join(batch_ids), "pagination": False}
+                url = f"{self.baseurl}/datasets"
+                response = self.get(url, params=params)
+                dataset_results.extend(response.json())
+
+        return [map_dataset(dataset) for dataset in dataset_results]
 
     def get_contracts(self, limit="1000000", offset="0"):
         """Get the data for contracts list from Metax.

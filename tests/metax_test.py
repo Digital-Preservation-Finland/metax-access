@@ -203,7 +203,7 @@ def test_get_datasets_by_ids(requests_mock, caplog, metax):
     expected_datasets = [create_test_dataset(id=id_) for id_ in ["foo", "bar"]]
     metax_mock = requests_mock.get(
         f"{metax.baseurl}/datasets",
-        json={"results": expected_datasets},
+        json=expected_datasets,
     )
 
     query_ids = ["foo", "bar", "cat"]
@@ -212,9 +212,45 @@ def test_get_datasets_by_ids(requests_mock, caplog, metax):
     # Check that correct query parameter were used
     query_string = metax_mock.last_request.qs
 
-    assert query_string["limit"][0] == "1000000"
-    assert query_string["offset"][0] == "0"
-    assert query_string["id"] == query_ids
+    assert query_string["id"][0] == ",".join(query_ids)
+
+    # No errors should be logged
+    logged_errors = [r for r in caplog.records if r.levelname == "ERROR"]
+    assert not logged_errors
+
+    assert datasets == expected_datasets
+
+@pytest.mark.parametrize(
+    ("number_of_ids"),
+    [
+        (100),
+        (250),
+    ],
+)
+def test_get_datasets_by_ids_query_many_ids(requests_mock, caplog, metax, number_of_ids):
+    """Test ``get_datasets_by_ids`` function with multiple ids as
+    then the id list is sliced to reduce the lenght of the URL query.
+    """
+
+    query_ids = [str(id_) for id_ in range(0, number_of_ids)]
+    expected_datasets = [create_test_dataset(id=id_) for id_ in query_ids]
+
+    requests_mock.get(
+        f"{metax.baseurl}/datasets?id={','.join(query_ids[0:100])}",
+        json=expected_datasets[0:100],
+    )
+    if number_of_ids == 250:
+        requests_mock.get(
+            f"{metax.baseurl}/datasets?id={','.join(query_ids[100:200])}",
+            json=expected_datasets[100:200],
+        )
+        requests_mock.get(
+            f"{metax.baseurl}/datasets?id={','.join(query_ids[200:250])}",
+            json=expected_datasets[200:250],
+        )
+
+    datasets = metax.get_datasets_by_ids(query_ids)
+    assert len(datasets) == number_of_ids
 
     # No errors should be logged
     logged_errors = [r for r in caplog.records if r.levelname == "ERROR"]
