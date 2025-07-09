@@ -74,9 +74,6 @@ FULL = _construct_file(
 MINIMAL_CHARACTERISTICS_FIELD = _construct_file(
     characteristics={
         "file_format_version": None,
-        "deprecated": None,
-        "file_format": "test/format",
-        "format_version": "",
         "encoding": "UTF-TEST",
         "csv_has_header": None,
         "csv_quoting_char": None,
