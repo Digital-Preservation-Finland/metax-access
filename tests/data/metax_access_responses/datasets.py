@@ -173,29 +173,11 @@ FULL = _construct_dataset_response(
         {
             "title": {"en": "Data collection"},
             "temporal": {
-                "temporal_coverage": None,
                 "start_date": "1999-01-01T00:00:00.000Z",
-                "end_date": "1999-02-01T00:00:00.000Z",
             },
             "description": {"en": "Data collection process"},
             "event_outcome": {"pref_label": {"en": "Success"}, "url": None},
             "outcome_description": {"en": "Great success"},
-            "is_associated_with": [
-                {
-                    "roles": [],
-                    "person": {
-                        "name": "Teppo Testaaja",
-                        "external_identifier": None,
-                        "email": None,
-                    },
-                    "organization": {
-                        "pref_label": {"en": "CSC"},
-                        "url": None,
-                        "external_identifier": None,
-                        "parent": None,
-                    },
-                }
-            ],
             "lifecycle_event": {"pref_label": {"en": "Collected"}},
         }
     ],
