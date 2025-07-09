@@ -1,5 +1,8 @@
 """Sample Metax contract data."""
 
+# TODO: This is almost identical to metax_access.template_data.CONTRACT.
+# The requirement for two almost identical test data cases should be 
+# revisited at least in TPASPKT-1529.
 BASE = {
     "id": "test_contract_id",
     "title": {"und": "Test Contract Title", "en": "Test Contract Title"},

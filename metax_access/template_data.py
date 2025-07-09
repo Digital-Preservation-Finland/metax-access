@@ -1,4 +1,4 @@
-"""Template Metax data."""
+"""Template Metax data for testing purposes."""
 
 CONTRACT = {
     "id": "urn:uuid:abcd1234-abcd-1234-5678-abcd1234abcd",
