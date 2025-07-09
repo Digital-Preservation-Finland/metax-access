@@ -241,11 +241,7 @@ def map_dataset(metax_dataset):
                 "title": p["title"],
                 "temporal": (
                     {
-                        "temporal_coverage": p["temporal"][
-                            "temporal_coverage"
-                        ],
-                        "start_date": p["temporal"]["start_date"],
-                        "end_date": p["temporal"]["end_date"],
+                        "start_date": p["temporal"]["start_date"]
                     }
                     if p["temporal"] is not None
                     else None
@@ -260,7 +256,6 @@ def map_dataset(metax_dataset):
                     else None
                 ),
                 "outcome_description": p["outcome_description"],
-                "is_associated_with": _map_actors(p["is_associated_with"]),
                 "lifecycle_event": (
                     {"pref_label": p["lifecycle_event"]["pref_label"]}
                     if p["lifecycle_event"] is not None
