@@ -194,6 +194,11 @@ def test_get_datasets(requests_mock, caplog, metax, qs):
     logged_errors = [r for r in caplog.records if r.levelname == "ERROR"]
     assert not logged_errors
 
+    # The method uses response_mapper.map_dataset to transform the results.
+    # Since the mapping logic is tested in the response_mapper_test module,
+    # the mocked Metax response returns pre-mapped data.
+    # This assertion ensures that get_datasets does
+    # not modify the mapped response further.
     assert datasets["results"] == expected_datasets
 
 
