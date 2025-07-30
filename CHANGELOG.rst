@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a
 Changelog <https://keepachangelog.com/en/1.1.0/>`__.
 
+1.1.0 - 2025-07-30
+------------------
+
+Added
+~~~~~
+
+- Template data for testing
+
+Fixed
+~~~~~
+- Fixed output of ``get_dataset_directory`` method
+- Fixed access rights in dataset metadata
+- Removed unnecessary provenance metadata from dataset metadata
+
 1.0.0 - 2025-05-26
 ------------------
 
