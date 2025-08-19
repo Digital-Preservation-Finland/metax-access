@@ -1,4 +1,5 @@
 """Metax interface class."""
+from __future__ import annotations
 
 import logging
 import re
@@ -697,7 +698,9 @@ class Metax:
         ]
 
     def request(
-            self, method, url, allowed_status_codes=None, params=None,
+            self, method: str, url: str,
+            allowed_status_codes: list[int] | None = None,
+            params: dict[str, str] | None = None,
             **kwargs):
         """Send authenticated HTTP request.
 
@@ -705,6 +708,7 @@ class Metax:
         authentication. Raises HTTPError if request fails with status code
         other than one of the allowed status codes.
 
+        :param method: HTTP method (eg. GET, POST, ...)
         :param url: Request URL
         :param allowed_status_codes: List of allowed HTTP error codes
         :param params: Query parameters
