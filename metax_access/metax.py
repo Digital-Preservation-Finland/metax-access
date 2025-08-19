@@ -2,6 +2,7 @@
 
 import logging
 import re
+from urllib.parse import parse_qs, urlparse
 
 import requests
 
@@ -695,7 +696,9 @@ class Metax:
             for file_format_version in result
         ]
 
-    def request(self, method, url, allowed_status_codes=None, **kwargs):
+    def request(
+            self, method, url, allowed_status_codes=None, params=None,
+            **kwargs):
         """Send authenticated HTTP request.
 
         This function is a wrapper function for requests.requets with automatic
@@ -704,20 +707,33 @@ class Metax:
 
         :param url: Request URL
         :param allowed_status_codes: List of allowed HTTP error codes
+        :param params: Query parameters
         :returns: requests response
         """
         if not allowed_status_codes:
             allowed_status_codes = []
 
+        if not params:
+            params = {}
+
         if "verify" not in kwargs:
             kwargs["verify"] = self.verify
 
-        kwargs.setdefault("params", {}).setdefault(
-                "include_nulls", True
-            )
+        # Move all query parameters from URL to a dict and ensure the query
+        # string is left empty. This prevents the default `?include_nulls=True`
+        # value from being appended again with each successive call when
+        # iterating paginated results, eventually resulting in the URL
+        # exceeding the length limit and causing a failure.
+        url_params = parse_qs(urlparse(url).query)
+        params = url_params | params  # Prioritize user params
+
+        url = urlparse(url)._replace(query="").geturl()
+
+        params.setdefault("include_nulls", True)
+
         kwargs["headers"] = {"Authorization": f"Token {self.token}"}
 
-        response = requests.request(method, url, **kwargs)
+        response = requests.request(method, url, params=params, **kwargs)
         request = response.request
         logger.debug("%s %s\n%s", request.method, request.url, request.body)
         try:
