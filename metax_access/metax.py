@@ -411,13 +411,13 @@ class Metax:
             },
         )
 
-    def get_datacite(self, dataset_id, dummy_doi="false"):
+    def get_datacite(self, dataset_id: str) -> bytes:
         """Get descriptive metadata in datacite xml format.
 
         :param dataset_id: Identifier of the dataset
         :param dummy_doi: "false" or "true". "true" asks Metax to use
                           a dummy DOI if the actual DOI is not yet generated
-        :returns: Datacite XML as string
+        :returns: Datacite XML as bytes
         """
         url = f"{self.baseurl}/datasets/{dataset_id}/metadata-download"
         params = {"format": "datacite"}
@@ -592,14 +592,14 @@ class Metax:
 
         # Endpoint has pagination that involves two lists at the same time:
         # 'files' and 'directories'
-        next = data["next"]
+        next_ = data["next"]
 
-        while next:
-            response = self.get(next)
+        while next_:
+            response = self.get(next_)
             data = response.json()
             result["directories"] += data["results"]["directories"]
             result["files"] += data["results"]["files"]
-            next = data["next"]
+            next_ = data["next"]
 
         return map_directory_files(result)
 
