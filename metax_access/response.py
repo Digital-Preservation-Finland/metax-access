@@ -20,19 +20,31 @@ else:
     Required = Union
 
 
-class MetaxFileDatasetMetadata(TypedDict):
+class MetaxPrefLabel(TypedDict):
+    en: str
+    fi: str
+
+
+class MetaxFileDatasetMetadataEntry(TypedDict, total=False):
+    id: Optional[str]
+    url: Optional[str]
+    in_schema: Optional[str]
+    pref_label: Optional[MetaxPrefLabel]
+
+
+class MetaxFileDatasetMetadata(TypedDict, total=False):
     title: Optional[str]
-    file_type: Optional[str]
-    use_category: Optional[str]
+    file_type: Optional[MetaxFileDatasetMetadataEntry]
+    use_category: Optional[MetaxFileDatasetMetadataEntry]
 
 
-class MetaxFileFormatVersion(TypedDict):
-    pref_label: Optional[str]
+class MetaxFileFormatVersion(TypedDict, total=False):
+    pref_label: Optional[MetaxPrefLabel]
     file_format: Optional[str]      # MIME type
     format_version: Optional[str]
 
 
-class MetaxFileCharacteristics(TypedDict):
+class MetaxFileCharacteristics(TypedDict, total=False):
     encoding: Optional[str]        # UTF-8, UTF-16, UTF-32 or ISO-8859-15
     csv_has_header: Optional[bool]
     csv_quoting_char: Optional[str]
@@ -46,7 +58,7 @@ class MetaxFileCharacteristics(TypedDict):
 
 class MetaxFile(TypedDict, total=False):
     id: Required[str]                       # UUID
-    storage_identifier: Optional[str]
+    storage_identifier: Required[str]
     pathname: Required[str]                 # Always starts with '/'
     filename: Required[str]
     size: Required[int]
@@ -54,12 +66,15 @@ class MetaxFile(TypedDict, total=False):
     storage_service: Required[str]          # 'pas', 'ida' or 'test'
     csc_project: Required[str]
     frozen: Optional[str]                   # ISO 8601 date
-    modified: Required[str]                                # ISO 8601 date
+    modified: Optional[str]                 # ISO 8601 date
     removed: Optional[str]                  # ISO 8601 date
     published: Optional[str]                # ISO 8601 date
     dataset_metadata: Optional[MetaxFileDatasetMetadata]
     characteristics: Optional[MetaxFileCharacteristics]
     characteristics_extension: Optional[dict]  # Free-form contents
+    pas_process_running: Optional[bool]
+    pas_compatible_file: Optional[str]
+    non_pas_compatible_file: Optional[str]
 
     # TODO: Temporary field used during V2-V3 transition. Metax V3 has no
     # file creation date field, but this is still required for V2.
