@@ -41,10 +41,12 @@ class MetaxFileDatasetMetadata(TypedDict, total=False):
     use_category: Optional[MetaxFileDatasetMetadataEntry]
 
 
-class MetaxFileFormatVersion(TypedDict, total=False):
-    pref_label: Optional[MetaxPrefLabel]
-    file_format: Optional[str]      # MIME type
-    format_version: Optional[str]
+class MetaxFileFormatVersion(
+    MetaxFileDatasetMetadataEntry, TypedDict, total=False
+):
+    file_format: Required[Optional[str]]      # MIME type
+    format_version: Required[Optional[str]]
+    deprecated: Optional[str]
 
 
 class MetaxFileCharacteristics(TypedDict, total=False):

@@ -1,7 +1,7 @@
 """Mapper for Metax responses."""
 
 from __future__ import annotations
-from typing import Sequence
+from collections.abc import Iterable
 
 from metax_access.response import (
     MetaxAccessRights,
@@ -273,7 +273,7 @@ def map_dataset(metax_dataset: MetaxDataset) -> MetaxDataset:
     }
 
 
-def _map_actors(actors: Sequence[MetaxActor]) -> list[MetaxActor]:
+def _map_actors(actors: Iterable[MetaxActor]) -> list[MetaxActor]:
     """A helper method for mapping actors in a dataset."""
 
     def _map_actor(actor: MetaxActor) -> MetaxActor:
