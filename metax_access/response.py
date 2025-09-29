@@ -8,7 +8,7 @@ period.
 
 For underlying data models, see:
 
-https://metax-v3.fd-staging.csc.fi/v3/swagger/
+https://metax.fd-staging.csc.fi/v3/swagger/
 """
 from collections.abc import Sequence
 from typing import Any, TypedDict, Optional, Union, TYPE_CHECKING
