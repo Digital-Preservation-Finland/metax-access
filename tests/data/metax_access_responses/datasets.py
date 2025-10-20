@@ -34,6 +34,7 @@ BASE = {
             "preservation_state": None,
         },
         "contract": None,
+        "pas_package_created": None,
     },
     "access_rights": None,
     "version": 1,
@@ -67,6 +68,7 @@ FULL = _construct_dataset_response(
             "preservation_state": 75,
         },
         "contract": "agreement:identifier1",
+        "pas_package_created": True,
     },
     access_rights={
         "license": [

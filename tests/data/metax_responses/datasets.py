@@ -214,6 +214,7 @@ FULL = _construct_dataset(
         "reason_description": "preservation_reason_description",
         "state": 75,
         "preservation_identifier": None,
+        "pas_package_created": True,
     },
     provenance=[
         {

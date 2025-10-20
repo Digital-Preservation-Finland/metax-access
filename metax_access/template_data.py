@@ -72,6 +72,7 @@ DATASET = {
         },
         "contract": "test_contract_id",
         "preservation_identifier": None,
+        "pas_package_created": None,
     },
     "projects": [],
     "provenance": [],

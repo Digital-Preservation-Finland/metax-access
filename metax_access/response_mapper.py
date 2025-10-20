@@ -173,6 +173,7 @@ def map_dataset(metax_dataset: MetaxDataset) -> MetaxDataset:
             "preservation_state": None,
         },
         "contract": None,
+        "pas_package_created": None,
     }
 
     if (input_pres := metax_dataset["preservation"]) is not None:
@@ -180,6 +181,7 @@ def map_dataset(metax_dataset: MetaxDataset) -> MetaxDataset:
         preservation["description"] = input_pres["description"]
         preservation["reason_description"] = input_pres["reason_description"]
         preservation["contract"] = input_pres["contract"]
+        preservation["pas_package_created"] = input_pres["pas_package_created"]
 
         if (dataset_ver := input_pres.get("dataset_version")) is not None:
             preservation["dataset_version"] = {
