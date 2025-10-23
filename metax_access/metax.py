@@ -35,7 +35,7 @@ from metax_access.utils import extended_result, update_nested_dict
 # pylint: disable=unused-import
 from metax_access import (  # noqa: F401 isort:skip
     DS_STATE_ALL_STATES,
-    DS_STATE_ACCEPTED_TO_DIGITAL_PRESERVATION,
+    DS_STATE_DATASET_VALIDATED,
     DS_STATE_GENERATING_METADATA,
     DS_STATE_IN_DIGITAL_PRESERVATION,
     DS_STATE_IN_DISSEMINATION,
