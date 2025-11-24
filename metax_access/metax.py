@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 import re
 from typing import Any, TypedDict
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlparse, urlencode
 
 import requests
 
@@ -471,13 +471,20 @@ class Metax:
             return result["fileset"]["total_files_count"]
         return 0
 
-    def get_dataset_files(self, dataset_id: str) -> list[MetaxFile]:
+    def get_dataset_files(
+            self, dataset_id: str, fields: None | list[str] = None
+            ) -> list[MetaxFile]:
         """Get files metadata of dataset Metax.
 
-        :param str dataset_id: Identifier of the dataset
+        :param dataset_id: Identifier of the dataset
+        :param fields: If provided, only given fields are returned
         :returns: metadata of dataset files as json
         """
-        url = f"{self.baseurl}/datasets/{dataset_id}/files?limit=10000"
+        params = {"limit": 10000}
+        if fields:
+            params["fields"] = ",".join(fields)
+
+        url = f"{self.baseurl}/datasets/{dataset_id}/files?{urlencode(params)}"
         result = []
         while url is not None:
             response = self.get(url, allowed_status_codes=[404])
@@ -485,6 +492,14 @@ class Metax:
                 raise DatasetNotAvailableError
             url = response.json()["next"]
             result.extend(response.json()["results"])
+
+        if fields:
+            # If custom fields were provided, only provide said fields
+            # skipping the mapping
+            return [
+                {key: value for key, value in file.items() if key in fields}
+                for file in result
+            ]
 
         return [map_file(file) for file in result]
 

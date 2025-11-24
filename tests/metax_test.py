@@ -470,6 +470,25 @@ def test_get_dataset_files(requests_mock, metax):
     assert paging.called_once
 
 
+def test_get_dataset_files_fields(requests_mock, metax):
+    """
+    Retrieve file metadata using ``get_dataset_files`` method only requesting
+    certain fields
+    """
+    dataset_id = "dataset_id"
+    url = f"{metax.baseurl}/datasets/{dataset_id}/files"
+
+    files = [create_test_file(id=f"id_{i}") for i in range(0, 3)]
+
+    requests_mock.get(url, json={"next": None, "results": files})
+
+    result_files = metax.get_dataset_files(
+        dataset_id, fields=["id", "pathname"]
+    )
+
+    assert set(result_files[0].keys()) == {"id", "pathname"}
+
+
 @pytest.mark.parametrize(
     ("file_path", "results"),
     [
