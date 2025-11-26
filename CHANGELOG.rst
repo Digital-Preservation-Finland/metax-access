@@ -6,13 +6,19 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a
 Changelog <https://keepachangelog.com/en/1.1.0/>`__.
 
-Unreleased
-----------
+2.0.0 - 2025-11-26
+------------------
 
 Added
 ~~~~~
 
 - Add ``fields`` parameter to ``get_dataset_files``
+- Add field ``preservation.pas_package_created`` to dataset
+
+Changed
+~~~~~~~
+
+- Rename state ``ACCEPTED_TO_DIGITAL_PRESERVATION`` to ``DATASET_VALIDATED``
 
 1.1.1 - 2025-08-20
 ------------------
