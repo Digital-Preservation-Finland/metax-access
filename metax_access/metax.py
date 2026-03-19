@@ -657,6 +657,71 @@ class Metax:
         except StopIteration as exc:
             raise FileNotAvailableError from exc
 
+    def get_directory_files_recursively(
+        self, project: str, path: str
+    ) -> list[MetaxFile]:
+        """Get list of all files in directory and its subdirectories.
+
+        :param str project: project identifier of the directory
+        :param str path: path of the directory
+        """
+        # The path must have traling slash to avoid matching other paths
+        # that start with the characters
+        path = path.rstrip("/") + "/"
+        url = f"{self.baseurl}/files"
+        result = extended_result(
+            url,
+            self,
+            params={"pathname__startswith": path, "csc_project": project}
+        )
+        return [map_file(file) for file in result]
+
+    def get_directory(
+        self, project: str, path: str
+    ) -> MetaxDirectoryFiles:
+        """Get directory metadata, subdirectories and files.
+
+        :param project: project identifier of the directory
+        :param path: path of the directory
+        """
+        url = f"{self.baseurl}/directories"
+
+        response = self.get(
+            url,
+            params={
+                "storage_service": "pas",
+                "path": path,
+                "csc_project": project,
+            },
+            allowed_status_codes=[404],
+        )
+        if response.status_code == 404:
+            # Instead of raising error, return empty lists
+            return map_directory_files(
+                {"directory": None, "directories": [], "files": []}
+            )
+
+        data = response.json()
+
+        result: MetaxDirectoryFiles = {
+            "directory": data["results"]["directory"],
+            "directories": data["results"]["directories"],
+            "files": data["results"]["files"],
+        }
+
+        # Endpoint has pagination that involves two lists at the same time:
+        # 'files' and 'directories'
+        next_ = data["next"]
+
+        while next_:
+            response = self.get(next_)
+            data = response.json()
+            result["directories"] += data["results"]["directories"]
+            result["files"] += data["results"]["files"]
+            next_ = data["next"]
+
+        return map_directory_files(result)
+
     def lock_dataset(self, dataset_id: str) -> None:
         """Lock the dataset's files and the dataset.
 

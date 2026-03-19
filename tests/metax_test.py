@@ -1167,3 +1167,113 @@ def test_set_contract(requests_mock, metax):
 
     request_body = requests_mock.last_request.json()
     assert request_body["contract"] == "new:contract:id"
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        # without trailing slash
+        "/testdir",
+        # with trailing slash
+        "/testdir/",
+    ]
+)
+def test_get_directory_files_recursively(requests_mock, metax, path):
+    """Test getting directory files recursively.
+
+    :param path: Path of the directory
+    """
+    # Mock metax
+    requests_mock.get(
+        "/v3/files?pathname__startswith=/testdir/&csc_project=test_project",
+        json={
+            "next": "https://thenexturl",
+            "results": [
+                create_test_file(id="testfile1"),
+                create_test_file(id="testfile2"),
+            ]
+        }
+    )
+    requests_mock.get(
+        "https://thenexturl/",
+        json={
+            "next": None,
+            "results": [create_test_file(id="testfile3")]
+        }
+    )
+
+    results = metax.get_directory_files_recursively(
+        project="test_project",
+        path=path,
+    )
+    assert [file["id"] for file in results] \
+        == ["testfile1", "testfile2", "testfile3"]
+
+
+def test_get_directory(requests_mock, metax):
+    """Test getting directory."""
+    # Mock metax
+    subdirectory1 = {
+        "name": "subdir1",
+        "size": 50,
+        "file_count": 2,
+        "pathname": "/testdir/subdir1",
+    }
+    subdirectory2 = {
+        "name": "subdir2",
+        "size": 50,
+        "file_count": 2,
+        "pathname": "/testdir/subdir2",
+    }
+    # First page contains one directory
+    requests_mock.get(
+        "/v3/directories?path=/testdir&csc_project=test_project"
+        "&storage_service=pas",
+        json={
+            "next": "https://secondpage",
+            "results": create_test_directory_files(
+                # The `directory` is same in all pages
+                directory__pathname="/testdir",
+                directories=[subdirectory1],
+                files=[],
+            ),
+        }
+    )
+    # Second page contains one directory and one file
+    requests_mock.get(
+        "https://secondpage/",
+        json={
+            "next": "https://thirdpage/",
+            "results": create_test_directory_files(
+                # The `directory` is same in all pages
+                directory__pathname="/testdir",
+                directories=[subdirectory2],
+                files=[create_test_file(id="testfile1")],
+            ),
+        }
+    )
+    # Third page contains one file
+    requests_mock.get(
+        "https://thirdpage/",
+        json={
+            "next": None,
+            "results": create_test_directory_files(
+                # The `directory` is same in all pages
+                directory__pathname="/testdir",
+                directories=[],
+                files=[create_test_file(id="testfile2")],
+            ),
+        }
+    )
+
+    # Get directory. The result should contains two directories and two
+    # files.
+    results = metax.get_directory(
+        project="test_project",
+        path="/testdir",
+    )
+    assert results["directory"]["pathname"] == "/testdir"
+    assert [directory["name"] for directory in results["directories"]]\
+        == ["subdir1", "subdir2"]
+    assert [file["id"] for file in results["files"]]\
+        == ["testfile1", "testfile2"]
