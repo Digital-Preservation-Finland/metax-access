@@ -7,6 +7,7 @@ from metax_access.response import (
     MetaxAccessRights,
     MetaxActor,
     MetaxContract,
+    MetaxContractRationale,
     MetaxDataFieldBase,
     MetaxDataset,
     MetaxDirectoryFiles,
@@ -128,6 +129,21 @@ def map_contract(metax_contract: MetaxContract) -> MetaxContract:
     """Maps a Metax contract response to a minimum response
     required by the FDPAS services.
     """
+    def _map_rationales(rationales):
+        result: list[MetaxContractRationale] = [
+            {
+                "id": rationale["id"],
+                "rationale": {
+                    "url": rationale["rationale"]["url"],
+                    "pref_label": rationale["rationale"]["pref_label"]
+                },
+                "expiration_date": rationale["expiration_date"]
+            }
+            for rationale in rationales
+        ]
+
+        return result
+
     return {
         "id": metax_contract["id"],
         "title": {"und": (metax_contract["title"].get("und"))},
@@ -140,6 +156,12 @@ def map_contract(metax_contract: MetaxContract) -> MetaxContract:
             if metax_contract["description"] is not None
             else {"und": None}
         ),
+        "data_sensitivity": {
+            "is_sensitive": metax_contract["data_sensitivity"]["is_sensitive"],
+            "rationales": _map_rationales(
+                metax_contract["data_sensitivity"]["rationales"]
+            )
+        },
         "created": metax_contract["created"],
         "validity": metax_contract["validity"],
     }

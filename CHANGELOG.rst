@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a
 Changelog <https://keepachangelog.com/en/1.1.0/>`__.
 
+Unreleased
+----------
+
+Added
+~~~~~
+
+- Add ``data_sensitivity`` field to contract
+
 2.1.0 - 2026-04-29
 ------------------
 

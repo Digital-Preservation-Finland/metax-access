@@ -158,6 +158,17 @@ class MetaxUrlField(TypedDict):
     url: str
 
 
+class MetaxContractRationale(TypedDict):
+    id: Required[str]
+    rationale: Required[MetaxDataField]
+    expiration_date: Required[Optional[str]]
+
+
+class MetaxContractDataSensitivity(TypedDict):
+    rationales: Required[Sequence[MetaxContractRationale]]
+    is_sensitive: Required[bool]
+
+
 class MetaxContract(TypedDict, total=False):
     id: Required[str]
     title: Required[MetaxPrefLabel]
@@ -169,6 +180,7 @@ class MetaxContract(TypedDict, total=False):
     validity: Required[DateRange]
     contact: Required[Sequence[MetaxContact]]
     related_service: Required[Sequence[RelatedService]]
+    data_sensitivity: Required[MetaxContractDataSensitivity]
     removed: Optional[bool]
 
 

@@ -25,5 +25,24 @@ BASE = {
     "related_service": [
         {"identifier": "local:service:id", "name": "Name of Service"}
     ],
+    "data_sensitivity": {
+        "is_sensitive": False,
+        "rationales": [
+            {
+                "id": "contract-rationale-1",
+                "rationale": {
+                    "url": "http://uri.suomi.fi/codelist/fairdata/sensitivity_rationale/code/tietosuojalaki-1050-2018",
+                    "pref_label": {
+                        "en": "Data Protection Act (1050/2018)",
+                        "fi": "Tietosuojalaki (1050/2018)",
+                        "sv": "Dataskyddslag (1050/2018)"
+                    },
+                    "broader": [],
+                    "narrower": []
+                },
+                "expiration_date": "2020-01-01"
+            }
+        ]
+    },
     "removed": None,
 }
