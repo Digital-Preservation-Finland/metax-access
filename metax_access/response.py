@@ -144,11 +144,11 @@ class RelatedService(TypedDict):
     name: str
 
 
-class MetaxDataFieldBase(TypedDict):
+class MetaxConceptBase(TypedDict):
     pref_label: MetaxPrefLabel
 
 
-class MetaxDataField(MetaxDataFieldBase, TypedDict, total=False):
+class MetaxConcept(MetaxConceptBase, TypedDict, total=False):
     id: Optional[str]
     in_scheme: Optional[str]
     url: Required[Optional[str]]
@@ -160,7 +160,7 @@ class MetaxUrlField(TypedDict):
 
 class MetaxContractRationale(TypedDict):
     id: Required[str]
-    rationale: Required[MetaxDataField]
+    rationale: Required[MetaxConcept]
     expiration_date: Required[Optional[str]]
 
 
@@ -209,7 +209,7 @@ class MetaxOrganization(TypedDict):
     pref_label: MetaxPrefLabel
     url: str
     external_identifier: str
-    parent: Optional[MetaxDataFieldBase]
+    parent: Optional[MetaxConceptBase]
 
 
 class MetaxActor(TypedDict, total=False):
@@ -248,9 +248,9 @@ class MetaxProvenance(TypedDict, total=False):
     title: Required[MetaxPrefLabel]
     temporal: Optional[DateRange]
     description: Required[MetaxPrefLabel]
-    event_outcome: Optional[MetaxDataField]
+    event_outcome: Optional[MetaxConcept]
     outcome_description: Required[MetaxPrefLabel]
-    lifecycle_event: Optional[MetaxDataFieldBase]
+    lifecycle_event: Optional[MetaxConceptBase]
 
 
 class MetaxSpatial(TypedDict):
@@ -265,7 +265,7 @@ class MetaxDataset(TypedDict, total=False):
     cumulative_state: Optional[int]
     data_catalog: Required[Optional[str]]
     description: Required[Optional[MetaxPrefLabel]]
-    field_of_science: Required[Sequence[MetaxDataFieldBase]]
+    field_of_science: Required[Sequence[MetaxConceptBase]]
     fileset: Required[MetaxFileSet]
     generate_pid_on_publish: Optional[str]
     infrastructure: Optional[Sequence[Any]]
@@ -283,7 +283,7 @@ class MetaxDataset(TypedDict, total=False):
     spatial: Required[Sequence[MetaxSpatial]]
     state: Optional[str]
     temporal: Optional[Sequence[DateRange]]
-    theme: Required[Sequence[MetaxDataFieldBase]]
+    theme: Required[Sequence[MetaxConceptBase]]
     title: Required[MetaxPrefLabel]
     created: Required[str]
     cumulation_started: Optional[str]

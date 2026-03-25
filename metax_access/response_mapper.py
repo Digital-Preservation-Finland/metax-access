@@ -8,7 +8,7 @@ from metax_access.response import (
     MetaxActor,
     MetaxContract,
     MetaxContractRationale,
-    MetaxDataFieldBase,
+    MetaxConceptBase,
     MetaxDataset,
     MetaxDirectoryFiles,
     MetaxFile,
@@ -319,7 +319,7 @@ def _map_actors(actors: Iterable[MetaxActor]) -> list[MetaxActor]:
             }
 
         if (org := actor.get("organization")) is not None:
-            parent: MetaxDataFieldBase | None = None
+            parent: MetaxConceptBase | None = None
             if org["parent"] is not None:
                 parent = {"pref_label": org["parent"]["pref_label"]}
 
