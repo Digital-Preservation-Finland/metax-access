@@ -147,7 +147,6 @@ def map_contract(metax_contract: MetaxContract) -> MetaxContract:
     """Maps a Metax contract response to a minimum response
     required by the FDPAS services.
     """
-
     return {
         "id": metax_contract["id"],
         "title": {"und": (metax_contract["title"].get("und"))},
