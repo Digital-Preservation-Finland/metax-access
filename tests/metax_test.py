@@ -1291,3 +1291,33 @@ def test_get_directory(requests_mock, metax):
         == ["subdir1", "subdir2"]
     assert [file["id"] for file in results["files"]]\
         == ["testfile1", "testfile2"]
+
+
+def test_get_sensitivity_rationales(requests_mock, metax):
+    url = f"{metax.baseurl}/reference-data/sensitivity-rationales"
+    requests_mock.get(
+    url,
+    json=[
+            {
+                "id": "test_rationale_id",
+                "url": "test_rationale_url",
+                "pref_label": {
+                    "en": "Name of the Test Rationale",
+                    "fi": "Testi Perusteen Nimi"
+                }
+            }
+        ]
+    )
+
+
+    result = metax.get_sensitivity_rationales()
+    assert result == [
+            {
+                "url": "test_rationale_url",
+                "pref_label": {
+                    "en": "Name of the Test Rationale",
+                    "fi": "Testi Perusteen Nimi"
+                }
+            }
+        ]
+    assert requests_mock.last_request.qs['pagination'][0] == 'false'

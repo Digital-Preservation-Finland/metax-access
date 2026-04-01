@@ -299,3 +299,8 @@ class MetaxDataset(TypedDict, total=False):
     version: Required[int]
     api_version: Optional[int]
     metadata_repository: Optional[str]
+
+
+class MetaxSensitivityRationale(TypedDict, total=False):
+    url: Required[str]
+    pref_label: Optional[MetaxPrefLabel]

@@ -13,6 +13,7 @@ Added
 ~~~~~
 
 - Add ``data_sensitivity`` field to contract
+- Add ``get_sensitivity_rationales`` to retrieve sensitivity rationales
 
 2.1.0 - 2026-04-29
 ------------------

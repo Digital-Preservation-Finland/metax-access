@@ -22,6 +22,7 @@ from metax_access.response import (
     MetaxFile,
     MetaxFileCharacteristics,
     MetaxFileFormatVersion,
+    MetaxSensitivityRationale
 )
 from metax_access.response_mapper import (
     map_contract,
@@ -766,6 +767,24 @@ class Metax:
                 "format_version": file_format_version["format_version"],
             }
             for file_format_version in result
+        ]
+
+    def get_sensitivity_rationales(self) -> list[MetaxSensitivityRationale]:
+        """Get sensitivity rationales.
+
+        :returns: A list of sensitivity rationales.
+        """
+        url = f"{self.baseurl}/reference-data/sensitivity-rationales"
+        params = {"pagination": False}
+        response = self.get(url, params=params)
+        result = response.json()
+
+        return [
+            {
+                "url": rationale["url"],
+                "pref_label": rationale["pref_label"],
+            }
+            for rationale in result
         ]
 
     def request(
