@@ -6,7 +6,7 @@
 BASE = {
     "id": "test_contract_id",
     "title": {"und": "Test Contract Title", "en": "Test Contract Title"},
-    "description": {"und": "Description of unknown length"},
+    "description": {"und": "Description of unknown length", "en":"Description of unknown length"},
     "quota": 111205,
     "created": "test_created_date",
     "modified": "test_modified_date",

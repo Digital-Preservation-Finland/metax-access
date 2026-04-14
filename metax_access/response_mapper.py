@@ -149,16 +149,12 @@ def map_contract(metax_contract: MetaxContract) -> MetaxContract:
     """
     return {
         "id": metax_contract["id"],
-        "title": {"und": (metax_contract["title"].get("und"))},
+        "title": metax_contract["title"],
         "quota": metax_contract["quota"],
         "organization": metax_contract["organization"],
         "contact": metax_contract["contact"],
         "related_service": metax_contract["related_service"],
-        "description": (
-            {"und": metax_contract["description"].get("und")}
-            if metax_contract["description"] is not None
-            else {"und": None}
-        ),
+        "description": metax_contract["description"],
         "data_sensitivity": {
             "is_sensitive": metax_contract["data_sensitivity"]["is_sensitive"],
             "rationales": _map_rationales(

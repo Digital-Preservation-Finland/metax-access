@@ -2,7 +2,8 @@
 
 BASE = {
     "id": "test_contract_id",
-    "title": {"und": "Test Contract Title"},
+    "title": {"und": "Test Contract Title", "en": "Test Contract Title"},
+    "description": {"und": "Description of unknown length", "en":"Description of unknown length"},
     "quota": 111205,
     "organization": {
         "name": "Test organization",
@@ -35,7 +36,6 @@ BASE = {
             }
         ]
     },
-    "description": {"und": "Description of unknown length"},
     "created": "test_created_date",
     "validity": {"start_date": "2014-01-17", "end_date": None},
 }
