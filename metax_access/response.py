@@ -82,10 +82,6 @@ class MetaxFile(TypedDict, total=False):
     pas_compatible_file: Optional[str]
     non_pas_compatible_file: Optional[str]
 
-    # TODO: Temporary field used during V2-V3 transition. Metax V3 has no
-    # file creation date field, but this is still required for V2.
-    _file_uploaded: Optional[str]
-
 
 class MetaxMinFile(TypedDict, total=False):
     id: Required[str]
