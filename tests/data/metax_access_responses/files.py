@@ -15,6 +15,7 @@ BASE = {
     "pathname": "/filename.txt",
     "filename": "filename.txt",
     "size": 14798,
+    "is_sensitive": False,
     "checksum": "sha256:test_checksum",
     "csc_project": "user_test_project",
     "storage_service": "test_pas",

@@ -67,6 +67,7 @@ class MetaxFile(TypedDict, total=False):
     pathname: Required[str]                 # Always starts with '/'
     filename: Required[str]
     size: Required[int]
+    is_sensitive: Required[bool]
     checksum: Required[str]                 # '<algo>:<hash>'
     storage_service: Required[str]          # 'pas', 'ida' or 'test'
     csc_project: Required[str]
@@ -90,6 +91,7 @@ class MetaxMinFile(TypedDict, total=False):
     id: Required[str]
     filename: Required[str]
     size: Required[str]
+    is_sensitive: Required[bool]
 
 
 class MetaxParentDirectory(TypedDict, total=False):

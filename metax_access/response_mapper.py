@@ -34,6 +34,7 @@ def map_directory_files(
             "id": file["id"],
             "filename": file["filename"],
             "size": file["size"],
+            "is_sensitive": file["is_sensitive"]
         }
         for file in metax_directory_files["files"]
     ]
@@ -113,6 +114,7 @@ def map_file(metax_file: MetaxFile) -> MetaxFile:
         "checksum": metax_file["checksum"],
         "csc_project": metax_file["csc_project"],
         "storage_service": metax_file["storage_service"],
+        "is_sensitive": metax_file["is_sensitive"],
         "dataset_metadata": dataset_metadata,
         "characteristics": characteristics,
         "characteristics_extension": metax_file.get(

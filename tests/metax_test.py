@@ -608,7 +608,12 @@ def test_get_dataset_directory(requests_mock, metax):
         "file_count": 2,
         "pathname": f"{dirpath}/sub_test_dir",
     }
-    file = {"id": "12345678", "filename": "test.txt", "size": 25}
+    file = {
+        "id": "12345678",
+        "filename": "test.txt",
+        "size": 25,
+        "is_sensitive": False
+    }
 
     requests_mock.get(
         url,

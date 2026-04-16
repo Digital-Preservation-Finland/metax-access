@@ -34,6 +34,7 @@ FULL = {
             "pathname": "/testdata/Test_Name/zero_size_file",
             "filename": "zero_size_file",
             "size": 0,
+            "is_sensitive": False,
             "storage_service": "test_storage_service",
             "csc_project": "test_project",
             "checksum": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",

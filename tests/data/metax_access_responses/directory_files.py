@@ -7,6 +7,7 @@ FULL = {
             "id": "68d4bcea-a020-446d-b20d-3bf3e022b7ba",
             "filename": "zero_size_file",
             "size": 0,
+            "is_sensitive": False,
         },
     ],
     "directories": [

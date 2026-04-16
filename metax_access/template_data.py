@@ -133,4 +133,5 @@ FILE = {
     "characteristics_extension": None,
     "pas_compatible_file": None,
     "non_pas_compatible_file": None,
+    "is_sensitive": False,
 }
