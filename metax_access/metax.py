@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 import re
 from typing import Any, TypedDict
-from urllib.parse import parse_qs, urlparse, urlencode
+from urllib.parse import parse_qs, urlparse
 
 import requests
 
@@ -29,7 +29,7 @@ from metax_access.response_mapper import (
     map_directory_files,
     map_file,
 )
-from metax_access.utils import extended_result, update_nested_dict
+from metax_access.utils import update_nested_dict
 
 # These imports are used by other projects (eg. upload-rest-api)
 # pylint: disable=unused-import
@@ -239,8 +239,8 @@ class Metax:
         """
         url = f"{self.baseurl}/datasets"
         params = {"preservation__contract": pid}
-        response = extended_result(url, self, params)
-        return [map_dataset(dataset) for dataset in response]
+        results = self._get_extended_results(url=url, params=params)
+        return [map_dataset(dataset) for dataset in results]
 
     def get_file(self, file_id: str) -> MetaxFile:
         """Get file metadata from Metax.
@@ -282,11 +282,10 @@ class Metax:
         :param project: project id
         :returns: Dict of all the files of a given project
         """
-        files = []
-        url = f"{self.baseurl}/files"
         # GET 10000 files every iteration until all files are read
-        files = extended_result(
-            url, self, params={"limit": 10000, "csc_project": project}
+        files = self._get_extended_results(
+            url=f"{self.baseurl}/files",
+            params={"limit": 10000, "csc_project": project},
         )
 
         file_dict = {}
@@ -484,24 +483,26 @@ class Metax:
         if fields:
             params["fields"] = ",".join(fields)
 
-        url = f"{self.baseurl}/datasets/{dataset_id}/files?{urlencode(params)}"
-        result = []
-        while url is not None:
-            response = self.get(url, allowed_status_codes=[404])
-            if response.status_code == 404:
-                raise DatasetNotAvailableError
-            url = response.json()["next"]
-            result.extend(response.json()["results"])
+        try:
+            results = self._get_extended_results(
+                url=f"{self.baseurl}/datasets/{dataset_id}/files",
+                params=params,
+                allowed_status_codes=[404],
+            )
+        except requests.HTTPError as error:
+            if error.response.status_code == 404:
+                raise DatasetNotAvailableError from error
+            raise
 
         if fields:
             # If custom fields were provided, only provide said fields
             # skipping the mapping
             return [
                 {key: value for key, value in file.items() if key in fields}
-                for file in result
+                for file in results
             ]
 
-        return [map_file(file) for file in result]
+        return [map_file(file) for file in results]
 
     def get_file2dataset_dict(self, file_storage_ids: list[str]) -> dict:
         """Get a dict of {file_identifier: [dataset_identifier...] mappings
@@ -604,38 +605,24 @@ class Metax:
         :param dataset_id: Dataset identifier
         :param path: Path of the directory
         """
-        url = f"{self.baseurl}/datasets/{dataset_id}/directories"
-        response = self.get(
-            url,
-            params={"path": path, "limit": 10_000},
-            allowed_status_codes=[404],
-        )
-        if response.status_code == 404:
-            # Instead of raising error, return empty lists
-            return map_directory_files(
-                {"directory": None, "directories": [], "files": []}
+        try:
+            results = self._get_extended_results(
+                url=f"{self.baseurl}/datasets/{dataset_id}/directories",
+                params={"path": path, "limit": 10_000},
+                allowed_status_codes=[404]
             )
+        except requests.HTTPError as error:
+            if error.response.status_code == 404:
+                # TODO: Currently the response from Metax is the same
+                # when the dataset does not exist, and when dataset
+                # exists but does not contain any files. Here we just
+                # expect that dataset exists.
+                return map_directory_files(
+                    {"directory": None, "directories": [], "files": []}
+                )
+            raise
 
-        data = response.json()
-
-        result: MetaxDirectoryFiles = {
-            "directory": data["results"]["directory"],
-            "directories": data["results"]["directories"],
-            "files": data["results"]["files"],
-        }
-
-        # Endpoint has pagination that involves two lists at the same time:
-        # 'files' and 'directories'
-        next_ = data["next"]
-
-        while next_:
-            response = self.get(next_)
-            data = response.json()
-            result["directories"] += data["results"]["directories"]
-            result["files"] += data["results"]["files"]
-            next_ = data["next"]
-
-        return map_directory_files(result)
+        return map_directory_files(results)
 
     def get_project_file(self, project: str, path: str) -> MetaxFile:
         """Get file of project by path.
@@ -644,14 +631,14 @@ class Metax:
         :param str path: path of the file
         :returns: file metadata
         """
-        url = f"{self.baseurl}/files"
-        result = extended_result(
-            url, self, params={"pathname": path, "csc_project": project}
+        results = self._get_extended_results(
+            url=f"{self.baseurl}/files",
+            params={"pathname": path, "csc_project": project},
         )
         try:
             return next(
                 map_file(file)
-                for file in result
+                for file in results
                 if file["pathname"].strip("/") == path.strip("/")
             )
         except StopIteration as exc:
@@ -668,13 +655,11 @@ class Metax:
         # The path must have traling slash to avoid matching other paths
         # that start with the characters
         path = path.rstrip("/") + "/"
-        url = f"{self.baseurl}/files"
-        result = extended_result(
-            url,
-            self,
-            params={"pathname__startswith": path, "csc_project": project}
+        results = self._get_extended_results(
+            url=f"{self.baseurl}/files",
+            params={"pathname__startswith": path, "csc_project": project},
         )
-        return [map_file(file) for file in result]
+        return [map_file(file) for file in results]
 
     def get_directory(
         self, project: str, path: str
@@ -684,43 +669,24 @@ class Metax:
         :param project: project identifier of the directory
         :param path: path of the directory
         """
-        url = f"{self.baseurl}/directories"
-
-        response = self.get(
-            url,
-            params={
-                "storage_service": "pas",
-                "path": path,
-                "csc_project": project,
-            },
-            allowed_status_codes=[404],
-        )
-        if response.status_code == 404:
-            # Instead of raising error, return empty lists
-            return map_directory_files(
-                {"directory": None, "directories": [], "files": []}
+        try:
+            results = self._get_extended_results(
+                url=f"{self.baseurl}/directories",
+                params={
+                    "storage_service": "pas",
+                    "path": path,
+                    "csc_project": project,
+                },
+                allowed_status_codes=[404],
             )
+        except requests.HTTPError as error:
+            if error.response.status_code == 404:
+                # Instead of raising error, return empty lists
+                results = {"directory": None, "directories": [], "files": []}
+            else:
+                raise
 
-        data = response.json()
-
-        result: MetaxDirectoryFiles = {
-            "directory": data["results"]["directory"],
-            "directories": data["results"]["directories"],
-            "files": data["results"]["files"],
-        }
-
-        # Endpoint has pagination that involves two lists at the same time:
-        # 'files' and 'directories'
-        next_ = data["next"]
-
-        while next_:
-            response = self.get(next_)
-            data = response.json()
-            result["directories"] += data["results"]["directories"]
-            result["files"] += data["results"]["files"]
-            next_ = data["next"]
-
-        return map_directory_files(result)
+        return map_directory_files(results)
 
     def lock_dataset(self, dataset_id: str) -> None:
         """Lock the dataset's files and the dataset.
@@ -944,3 +910,48 @@ class Metax:
         :returns: requests response
         """
         return self.request("DELETE", url, allowed_status_codes, **kwargs)
+
+    def _get_extended_results(
+        self, url: str,
+        params: dict,
+        allowed_status_codes: list[int] | None = None,
+    ) -> dict:
+        """Handle paged queries by calling the next url.
+
+        Error message is not logged if request fails with one the
+        allowed status codes. However, the HTTPError is always raised.
+
+        :param url: Request URL
+        :param params: Query parameters
+        :param allowed_status_codes: List of allowed HTTP error codes
+        :returns: Extended results
+        """
+        response = self.get(
+            url=url,
+            params=params,
+            # allowed_status_codes is used only to avoid unnecessary log
+            # message from self.get()
+            allowed_status_codes=allowed_status_codes,
+        )
+        response.raise_for_status()
+
+        results = response.json()["results"]
+
+        while response.json()["next"] is not None:
+            # Get the next page
+            response = self.get(response.json()["next"])
+
+            # The `results` could be a list or a dict. A list simply
+            # is extended.
+            if isinstance(results, list):
+                results += response.json()["results"]
+            else:
+                for key, value in response.json()["results"].items():
+                    # If `results` is a dict, it contains dicts and
+                    # multiple lists. The dicts are same on every page,
+                    # so they don't have to be extended. Each list must
+                    # be extended.
+                    if isinstance(value, list):
+                        results[key] += value
+
+        return results

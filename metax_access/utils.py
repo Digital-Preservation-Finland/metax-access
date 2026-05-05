@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 import copy
-from typing import TYPE_CHECKING, Any
-
-if TYPE_CHECKING:
-    from metax_access.metax import Metax
+from typing import Any
 
 
 def update_nested_dict(
@@ -33,22 +30,3 @@ def update_nested_dict(
             updated_dict[key] = update[key]
 
     return updated_dict
-
-
-def extended_result(
-    url: str, metax: Metax, params: dict[str, Any] | None = None
-) -> list:
-    """Handles paged queries by calling the next url.
-
-    :param str url: The URL to make the query.
-    :param obj metax: Metax instance to handle the queries.
-    :param dict params: URL parameters for the query
-    """
-    if params is None:
-        params = {}
-    result = []
-    while url is not None:
-        response = metax.get(url, params=params).json()
-        url = response["next"]
-        result.extend(response["results"])
-    return result
