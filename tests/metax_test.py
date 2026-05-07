@@ -892,7 +892,16 @@ def test_get_dataset_file_count(requests_mock, metax, fileset):
 
 @pytest.mark.parametrize(
     ("file_id_list", "json"),
-    [(["id1", "id2"], {"id1": ["urn:dataset:aaffaaff"]}), ([], {})],
+    [
+        (
+            ["id1", "id2"],
+            {"id1": ["urn:dataset:aaffaaff"]},
+        ),
+        (
+            [],
+            {},
+        )
+    ],
 )
 def test_get_file2dataset_dict(requests_mock, metax, file_id_list, json):
     """Test Metax.get_file2dataset_dict
@@ -901,7 +910,11 @@ def test_get_file2dataset_dict(requests_mock, metax, file_id_list, json):
     datasets are not included in the response.
     """
     req = requests_mock.post(
-        f"{metax.baseurl}/files/datasets",
+        f"{metax.baseurl}/files/datasets?relations=true&include_nulls=True",
+        # Ensure that storage_service parameter is NOT used. If
+        # storage_service parameter is used, Metax will return
+        # storage_identifiers instead of ids.
+        complete_qs=True,
         json=json,
         # Ensure the request body has the requested file IDs
         additional_matcher=lambda req: req.json() == file_id_list,

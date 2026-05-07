@@ -504,20 +504,17 @@ class Metax:
 
         return [map_file(file) for file in results]
 
-    def get_file2dataset_dict(self, file_storage_ids: list[str]) -> dict:
-        """Get a dict of {file_identifier: [dataset_identifier...] mappings
+    def get_file2dataset_dict(self, file_ids: list[str]) -> dict:
+        """Get a dict of {file_id: [dataset_id...] mappings.
 
-        :param file_storage_ids: List of file storage identifiers
+        :param file_ids: List of file identifiers
         :returns: Dictionary with the format
-                  {file_identifier: [dataset_identifier1, ...]}
+                  {file_id: [dataset_id, ...]}
         """
-        if not file_storage_ids:
+        if not file_ids:
             return {}
-        url = (
-            f"{self.baseurl}/files/datasets?relations=true&"
-            f"storage_service=pas"
-        )
-        response = self.post(url, json=file_storage_ids)
+        url = f"{self.baseurl}/files/datasets?relations=true"
+        response = self.post(url, json=file_ids)
         return response.json()
 
     def delete_files(self, files: list[str]) -> requests.Response:
