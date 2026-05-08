@@ -158,14 +158,14 @@ class MetaxUrlField(TypedDict):
     url: str
 
 
-class MetaxContractRationale(TypedDict):
+class MetaxRationale(TypedDict):
     id: Required[str]
     rationale: Required[MetaxConcept]
     expiration_date: Required[Optional[str]]
 
 
-class MetaxContractDataSensitivity(TypedDict):
-    rationales: Required[Sequence[MetaxContractRationale]]
+class MetaxDataSensitivity(TypedDict):
+    rationales: Required[Sequence[MetaxRationale]]
     is_sensitive: Required[bool]
 
 
@@ -180,7 +180,7 @@ class MetaxContract(TypedDict, total=False):
     validity: Required[DateRange]
     contact: Required[Sequence[MetaxContact]]
     related_service: Required[Sequence[RelatedService]]
-    data_sensitivity: Required[MetaxContractDataSensitivity]
+    data_sensitivity: Required[MetaxDataSensitivity]
     removed: Optional[bool]
 
 
@@ -281,6 +281,7 @@ class MetaxDataset(TypedDict, total=False):
     relation: Optional[Sequence[Any]]
     remote_resources: Optional[Sequence[Any]]
     spatial: Required[Sequence[MetaxSpatial]]
+    data_sensitivity: Required[MetaxDataSensitivity]
     state: Optional[str]
     temporal: Optional[Sequence[DateRange]]
     theme: Required[Sequence[MetaxConceptBase]]

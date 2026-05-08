@@ -7,8 +7,8 @@ from metax_access.response import (
     MetaxAccessRights,
     MetaxActor,
     MetaxContract,
-    MetaxContractRationale,
     MetaxConceptBase,
+    MetaxDataSensitivity,
     MetaxDataset,
     MetaxDirectoryFiles,
     MetaxFile,
@@ -21,6 +21,7 @@ from metax_access.response import (
     MetaxParentDirectory,
     MetaxPreservation,
     MetaxProvenance,
+    MetaxRationale,
 )
 
 
@@ -125,24 +126,26 @@ def map_file(metax_file: MetaxFile) -> MetaxFile:
     }
 
 
+def _map_rationales(rationales):
+    result: list[MetaxRationale] = [
+        {
+            "id": rationale["id"],
+            "rationale": {
+                "url": rationale["rationale"]["url"],
+                "pref_label": rationale["rationale"]["pref_label"]
+            },
+            "expiration_date": rationale["expiration_date"]
+        }
+        for rationale in rationales
+    ]
+
+    return result
+
+
 def map_contract(metax_contract: MetaxContract) -> MetaxContract:
     """Maps a Metax contract response to a minimum response
     required by the FDPAS services.
     """
-    def _map_rationales(rationales):
-        result: list[MetaxContractRationale] = [
-            {
-                "id": rationale["id"],
-                "rationale": {
-                    "url": rationale["rationale"]["url"],
-                    "pref_label": rationale["rationale"]["pref_label"]
-                },
-                "expiration_date": rationale["expiration_date"]
-            }
-            for rationale in rationales
-        ]
-
-        return result
 
     return {
         "id": metax_contract["id"],
@@ -263,6 +266,13 @@ def map_dataset(metax_dataset: MetaxDataset) -> MetaxDataset:
         "user": metax_dataset["metadata_owner"].get("user"),
     }
 
+    data_sensitivity: MetaxDataSensitivity = {
+        "is_sensitive": metax_dataset["data_sensitivity"]["is_sensitive"],
+        "rationales": _map_rationales(
+            metax_dataset["data_sensitivity"]["rationales"]
+        )
+    }
+
     return {
         "id": metax_dataset["id"],
         "created": metax_dataset["created"],
@@ -271,6 +281,7 @@ def map_dataset(metax_dataset: MetaxDataset) -> MetaxDataset:
         "modified": metax_dataset["modified"],
         "fileset": fileset,
         "preservation": preservation,
+        "data_sensitivity": data_sensitivity,
         "access_rights": access_rights,
         "version": metax_dataset["version"],
         "language": [

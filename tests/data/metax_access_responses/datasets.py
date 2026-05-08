@@ -36,6 +36,10 @@ BASE = {
         "contract": None,
         "pas_package_created": None,
     },
+    "data_sensitivity": {
+        "is_sensitive": False,
+        "rationales": []
+    },
     "access_rights": None,
     "version": 1,
     "language": [],
@@ -69,6 +73,23 @@ FULL = _construct_dataset_response(
         },
         "contract": "agreement:identifier1",
         "pas_package_created": True,
+    },
+    data_sensitivity={
+        "is_sensitive": True,
+        "rationales": [
+            {
+                "id": "contract-rationale-1",
+                "rationale": {
+                    "url": "http://uri.suomi.fi/codelist/fairdata/sensitivity_rationale/code/tietosuojalaki-1050-2018",
+                    "pref_label": {
+                        "en": "Data Protection Act (1050/2018)",
+                        "fi": "Tietosuojalaki (1050/2018)",
+                        "sv": "Dataskyddslag (1050/2018)"
+                    },
+                },
+                "expiration_date": "2020-01-01"
+            }
+        ]
     },
     access_rights={
         "license": [
