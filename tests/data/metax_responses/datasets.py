@@ -183,9 +183,7 @@ FULL = _construct_dataset(
                         "en": "Data Protection Act (1050/2018)",
                         "fi": "Tietosuojalaki (1050/2018)",
                         "sv": "Dataskyddslag (1050/2018)"
-                    },
-                    "broader": [],
-                    "narrower": []
+                    }
                 },
                 "expiration_date": "2020-01-01"
             }
