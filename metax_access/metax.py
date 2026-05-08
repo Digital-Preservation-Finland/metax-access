@@ -219,6 +219,20 @@ class Metax:
             raise DatasetNotAvailableError
         return map_dataset(response.json())
 
+    def patch_dataset(
+            self, dataset_id: str, data: dict[str, Any]) -> MetaxDataset:
+        """Patch a dataset.
+
+        :param dataset_id: Identifier of the dataset
+        :param data: Dictionary containing fields to be updated
+
+        :returns: Updated dataset
+        """
+        url = f"{self.baseurl}/datasets/{dataset_id}"
+
+        response = self.patch(url, json=data)
+        return map_dataset(response.json())
+
     def set_contract(self, dataset_id: str, contract_id: str) -> dict:
         """Update the contract of a dataset.
 

@@ -285,6 +285,29 @@ def test_get_dataset(requests_mock, metax):
     assert dataset == json
 
 
+def test_patch_dataset(requests_mock, metax):
+    """Test `patch_dataset` method.
+    """
+    dataset_id = "123"
+
+    data = {
+        "title": {"en": "New title"}
+    }
+    new_dataset = create_test_dataset(id=dataset_id, title={"en": "New title"})
+    url = f"{metax.baseurl}/datasets/{dataset_id}"
+
+    patch_mock = requests_mock.patch(
+        url, json=new_dataset
+    )
+
+    dataset = metax.patch_dataset(dataset_id, data)
+    assert dataset == new_dataset
+
+    last_request = patch_mock.last_request
+    assert last_request.json() == {"title": {"en": "New title"}}
+    assert last_request.url.startswith(f"{metax.baseurl}/datasets/123")
+
+
 def test_get_contract_datasets(requests_mock, metax, caplog):
     ids = ["foo", "bar"]
     contract_id = "contract"
