@@ -107,7 +107,6 @@ def map_file(metax_file: MetaxFile) -> MetaxFile:
 
     return {
         "id": metax_file["id"],
-        "storage_identifier": metax_file["storage_identifier"],
         "pathname": metax_file["pathname"],
         "filename": metax_file["filename"],
         "size": metax_file["size"],

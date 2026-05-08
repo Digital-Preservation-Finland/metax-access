@@ -11,7 +11,6 @@ def _construct_file_response(**kwargs):
 
 BASE = {
     "id": "test_id",
-    "storage_identifier": "pas_storage_id",
     "pathname": "/filename.txt",
     "filename": "filename.txt",
     "size": 14798,
