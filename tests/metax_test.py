@@ -456,7 +456,8 @@ def test_get_dataset_files(requests_mock, metax):
     the output is compared to the expected output.
     """
     dataset_id = "dataset_id"
-    url = f"{metax.baseurl}/datasets/{dataset_id}/files?limit=10000"
+    url = (f"{metax.baseurl}/datasets/{dataset_id}/files?limit=10000"
+           "&pagination_type=cursor")
     pagin_url = "https://plaa"
     files = [create_test_file(id=f"id_{i}") for i in range(0, 3)]
 
@@ -517,7 +518,7 @@ def test_get_project_file(file_path, results, requests_mock, metax):
     :param requets_mock: HTTP request mocker
     """
     requests_mock.get(
-        metax.baseurl + "/files?limit=10000",
+        metax.baseurl + "/files?limit=10000&pagination_type=cursor",
         json={"count": 1, "next": None, "previous": None, "results": results},
     )
     expected_file = create_test_file(pathname="/dir/file")
@@ -554,7 +555,8 @@ def test_get_files_dict(requests_mock, metax):
 
     Metax is mocked to return files as two reponses.
     """
-    url_1 = f"{metax.baseurl}/files?csc_project=test&limit=10000"
+    url_1 = (f"{metax.baseurl}/files?csc_project=test&limit=10000"
+             "&pagination_type=cursor")
     file_1 = create_test_file(
         id="file1_identifier", pathname="/path/file1", storage_service="pas1"
     )
@@ -1197,7 +1199,7 @@ def test_get_directory_files_recursively(requests_mock, metax, path):
     # Mock metax
     requests_mock.get(
         "/v3/files?pathname__startswith=/testdir/&csc_project=test_project"
-        "&limit=10000",
+        "&limit=10000&pagination_type=cursor",
         json={
             "next": "https://thenexturl",
             "results": [

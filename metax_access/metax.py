@@ -267,6 +267,7 @@ class Metax:
             raise FileNotAvailableError
         return map_file(response.json())
 
+    # TODO: This method can be removed when TPASPKT-749 is resolved.
     def get_files_dict(self, project: str) -> dict[str, dict[str, str]]:
         """Get all the files of a given project.
 
@@ -284,7 +285,7 @@ class Metax:
         """
         files = self._get_extended_results(
             url=f"{self.baseurl}/files",
-            params={"csc_project": project},
+            params={"csc_project": project, "pagination_type": "cursor"},
         )
 
         file_dict = {}
@@ -478,7 +479,7 @@ class Metax:
         :param fields: If provided, only given fields are returned
         :returns: metadata of dataset files as json
         """
-        params = {}
+        params = {"pagination_type": "cursor"}
         if fields:
             params["fields"] = ",".join(fields)
 
@@ -629,7 +630,11 @@ class Metax:
         """
         results = self._get_extended_results(
             url=f"{self.baseurl}/files",
-            params={"pathname": path, "csc_project": project},
+            params={
+                "pathname": path,
+                "csc_project": project,
+                "pagination_type": "cursor",
+            },
         )
         try:
             return next(
@@ -653,7 +658,11 @@ class Metax:
         path = path.rstrip("/") + "/"
         results = self._get_extended_results(
             url=f"{self.baseurl}/files",
-            params={"pathname__startswith": path, "csc_project": project},
+            params={
+                "pathname__startswith": path,
+                "csc_project": project,
+                "pagination_type": "cursor",
+            },
         )
         return [map_file(file) for file in results]
 
