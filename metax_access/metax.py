@@ -282,10 +282,9 @@ class Metax:
         :param project: project id
         :returns: Dict of all the files of a given project
         """
-        # GET 10000 files every iteration until all files are read
         files = self._get_extended_results(
             url=f"{self.baseurl}/files",
-            params={"limit": 10000, "csc_project": project},
+            params={"csc_project": project},
         )
 
         file_dict = {}
@@ -479,7 +478,7 @@ class Metax:
         :param fields: If provided, only given fields are returned
         :returns: metadata of dataset files as json
         """
-        params = {"limit": 10000}
+        params = {}
         if fields:
             params["fields"] = ",".join(fields)
 
@@ -605,7 +604,7 @@ class Metax:
         try:
             results = self._get_extended_results(
                 url=f"{self.baseurl}/datasets/{dataset_id}/directories",
-                params={"path": path, "limit": 10_000},
+                params={"path": path},
                 allowed_status_codes=[404]
             )
         except requests.HTTPError as error:
@@ -923,6 +922,8 @@ class Metax:
         :param allowed_status_codes: List of allowed HTTP error codes
         :returns: Extended results
         """
+        # limit=10000 gives good performance based on simple tests
+        params["limit"] = 10_000
         response = self.get(
             url=url,
             params=params,
