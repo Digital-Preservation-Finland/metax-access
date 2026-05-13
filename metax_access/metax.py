@@ -238,7 +238,8 @@ class Metax:
         :returns: The datasets from Metax as json.
         """
         url = f"{self.baseurl}/datasets"
-        params = {"preservation__contract": pid}
+        # limit=2000 gives good performance based on simple tests
+        params = {"preservation__contract": pid, "limit": 2000}
         results = self._get_extended_results(url=url, params=params)
         return [map_dataset(dataset) for dataset in results]
 
@@ -931,8 +932,12 @@ class Metax:
         :param allowed_status_codes: List of allowed HTTP error codes
         :returns: Extended results
         """
-        # limit=10000 gives good performance based on simple tests
-        params["limit"] = 10_000
+        if "limit" not in params:
+            # By default the limit is 20, which will cause too many
+            # requests if there is many results. Based on simple tests,
+            # limit=10000 gives good performance at least when browsing
+            # files
+            params["limit"] = 10_000
         response = self.get(
             url=url,
             params=params,

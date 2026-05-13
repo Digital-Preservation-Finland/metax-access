@@ -298,7 +298,7 @@ def test_get_contract_datasets(requests_mock, metax, caplog):
         json={"next": None, "results": [expected_datasets[1]]},
     )
     metax_mock = requests_mock.get(
-        f"{metax.baseurl}/datasets?limit=10000",
+        f"{metax.baseurl}/datasets?limit=2000",
         json={
             "next": "https://url_to_next_page",
             "results": [expected_datasets[0]],
