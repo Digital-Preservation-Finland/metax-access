@@ -306,6 +306,7 @@ def map_dataset(metax_dataset: MetaxDataset) -> MetaxDataset:
         "provenance": provenance,
         "metadata_owner": metadata_owner,
         "data_catalog": metax_dataset["data_catalog"],
+        "state": metax_dataset["state"]
     }
 
 

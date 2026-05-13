@@ -44,6 +44,7 @@ BASE = {
     "version": 1,
     "language": [],
     "persistent_identifier": None,
+    "state": "published",
     "issued": None,
     "actors": [],
     "keyword": [],

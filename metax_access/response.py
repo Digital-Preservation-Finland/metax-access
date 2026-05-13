@@ -11,7 +11,7 @@ For underlying data models, see:
 https://metax.fd-staging.csc.fi/v3/swagger/
 """
 from collections.abc import Sequence
-from typing import Any, TypedDict, Optional, Union, TYPE_CHECKING
+from typing import Any, TypedDict, Optional, Union, Literal, TYPE_CHECKING
 
 if TYPE_CHECKING:
     # Type checkers need to support NotRequired
@@ -282,7 +282,7 @@ class MetaxDataset(TypedDict, total=False):
     remote_resources: Optional[Sequence[Any]]
     spatial: Required[Sequence[MetaxSpatial]]
     data_sensitivity: Required[MetaxDataSensitivity]
-    state: Optional[str]
+    state: Required[Optional[Literal["draft", "published"]]]
     temporal: Optional[Sequence[DateRange]]
     theme: Required[Sequence[MetaxConceptBase]]
     title: Required[MetaxPrefLabel]

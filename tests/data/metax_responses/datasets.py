@@ -41,7 +41,7 @@ BASE = {
     "relation": [],
     "remote_resources": [],
     "spatial": [],
-    "state": "draft",
+    "state": "published",
     "temporal": [],
     "theme": [],
     "title": {"en": "testing"},
