@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Any, TypedDict
+from typing import Any, TypedDict, Literal
 from urllib.parse import parse_qs, urlparse
 
 import requests
@@ -93,6 +93,7 @@ class Metax:
         metadata_owner_user: str | None = None,
         ordering: str | None = None,
         search: str | None = None,
+        publication_state: None | Literal["published", "draft"] = None
     ) -> _DatasetJsonResponse:
         """Get the metadata of datasets from Metax.
 
@@ -107,6 +108,7 @@ class Metax:
         :param str ordering: metax dataset attribute for sorting
             datasets.
         :param str search: string for filtering datasets.
+        :param publication_state: Filter by publication state, if provided
         :returns: datasets from Metax as json.
         """
         params = {
@@ -118,6 +120,9 @@ class Metax:
             "limit": limit,
             "offset": offset,
         }
+
+        if publication_state:
+            params["state"] = publication_state
 
         url = f"{self.baseurl}/datasets"
         response = self.get(url, allowed_status_codes=[404], params=params)
