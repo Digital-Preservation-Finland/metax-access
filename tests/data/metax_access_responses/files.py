@@ -33,6 +33,7 @@ BASE = {
     "characteristics_extension": None,
     "pas_compatible_file": None,
     "non_pas_compatible_file": None,
+    "pas_process_running": False,
 }
 
 

@@ -123,6 +123,7 @@ def map_file(metax_file: MetaxFile) -> MetaxFile:
         ),
         "pas_compatible_file": metax_file.get("pas_compatible_file"),
         "non_pas_compatible_file": metax_file.get("non_pas_compatible_file"),
+        "pas_process_running": metax_file["pas_process_running"]
     }
 
 

@@ -158,4 +158,5 @@ FILE = {
     "pas_compatible_file": None,
     "non_pas_compatible_file": None,
     "is_sensitive": False,
+    "pas_process_running": False,
 }

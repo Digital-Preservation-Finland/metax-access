@@ -78,7 +78,7 @@ class MetaxFile(TypedDict, total=False):
     dataset_metadata: Optional[MetaxFileDatasetMetadata]
     characteristics: Optional[MetaxFileCharacteristics]
     characteristics_extension: Optional[dict]  # Free-form contents
-    pas_process_running: Optional[bool]
+    pas_process_running: Required[bool]
     pas_compatible_file: Optional[str]
     non_pas_compatible_file: Optional[str]
 
