@@ -28,7 +28,7 @@ from tests.data.metax_responses import (
     ],
 )
 def test_map_dataset(input, output):
-    assert output == map_dataset(input)
+    assert map_dataset(input) == output
 
 
 @pytest.mark.parametrize(
@@ -38,7 +38,7 @@ def test_map_dataset(input, output):
     ],
 )
 def test_map_contract(input, output):
-    assert output == map_contract(input)
+    assert map_contract(input) == output
 
 
 @pytest.mark.parametrize(
@@ -53,7 +53,7 @@ def test_map_contract(input, output):
     ],
 )
 def test_map_file(input, output):
-    assert output == map_file(input)
+    assert map_file(input) == output
 
 
 @pytest.mark.parametrize(
@@ -64,4 +64,4 @@ def test_map_file(input, output):
     ],
 )
 def test_map_directory_files(input, output):
-    assert output == map_directory_files(input)
+    assert map_directory_files(input) == output
