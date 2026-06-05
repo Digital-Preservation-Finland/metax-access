@@ -34,8 +34,8 @@ BASE = {
             "preservation_state": None,
         },
         "contract": None,
-        "pas_package_created": None,
-        "pas_process_running": None,
+        "pas_package_created": False,
+        "pas_process_running": False,
     },
     "data_sensitivity": {
         "is_sensitive": False,
