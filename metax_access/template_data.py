@@ -45,45 +45,34 @@ CONTRACT = {
 
 DATASET = {
     "id": "test_dataset_id",
-    "access_rights": {
-        "available": None,
-        "description": None,
+    "access_rights": {  # for visualizing Datacite
         "license": [
             {
-                "custom_url": None,
-                "description": None,
-                "title": {"en": "Title here"},
                 "pref_label": {"en": "Title here"},
                 "url": "http://urn.fi/urn:nbn:fi:csc-3388475675",
             }
         ],
     },
     "actors": [],
-    "bibliographic_citation": None,
-    "cumulative_state": 0,
     "data_catalog": "urn:nbn:fi:att:data-catalog-pas",
     "data_sensitivity": {
         "is_sensitive": False,
         "rationales": []
     },
-    "description": None,
-    "field_of_science": [],
+    "description": None,  # for visualizing Datacite
+    "field_of_science": [],  # for visualizing Datacite
     "fileset": {
         "total_files_size": 0,
         "csc_project": None,
         "total_files_count": 0,
     },
-    "generate_pid_on_publish": None,
-    "infrastructure": [],
-    "issued": None,
-    "keyword": [],
+    "issued": None,  # for visualizing Datacite
+    "keyword": [],  # for visualizing Datacite
     "language": [],
     "metadata_owner": {
-        "id": "test_metadata_owner_id",
         "user": "service_tpas",
         "organization": "service_tpas",
     },
-    "other_identifiers": [],
     "persistent_identifier": None,
     "preservation": {
         "state": -1,
@@ -95,51 +84,21 @@ DATASET = {
             "preservation_state": None,
         },
         "contract": "test_contract_id",
-        "preservation_identifier": None,
         "pas_package_created": False,
         "pas_process_running": False,
     },
-    "projects": [],
     "provenance": [],
-    "relation": [],
-    "remote_resources": [],
-    "spatial": [],
+    "spatial": [],  # for visualizing Datacite
     "state": "published",
-    "temporal": [],
-    "theme": [],
+    "theme": [],  # for visualizing Datacite
     "title": {"en": "testing"},
     "created": "test_created_date",
-    "cumulation_started": None,
-    "cumulation_ended": None,
-    "deprecated": None,
-    "removed": None,
     "modified": "test_modified_date",
-    "dataset_versions": [
-        {
-            "id": "test_dataset_id",
-            "title": {"en": "testing"},
-            "persistent_identifier": None,
-            "state": "draft",
-            "created": "test_created_date",
-            "removed": None,
-            "deprecated": None,
-            "next_draft": None,
-            "draft_of": None,
-            "version": 1,
-        }
-    ],
-    "published_revision": 0,
-    "draft_revision": 1,
-    "draft_of": None,
-    "next_draft": None,
-    "version": 1,
-    "api_version": 3,
-    "metadata_repository": "Fairdata",
+    "version": 1,  # Probably not used for anything
 }
 
 FILE = {
     "id": "pid:urn:identifier",
-    "storage_identifier": "urn:uuid:identifier",
     "pathname": "/path/to/file",
     "filename": "file",
     "size": 14798,

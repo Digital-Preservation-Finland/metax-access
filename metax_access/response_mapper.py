@@ -174,6 +174,9 @@ def map_dataset(metax_dataset: MetaxDataset) -> MetaxDataset:
     fileset: MetaxFileSet = (
         {
             "total_files_size": metax_dataset["fileset"]["total_files_size"],
+            # TODO: TPASPKT-1475 Where is fileset.csc_project used?
+            # csc_project is needed in file metadata, but maybe not in
+            # dataset metadata?
             "csc_project": metax_dataset["fileset"]["csc_project"],
             "total_files_count": metax_dataset["fileset"]["total_files_count"],
         }
@@ -281,6 +284,7 @@ def map_dataset(metax_dataset: MetaxDataset) -> MetaxDataset:
         "preservation": preservation,
         "data_sensitivity": data_sensitivity,
         "access_rights": access_rights,
+        # TODO: TPASPKT-1475 Where "version" is used?
         "version": metax_dataset["version"],
         "language": [
             {"url": language["url"]} for language in metax_dataset["language"]
@@ -321,10 +325,14 @@ def _map_actors(actors: Iterable[MetaxActor]) -> list[MetaxActor]:
         if (person := actor.get("person")) is not None:
             act["person"] = {
                 "name": person["name"],
+                # TODO: TPASPKT-1475 where external_identifier is used?
                 "external_identifier": person["external_identifier"],
                 # TODO: `email` might be hidden in some datasets, so
                 # it is then set to `None`. Does it make sense fetch
                 # those datasets? Can it be avoided?
+                # TODO: TPASPKT-1697 The email sending functionality
+                # will be removed, and then this "email" field will be
+                # unnecessary
                 "email": person.get("email"),
             }
 
@@ -335,8 +343,12 @@ def _map_actors(actors: Iterable[MetaxActor]) -> list[MetaxActor]:
 
             act["organization"] = {
                 "pref_label": org["pref_label"],
+                # TODO: TPASPKT-1475 where url is used?
                 "url": org["url"],
+                # TODO: TPASPKT-1475 where external_identifier is used?
                 "external_identifier": org["external_identifier"],
+                # The parent field probably is not used anywhere although it
+                # should, see TPASPKT-1702
                 "parent": parent,
             }
 
