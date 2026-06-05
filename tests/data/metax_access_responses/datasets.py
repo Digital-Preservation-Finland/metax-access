@@ -35,6 +35,7 @@ BASE = {
         },
         "contract": None,
         "pas_package_created": None,
+        "pas_process_running": None,
     },
     "data_sensitivity": {
         "is_sensitive": False,
@@ -74,6 +75,7 @@ FULL = _construct_dataset_response(
         },
         "contract": "agreement:identifier1",
         "pas_package_created": True,
+        "pas_process_running": True,
     },
     data_sensitivity={
         "is_sensitive": True,

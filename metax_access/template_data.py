@@ -97,6 +97,7 @@ DATASET = {
         "contract": "test_contract_id",
         "preservation_identifier": None,
         "pas_package_created": None,
+        "pas_process_running": None,
     },
     "projects": [],
     "provenance": [],

@@ -243,6 +243,7 @@ class MetaxPreservation(TypedDict, total=False):
     dataset_version: Optional[MetaxPreservationDatasetVersion]
     contract: Required[Optional[str]]
     pas_package_created: Required[bool]
+    pas_process_running: Optional[bool]
 
 
 class MetaxProvenance(TypedDict, total=False):
