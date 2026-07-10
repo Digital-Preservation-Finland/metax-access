@@ -33,6 +33,9 @@ BASE = {
             "persistent_identifier": None,
             "preservation_state": None,
         },
+        "dataset_origin_version": {
+            "id": None,
+        },
         "contract": None,
         "pas_package_created": False,
         "pas_process_running": False,
@@ -72,6 +75,9 @@ FULL = _construct_dataset_response(
             "id": "pas_version_identifier",
             "persistent_identifier": "doi:pas_version_preferred_identifier",
             "preservation_state": 75,
+        },
+        "dataset_origin_version": {
+            "id": "origin_version_identifier",
         },
         "contract": "agreement:identifier1",
         "pas_package_created": True,

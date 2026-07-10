@@ -236,11 +236,16 @@ class MetaxPreservationDatasetVersion(TypedDict):
     preservation_state: Optional[str]
 
 
+class MetaxPreservationDatasetOriginVersion(TypedDict):
+    id: Optional[str]
+
+
 class MetaxPreservation(TypedDict, total=False):
     state: Required[int]
     description: Required[Optional[MetaxPrefLabel]]
     reason_description: Required[Optional[MetaxPrefLabel]]
     dataset_version: Optional[MetaxPreservationDatasetVersion]
+    dataset_origin_version: Optional[MetaxPreservationDatasetOriginVersion]
     contract: Required[Optional[str]]
     pas_package_created: Required[bool]
     pas_process_running: Required[bool]

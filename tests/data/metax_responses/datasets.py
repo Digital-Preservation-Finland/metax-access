@@ -230,6 +230,7 @@ FULL = _construct_dataset(
             "persistent_identifier": "doi:pas_version_preferred_identifier",
             "preservation_state": DS_STATE_METADATA_CONFIRMED,
         },
+        "dataset_origin_version": {"id": "origin_version_identifier"},
         "description": {"en": "preservation_description"},
         "id": "abcdefgh1",
         "reason_description": "preservation_reason_description",

@@ -83,6 +83,9 @@ DATASET = {
             "persistent_identifier": None,
             "preservation_state": None,
         },
+        "dataset_origin_version": {
+            "id": None,
+        },
         "contract": "test_contract_id",
         "pas_package_created": False,
         "pas_process_running": False,

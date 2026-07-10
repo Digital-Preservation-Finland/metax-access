@@ -197,6 +197,14 @@ def map_dataset(metax_dataset: MetaxDataset) -> MetaxDataset:
             "persistent_identifier": None,
             "preservation_state": None,
         },
+        # TODO: dataset_origin_version was added, because it is the only
+        # way to know whether dataset in PAS datalog is a copy of Ida
+        # dataset, or a pottumonttu dataset. In future there probably is
+        # separate data catalogs for pottumonttu datasets and PAS
+        # datasets. (TPASPKT-1723)
+        "dataset_origin_version": {
+            "id": None,
+        },
         "contract": None,
         "pas_package_created": False,
         "pas_process_running": False,
@@ -215,6 +223,14 @@ def map_dataset(metax_dataset: MetaxDataset) -> MetaxDataset:
                 "id": dataset_ver["id"],
                 "persistent_identifier": dataset_ver["persistent_identifier"],
                 "preservation_state": dataset_ver["preservation_state"],
+            }
+
+        # Set on PAS-catalog copies: points back to the original
+        # dataset the copy was created from
+        if (origin_ver := input_pres.get("dataset_origin_version")) \
+                is not None:
+            preservation["dataset_origin_version"] = {
+                "id": origin_ver["id"],
             }
 
     access_rights: MetaxAccessRights | None = None
