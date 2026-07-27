@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a
 Changelog <https://keepachangelog.com/en/1.1.0/>`__.
 
+2.3.0 - 2026-07-27
+------------------
+
+Added
+~~~~~
+
+- Add ``contract.data_sensitivity`` field
+- Add ``pas_process_running`` field to dataset and file metadata
+
+Changed
+~~~~~~~
+
+- Return all languages for contract's title and description, not just ``und``
+
 2.2.0 - 2026-05-26
 ------------------
 
