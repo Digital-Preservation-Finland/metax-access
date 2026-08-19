@@ -50,7 +50,6 @@ export SETUPTOOLS_SCM_PRETEND_VERSION=%{file_version}
 %pyproject_save_files metax_access
 
 %files -n python3-metax-access -f %{pyproject_files}
-%{_bindir}/metax_access
 %license LICENSE
 %doc README.rst
 
