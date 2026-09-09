@@ -243,7 +243,7 @@ class MetaxPreservationDatasetOriginVersion(TypedDict):
 class MetaxPreservation(TypedDict, total=False):
     state: Required[int]
     description: Required[Optional[MetaxPrefLabel]]
-    reason_description: Required[Optional[MetaxPrefLabel]]
+    reason_description: Required[str]
     dataset_version: Optional[MetaxPreservationDatasetVersion]
     dataset_origin_version: Optional[MetaxPreservationDatasetOriginVersion]
     contract: Required[Optional[str]]
