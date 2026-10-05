@@ -6,6 +6,19 @@ All notable changes to this project will be documented in this file.
 The format is based on `Keep a
 Changelog <https://keepachangelog.com/en/1.1.0/>`__.
 
+2.4.0 - 2026-10-05
+------------------
+
+Added
+~~~~~
+
+- Add ``dataset_origin_version`` field to preservation object
+
+Fixed
+~~~~~
+
+- Fix ``reason_description`` type annotation
+
 2.3.0 - 2026-07-27
 ------------------
 
